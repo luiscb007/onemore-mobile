@@ -13,6 +13,7 @@ import {
   Modal,
   Switch,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { eventsApi } from '../api/events';
 import { useAuth } from '../contexts/AuthContext';
 import type { EventWithDetails } from '../types';
@@ -21,6 +22,7 @@ import { Search, SlidersHorizontal } from 'lucide-react-native';
 
 export const HomeScreen = () => {
   const { user } = useAuth();
+  const navigation = useNavigation();
   const [events, setEvents] = useState<EventWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -98,7 +100,11 @@ export const HomeScreen = () => {
     const hasInteracted = item.userInteraction !== undefined;
 
     return (
-      <View style={styles.eventCard}>
+      <TouchableOpacity 
+        style={styles.eventCard}
+        onPress={() => navigation.navigate('EventDetail' as never, { eventId: item.id } as never)}
+        activeOpacity={0.7}
+      >
         {item.imageUrl && (
           <Image
             source={{ uri: item.imageUrl }}
@@ -170,7 +176,7 @@ export const HomeScreen = () => {
             </View>
           )}
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 

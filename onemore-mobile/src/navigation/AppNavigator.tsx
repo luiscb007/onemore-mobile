@@ -9,6 +9,8 @@ import { CreateEventScreen } from '../screens/CreateEventScreen';
 import { MyEventsScreen } from '../screens/MyEventsScreen';
 import { EditEventScreen } from '../screens/EditEventScreen';
 import { MessagesScreen } from '../screens/MessagesScreen';
+import { ChatScreen } from '../screens/ChatScreen';
+import { EventDetailScreen } from '../screens/EventDetailScreen';
 import { useAuth } from '../contexts/AuthContext';
 import { ActivityIndicator, View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 
@@ -128,6 +130,20 @@ export const AppNavigator = () => {
         <Stack.Screen 
           name="EditEvent" 
           component={EditEventScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen 
+          name="Chat" 
+          component={ChatScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen 
+          name="EventDetail" 
+          component={EventDetailScreen}
           options={{
             headerShown: false,
           }}
