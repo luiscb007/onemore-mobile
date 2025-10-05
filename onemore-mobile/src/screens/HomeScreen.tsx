@@ -21,7 +21,7 @@ import { useAuth } from '../contexts/AuthContext';
 import type { EventWithDetails } from '../types';
 import { format, addDays } from 'date-fns';
 import { Search, SlidersHorizontal, MapPin, RefreshCw, Calendar, Plus } from 'lucide-react-native';
-import Slider from '@react-native-community/slider';
+import { RangeSlider } from '../components/RangeSlider';
 
 export const HomeScreen = () => {
   const { user } = useAuth();
@@ -321,41 +321,26 @@ export const HomeScreen = () => {
           <Text style={styles.dateLabel}>Events starting in</Text>
           <Text style={styles.dateValue}>{startDays} - {endDays} days</Text>
         </View>
-        <View style={styles.sliderContainer}>
-          <Text style={styles.sliderLabel}>Start: {startDays} days</Text>
-          <Slider
-            style={styles.slider}
-            value={startDays}
-            onValueChange={(value) => {
-              setStartDays(value);
-              if (value > endDays) {
-                setEndDays(value);
-              }
-            }}
-            minimumValue={0}
-            maximumValue={60}
+        <View style={styles.rangeSliderContainer}>
+          <RangeSlider
+            min={0}
+            max={60}
             step={1}
-            minimumTrackTintColor="#007AFF"
-            maximumTrackTintColor="#cbd5e1"
-          />
-        </View>
-        <View style={styles.sliderContainer}>
-          <Text style={styles.sliderLabel}>End: {endDays} days</Text>
-          <Slider
-            style={styles.slider}
-            value={endDays}
-            onValueChange={(value) => {
-              setEndDays(value);
-              if (value < startDays) {
-                setStartDays(value);
-              }
+            low={startDays}
+            high={endDays}
+            onValueChanged={(low, high) => {
+              setStartDays(low);
+              setEndDays(high);
             }}
-            minimumValue={0}
-            maximumValue={60}
-            step={1}
-            minimumTrackTintColor="#007AFF"
-            maximumTrackTintColor="#cbd5e1"
           />
+          <View style={styles.dateLabels}>
+            <Text style={styles.dateLabelText}>
+              {format(addDays(new Date(), startDays), 'MMM d')}
+            </Text>
+            <Text style={styles.dateLabelText}>
+              {format(addDays(new Date(), endDays), 'MMM d')}
+            </Text>
+          </View>
         </View>
       </View>
 
@@ -600,6 +585,21 @@ const styles = StyleSheet.create({
   slider: {
     flex: 1,
     height: 30,
+  },
+  rangeSliderContainer: {
+    paddingHorizontal: 8,
+    paddingVertical: 16,
+  },
+  dateLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+    paddingHorizontal: 4,
+  },
+  dateLabelText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#64748b',
   },
   searchContainer: {
     flexDirection: 'row',
