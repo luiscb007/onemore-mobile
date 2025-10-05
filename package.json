@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/datetimepicker": "^8.4.5",
     "@react-native-picker/picker": "^2.11.2",
     "@types/bcryptjs": "^2.4.6",
@@ -19,6 +20,7 @@
     "expo-image-picker": "^17.0.8",
     "expo-secure-store": "^15.0.7",
     "jsonwebtoken": "^9.0.2",
+    "lucide-react-native": "^0.544.0",
     "react-hook-form": "^7.64.0"
   }
 }

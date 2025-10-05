@@ -9,9 +9,10 @@ import {
   Alert,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { RoleSwitcher } from '../components/RoleSwitcher';
 
 export const ProfileScreen = () => {
-  const { user, logout, refreshUser } = useAuth();
+  const { user, logout, refreshUser, userRole, setUserRole } = useAuth();
 
   if (!user) {
     return (
@@ -67,9 +68,14 @@ export const ProfileScreen = () => {
         </View>
         <Text style={styles.name}>{fullName}</Text>
         {user.email && <Text style={styles.email}>{user.email}</Text>}
-        <View style={styles.roleBadge}>
-          <Text style={styles.roleText}>{user.role.toUpperCase()}</Text>
+        
+        <View style={styles.roleSwitcherContainer}>
+          <RoleSwitcher
+            currentRole={userRole}
+            onRoleChange={setUserRole}
+          />
         </View>
+
         {user.subscriptionTier && (
           <View style={[styles.tierBadge, user.subscriptionTier === 'premium' ? styles.premiumBadge : styles.freeBadge]}>
             <Text style={styles.tierText}>{user.subscriptionTier.toUpperCase()}</Text>
@@ -188,6 +194,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginBottom: 12,
+  },
+  roleSwitcherContainer: {
+    marginBottom: 16,
   },
   roleBadge: {
     backgroundColor: '#007AFF',

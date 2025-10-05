@@ -6,6 +6,8 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { CreateEventScreen } from '../screens/CreateEventScreen';
+import { MyEventsScreen } from '../screens/MyEventsScreen';
+import { EditEventScreen } from '../screens/EditEventScreen';
 import { useAuth } from '../contexts/AuthContext';
 import { ActivityIndicator, View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 
@@ -13,7 +15,7 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 export const AppNavigator = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, userRole } = useAuth();
 
   if (loading) {
     return (
@@ -49,12 +51,24 @@ export const AppNavigator = () => {
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarLabel: 'Discover',
+          tabBarLabel: userRole === 'organizer' ? 'Discover' : 'Events',
           tabBarIcon: ({ color }) => (
             <Text style={{ fontSize: 24 }}>🎉</Text>
           ),
         }}
       />
+      {userRole === 'organizer' && (
+        <Tab.Screen
+          name="MyEvents"
+          component={MyEventsScreen}
+          options={{
+            tabBarLabel: 'My Events',
+            tabBarIcon: ({ color }) => (
+              <Text style={{ fontSize: 24 }}>📅</Text>
+            ),
+          }}
+        />
+      )}
       <Tab.Screen
         name="CreateEventTab"
         component={View}
@@ -98,6 +112,13 @@ export const AppNavigator = () => {
           options={{
             title: 'Create Event',
             headerBackTitle: 'Back',
+          }}
+        />
+        <Stack.Screen 
+          name="EditEvent" 
+          component={EditEventScreen}
+          options={{
+            headerShown: false,
           }}
         />
       </Stack.Navigator>
