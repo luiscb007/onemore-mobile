@@ -27,14 +27,43 @@ const createEventSchema = z.object({
   date: z.date(),
   time: z.date(),
   address: z.string().min(1, 'Address is required'),
-  latitude: z.string().min(1),
-  longitude: z.string().min(1),
+  latitude: z.string().min(1, 'Location coordinates required'),
+  longitude: z.string().min(1, 'Location coordinates required'),
   priceAmount: z.string().optional(),
   priceCurrencyCode: z.string().default('USD'),
   capacity: z.string().optional(),
   isRecurring: z.boolean().default(false),
-  recurrenceType: z.string().nullable(),
-  recurrenceEndDate: z.date().nullable(),
+  recurrenceType: z.string().nullable().refine(
+    (val, ctx) => {
+      const isRecurring = ctx.parent?.isRecurring;
+      if (isRecurring && (!val || val === '')) {
+        return false;
+      }
+      return true;
+    },
+    { message: 'Recurrence pattern is required when recurring is enabled' }
+  ),
+  recurrenceEndDate: z.date().nullable().refine(
+    (val, ctx) => {
+      const isRecurring = ctx.parent?.isRecurring;
+      if (isRecurring && !val) {
+        return false;
+      }
+      // Check 2-month maximum constraint
+      if (isRecurring && val) {
+        const startDate = ctx.parent?.date;
+        if (startDate) {
+          const twoMonthsLater = new Date(startDate);
+          twoMonthsLater.setMonth(twoMonthsLater.getMonth() + 2);
+          if (val > twoMonthsLater) {
+            return false;
+          }
+        }
+      }
+      return true;
+    },
+    { message: 'End date must be within 2 months of start date' }
+  ),
 });
 
 type CreateEventForm = z.infer<typeof createEventSchema>;
@@ -271,13 +300,24 @@ export const CreateEventScreen = () => {
                 <TextInput
                   style={[styles.input, errors.address && styles.inputError]}
                   placeholder="Enter event location"
-                  onBlur={onBlur}
+                  onBlur={(e) => {
+                    onBlur();
+                    // TODO: Implement geocoding to get lat/lng from address
+                    // For now, using default coordinates
+                    if (value && value.length > 0) {
+                      setValue('latitude', '37.7749'); // San Francisco default
+                      setValue('longitude', '-122.4194');
+                    }
+                  }}
                   onChangeText={onChange}
                   value={value}
                 />
               )}
             />
             {errors.address && <Text style={styles.errorText}>{errors.address.message}</Text>}
+            <Text style={styles.warningText}>
+              ⚠️ Location coordinates need geocoding integration. Using default coordinates for now.
+            </Text>
           </View>
 
           {/* Price */}
@@ -360,18 +400,18 @@ export const CreateEventScreen = () => {
           {isRecurring && (
             <>
               <View style={styles.fieldContainer}>
-                <Text style={styles.label}>Recurrence Pattern</Text>
+                <Text style={styles.label}>Recurrence Pattern *</Text>
                 <Controller
                   control={control}
                   name="recurrenceType"
                   render={({ field: { onChange, value } }) => (
                     <View style={styles.pickerContainer}>
                       <Picker
-                        selectedValue={value || undefined}
-                        onValueChange={onChange}
+                        selectedValue={value || 'none'}
+                        onValueChange={(val) => onChange(val === 'none' ? null : val)}
                         style={styles.picker}
                       >
-                        <Picker.Item label="Select pattern" value="" />
+                        <Picker.Item label="Select pattern" value="none" />
                         <Picker.Item label="Weekly" value="weekly" />
                         <Picker.Item label="Biweekly" value="biweekly" />
                         <Picker.Item label="Monthly" value="monthly" />
@@ -379,10 +419,13 @@ export const CreateEventScreen = () => {
                     </View>
                   )}
                 />
+                {errors.recurrenceType && (
+                  <Text style={styles.errorText}>{errors.recurrenceType.message}</Text>
+                )}
               </View>
 
               <View style={styles.fieldContainer}>
-                <Text style={styles.label}>End Date</Text>
+                <Text style={styles.label}>End Date *</Text>
                 <Controller
                   control={control}
                   name="recurrenceEndDate"
@@ -401,6 +444,7 @@ export const CreateEventScreen = () => {
                           value={value || new Date()}
                           mode="date"
                           display="default"
+                          minimumDate={watch('date')}
                           onChange={(event, selectedDate) => {
                             setShowRecurrenceEndPicker(Platform.OS === 'ios');
                             if (selectedDate) {
@@ -412,6 +456,9 @@ export const CreateEventScreen = () => {
                     </>
                   )}
                 />
+                {errors.recurrenceEndDate && (
+                  <Text style={styles.errorText}>{errors.recurrenceEndDate.message}</Text>
+                )}
                 <Text style={styles.helperText}>Maximum 2 months from start date</Text>
               </View>
             </>
@@ -531,6 +578,11 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 12,
     color: '#ef4444',
+    marginTop: 4,
+  },
+  warningText: {
+    fontSize: 12,
+    color: '#f59e0b',
     marginTop: 4,
   },
   buttonContainer: {
