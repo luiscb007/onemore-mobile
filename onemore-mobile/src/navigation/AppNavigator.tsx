@@ -8,6 +8,7 @@ import { LoginScreen } from '../screens/LoginScreen';
 import { CreateEventScreen } from '../screens/CreateEventScreen';
 import { MyEventsScreen } from '../screens/MyEventsScreen';
 import { EditEventScreen } from '../screens/EditEventScreen';
+import { MessagesScreen } from '../screens/MessagesScreen';
 import { useAuth } from '../contexts/AuthContext';
 import { ActivityIndicator, View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 
@@ -69,6 +70,16 @@ export const AppNavigator = () => {
           }}
         />
       )}
+      <Tab.Screen
+        name="Messages"
+        component={MessagesScreen}
+        options={{
+          tabBarLabel: 'Messages',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 24 }}>💬</Text>
+          ),
+        }}
+      />
       <Tab.Screen
         name="CreateEventTab"
         component={View}
