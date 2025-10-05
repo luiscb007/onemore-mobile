@@ -1,7 +1,14 @@
 import axios from 'axios';
 import { tokenStorage } from '../services/tokenStorage';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000';
+const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined' && window.location) {
+    return window.location.origin;
+  }
+  return process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: `${API_BASE_URL}/api`,
