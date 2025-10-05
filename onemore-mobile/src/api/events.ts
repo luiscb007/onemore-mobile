@@ -46,4 +46,9 @@ export const eventsApi = {
     const response = await apiClient.get(`/organizers/${organizerId}/events`);
     return response.data;
   },
+
+  getUserEvents: async (type: 'going' | 'like' | 'pass'): Promise<EventWithDetails[]> => {
+    const response = await apiClient.get(`/user/events/${type}`);
+    return response.data;
+  },
 };
