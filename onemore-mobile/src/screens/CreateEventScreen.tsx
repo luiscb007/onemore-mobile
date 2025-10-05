@@ -21,6 +21,7 @@ import { queryClient } from '../lib/queryClient';
 import { useNavigation } from '@react-navigation/native';
 import { eventsApi } from '../api/events';
 import { AddressAutocomplete } from '../components/AddressAutocomplete';
+import { useAuth } from '../contexts/AuthContext';
 
 const createEventSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -32,7 +33,7 @@ const createEventSchema = z.object({
   latitude: z.string().min(1, 'Location coordinates required'),
   longitude: z.string().min(1, 'Location coordinates required'),
   priceAmount: z.string().optional(),
-  priceCurrencyCode: z.string().default('USD'),
+  priceCurrencyCode: z.string().default('EUR'),
   capacity: z.string().optional(),
   isRecurring: z.boolean().default(false),
   recurrenceType: z.string().nullable().refine(
@@ -80,6 +81,7 @@ const categories = [
 
 export const CreateEventScreen = () => {
   const navigation = useNavigation();
+  const { user } = useAuth();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showRecurrenceEndPicker, setShowRecurrenceEndPicker] = useState(false);
@@ -102,7 +104,7 @@ export const CreateEventScreen = () => {
       latitude: '',
       longitude: '',
       priceAmount: '',
-      priceCurrencyCode: 'USD',
+      priceCurrencyCode: user?.defaultCurrencyCode || 'EUR',
       capacity: '',
       isRecurring: false,
       recurrenceType: null,
@@ -350,8 +352,8 @@ export const CreateEventScreen = () => {
                       onValueChange={onChange}
                       style={styles.picker}
                     >
-                      <Picker.Item label="$ USD" value="USD" />
                       <Picker.Item label="€ EUR" value="EUR" />
+                      <Picker.Item label="zł PLN" value="PLN" />
                       <Picker.Item label="£ GBP" value="GBP" />
                     </Picker>
                   </View>

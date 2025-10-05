@@ -29,7 +29,7 @@ const editEventSchema = z.object({
   latitude: z.string().min(1, 'Location coordinates required'),
   longitude: z.string().min(1, 'Location coordinates required'),
   priceAmount: z.string().optional(),
-  priceCurrencyCode: z.string().default('USD'),
+  priceCurrencyCode: z.string().default('EUR'),
   capacity: z.string().optional(),
   isRecurring: z.boolean().default(false),
   recurrenceType: z.string().nullable().refine(
@@ -107,7 +107,7 @@ export const EditEventScreen = () => {
       latitude: '37.7749',
       longitude: '-122.4194',
       priceAmount: '',
-      priceCurrencyCode: 'USD',
+      priceCurrencyCode: 'EUR',
       capacity: '',
       isRecurring: false,
       recurrenceType: null,
@@ -153,7 +153,7 @@ export const EditEventScreen = () => {
         latitude: data.latitude,
         longitude: data.longitude,
         priceAmount: data.priceAmount || null,
-        priceCurrencyCode: data.priceCurrencyCode || 'USD',
+        priceCurrencyCode: data.priceCurrencyCode || 'EUR',
         capacity: data.capacity ? parseInt(data.capacity) : null,
         recurrenceType: data.isRecurring ? data.recurrenceType : null,
         recurrenceEndDate: data.isRecurring && data.recurrenceEndDate

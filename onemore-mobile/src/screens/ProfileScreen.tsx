@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useAuth } from '../contexts/AuthContext';
-import { RoleSwitcher } from '../components/RoleSwitcher';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { api } from '../api/client';
 import { queryClient } from '../lib/queryClient';
@@ -151,13 +150,6 @@ export const ProfileScreen = () => {
         </View>
         <Text style={styles.name}>{fullName}</Text>
         {user.email && <Text style={styles.email}>{user.email}</Text>}
-        
-        <View style={styles.roleSwitcherContainer}>
-          <RoleSwitcher
-            currentRole={userRole}
-            onRoleChange={setUserRole}
-          />
-        </View>
 
         {user.subscriptionTier && (
           <View style={[styles.tierBadge, user.subscriptionTier === 'premium' ? styles.premiumBadge : styles.freeBadge]}>

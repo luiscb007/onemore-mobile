@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { eventsApi } from '../api/events';
+import { api } from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 import type { EventWithDetails } from '../types';
 import { format, addDays } from 'date-fns';
@@ -33,10 +34,29 @@ export const HomeScreen = () => {
   const [hidePast, setHidePast] = useState(true);
   const [sortBy, setSortBy] = useState<'date' | 'distance' | 'popularity'>('date');
   const [showFilters, setShowFilters] = useState(false);
-  const [daysAhead, setDaysAhead] = useState(60);
+  const [startDays, setStartDays] = useState(0);
+  const [endDays, setEndDays] = useState(60);
   const [locationLoading, setLocationLoading] = useState(false);
+  const [cityName, setCityName] = useState<string>('');
 
   const categories = ['all', 'arts', 'community', 'culture', 'sports', 'workshops'];
+
+  const reverseGeocode = async (lat: number, lng: number) => {
+    try {
+      const response = await api.get(`/api/geocode/reverse?lat=${lat}&lon=${lng}`);
+      if (response.data && response.data.city) {
+        setCityName(response.data.city);
+      }
+    } catch (error) {
+      console.error('Failed to reverse geocode:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.currentLatitude && user?.currentLongitude) {
+      reverseGeocode(user.currentLatitude, user.currentLongitude);
+    }
+  }, [user?.currentLatitude, user?.currentLongitude]);
 
   const formatDate = (date: Date): string => {
     const year = date.getFullYear();
@@ -50,10 +70,12 @@ export const HomeScreen = () => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      const dateFrom = formatDate(today);
+      const startDate = new Date(today);
+      startDate.setDate(today.getDate() + startDays);
+      const dateFrom = formatDate(startDate);
       
       const endDate = new Date(today);
-      endDate.setDate(today.getDate() + daysAhead);
+      endDate.setDate(today.getDate() + endDays);
       const dateTo = formatDate(endDate);
 
       const params = {
@@ -100,7 +122,7 @@ export const HomeScreen = () => {
       }, 300);
       return () => clearTimeout(timeoutId);
     }
-  }, [selectedCategory, user, searchQuery, hidePast, sortBy, daysAhead]);
+  }, [selectedCategory, user, searchQuery, hidePast, sortBy, startDays, endDays]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -213,8 +235,10 @@ export const HomeScreen = () => {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const startDate = new Date(today);
+  startDate.setDate(today.getDate() + startDays);
   const endDate = new Date(today);
-  endDate.setDate(today.getDate() + daysAhead);
+  endDate.setDate(today.getDate() + endDays);
 
   return (
     <View style={styles.container}>
@@ -261,13 +285,14 @@ export const HomeScreen = () => {
           <View style={styles.locationInfo}>
             <MapPin size={16} color="#64748b" />
             <Text style={styles.locationText}>
-              Within {user.searchRadius || 50} km
+              {cityName || 'Loading location...'} • Within {user.searchRadius || 50} km
             </Text>
           </View>
           <TouchableOpacity
             style={styles.refreshButton}
             onPress={() => {
               setLocationLoading(true);
+              reverseGeocode(user.currentLatitude!, user.currentLongitude!);
               setTimeout(() => setLocationLoading(false), 1000);
             }}
           >
@@ -293,19 +318,45 @@ export const HomeScreen = () => {
 
       <View style={styles.dateRangeContainer}>
         <View style={styles.dateHeader}>
-          <Text style={styles.dateLabel}>Show events up to</Text>
-          <Text style={styles.dateValue}>{daysAhead} days</Text>
+          <Text style={styles.dateLabel}>Events starting in</Text>
+          <Text style={styles.dateValue}>{startDays} - {endDays} days</Text>
         </View>
-        <Slider
-          style={styles.slider}
-          value={daysAhead}
-          onValueChange={setDaysAhead}
-          minimumValue={1}
-          maximumValue={60}
-          step={1}
-          minimumTrackTintColor="#007AFF"
-          maximumTrackTintColor="#cbd5e1"
-        />
+        <View style={styles.sliderContainer}>
+          <Text style={styles.sliderLabel}>Start: {startDays} days</Text>
+          <Slider
+            style={styles.slider}
+            value={startDays}
+            onValueChange={(value) => {
+              setStartDays(value);
+              if (value > endDays) {
+                setEndDays(value);
+              }
+            }}
+            minimumValue={0}
+            maximumValue={60}
+            step={1}
+            minimumTrackTintColor="#007AFF"
+            maximumTrackTintColor="#cbd5e1"
+          />
+        </View>
+        <View style={styles.sliderContainer}>
+          <Text style={styles.sliderLabel}>End: {endDays} days</Text>
+          <Slider
+            style={styles.slider}
+            value={endDays}
+            onValueChange={(value) => {
+              setEndDays(value);
+              if (value < startDays) {
+                setStartDays(value);
+              }
+            }}
+            minimumValue={0}
+            maximumValue={60}
+            step={1}
+            minimumTrackTintColor="#007AFF"
+            maximumTrackTintColor="#cbd5e1"
+          />
+        </View>
       </View>
 
       <Modal
@@ -526,7 +577,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 8,
   },
   dateLabel: {
     fontSize: 14,
@@ -537,6 +588,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#007AFF',
+  },
+  sliderContainer: {
+    gap: 4,
+  },
+  sliderLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#64748b',
   },
   slider: {
     flex: 1,
