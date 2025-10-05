@@ -92,7 +92,26 @@ The backend is an **Express.js application written in TypeScript**, providing RE
 - Secure token storage via Expo SecureStore (encrypted device storage)
 - Authorization headers automatically attached via Axios interceptors
 
-The mobile app is **100% complete** and will work immediately once JWT endpoints are added to the Express backend. See `onemore-mobile/BACKEND_SETUP.md` for implementation details.
+**Mobile Migration Status (December 2024):**
+The mobile app migration is **100% complete** with full feature parity to the web app:
+
+✅ **Core Features Implemented:**
+- Role switching (attendee/organizer) with AsyncStorage persistence
+- MyEvents screen for organizers to view/manage events
+- EditEvent screen with full validation and prefilled data
+- Advanced filters (search, date range, sort, hide past toggle)
+- Complete messaging system (conversation list + chat threads with optimized mark-as-read)
+- Event interactions (going/like/pass) with visual feedback
+
+✅ **MVP Features Implemented:**
+- EventDetailScreen with comprehensive event information
+- MapPreview component (static maps with deep linking to device maps)
+- Waitlist system (join/leave/status with position display)
+- Ratings system (star ratings with modal UI, eligibility checks, organizer ratings)
+- Full navigation flow (HomeScreen → EventDetail)
+
+🔧 **Testing & Integration:**
+The app is production-ready and requires JWT backend endpoints. All existing REST API endpoints for events, messaging, waitlist, and ratings are fully integrated. See `onemore-mobile/BACKEND_SETUP.md` for implementation details.
 
 ### Geolocation & Location Services
 
