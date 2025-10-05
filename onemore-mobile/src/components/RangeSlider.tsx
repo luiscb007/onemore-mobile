@@ -19,6 +19,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
   onValueChanged,
 }) => {
   const [sliderWidth, setSliderWidth] = useState(0);
+  const [sliderLeft, setSliderLeft] = useState(0);
   const [isDraggingLow, setIsDraggingLow] = useState(false);
   const [isDraggingHigh, setIsDraggingHigh] = useState(false);
 
@@ -42,11 +43,9 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
       onPanResponderGrant: () => {
         setIsDraggingLow(true);
       },
-      onPanResponderMove: (_, gestureState) => {
-        const newPosition = Math.max(
-          0,
-          Math.min(sliderWidth, getPositionFromValue(low) + gestureState.dx)
-        );
+      onPanResponderMove: (evt, gestureState) => {
+        const touchX = gestureState.moveX - sliderLeft;
+        const newPosition = Math.max(0, Math.min(sliderWidth, touchX));
         const newValue = getValueFromPosition(newPosition);
         
         if (newValue <= high) {
@@ -66,11 +65,9 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
       onPanResponderGrant: () => {
         setIsDraggingHigh(true);
       },
-      onPanResponderMove: (_, gestureState) => {
-        const newPosition = Math.max(
-          0,
-          Math.min(sliderWidth, getPositionFromValue(high) + gestureState.dx)
-        );
+      onPanResponderMove: (evt, gestureState) => {
+        const touchX = gestureState.moveX - sliderLeft;
+        const newPosition = Math.max(0, Math.min(sliderWidth, touchX));
         const newValue = getValueFromPosition(newPosition);
         
         if (newValue >= low) {
@@ -91,8 +88,11 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
       <View
         style={styles.rail}
         onLayout={(event) => {
-          const { width } = event.nativeEvent.layout;
+          const { width, x } = event.nativeEvent.layout;
           setSliderWidth(width);
+          event.currentTarget.measure((fx, fy, w, h, px, py) => {
+            setSliderLeft(px);
+          });
         }}
       >
         <View

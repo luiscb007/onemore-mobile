@@ -130,6 +130,12 @@ export async function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
+  // Check if JWT authentication was successful (set by authenticateJWT middleware)
+  if (user && user.claims && user.claims.sub) {
+    return next();
+  }
+
+  // Fall back to Replit Auth session authentication
   if (!req.isAuthenticated() || !user.expires_at) {
     return res.status(401).json({ message: "Unauthorized" });
   }
