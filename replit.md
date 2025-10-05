@@ -92,16 +92,17 @@ The backend is an **Express.js application written in TypeScript**, providing RE
 - Secure token storage via Expo SecureStore (encrypted device storage)
 - Authorization headers automatically attached via Axios interceptors
 
-**Mobile Migration Status (December 2024):**
+**Mobile Migration Status (January 2025):**
 The mobile app migration is **100% complete** with full feature parity to the web app:
 
 ✅ **Core Features Implemented:**
 - Role switching (attendee/organizer) with AsyncStorage persistence
-- MyEvents screen for organizers to view/manage events
+- **MyEvents screen with 4 tabs** (Going, Liked, Passed, Organized) matching web app layout
 - EditEvent screen with full validation and prefilled data
 - Advanced filters (search, date range, sort, hide past toggle)
 - Complete messaging system (conversation list + chat threads with optimized mark-as-read)
 - Event interactions (going/like/pass) with visual feedback
+- **Discover screen filters out user's own events** (backend automatically excludes)
 
 ✅ **MVP Features Implemented:**
 - EventDetailScreen with comprehensive event information
@@ -110,8 +111,21 @@ The mobile app migration is **100% complete** with full feature parity to the we
 - Ratings system (star ratings with modal UI, eligibility checks, organizer ratings)
 - Full navigation flow (HomeScreen → EventDetail)
 
+✅ **Profile & Account Features:**
+- User stats display (Events Created, Events Attended, Average Rating)
+- About OneMore info section with feature list
+- Give us feedback modal (submits to `/api/feedback`)
+- Delete account dialog with reason selection and feedback
+
+✅ **Authentication:**
+- **Email/password registration** fully implemented (`POST /api/auth/register`)
+- Login with email/password (`POST /api/auth/login`)
+- JWT token-based authentication with automatic refresh
+- Secure token storage via Expo SecureStore
+- Registration screen with validation (password min 6 chars, email required, passwords must match)
+
 🔧 **Testing & Integration:**
-The app is production-ready and requires JWT backend endpoints. All existing REST API endpoints for events, messaging, waitlist, and ratings are fully integrated. See `onemore-mobile/BACKEND_SETUP.md` for implementation details.
+The app is production-ready for iOS deployment. All REST API endpoints for events, messaging, waitlist, ratings, authentication, and user management are fully integrated. Backend JWT authentication endpoints are implemented and working.
 
 ### Geolocation & Location Services
 
