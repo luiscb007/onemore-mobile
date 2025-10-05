@@ -19,6 +19,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "bcryptjs": "^3.0.2",
     "expo-image-picker": "^17.0.8",
+    "expo-location": "^19.0.7",
     "expo-secure-store": "^15.0.7",
     "jsonwebtoken": "^9.0.2",
     "lucide-react-native": "^0.544.0",

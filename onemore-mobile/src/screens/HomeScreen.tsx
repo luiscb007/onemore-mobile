@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { eventsApi } from '../api/events';
-import { api } from '../api/client';
+import { apiClient } from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 import type { EventWithDetails } from '../types';
 import { format, addDays } from 'date-fns';
@@ -43,7 +43,7 @@ export const HomeScreen = () => {
 
   const reverseGeocode = async (lat: number, lng: number) => {
     try {
-      const response = await api.get(`/api/geocode/reverse?lat=${lat}&lon=${lng}`);
+      const response = await apiClient.get(`/geocode/reverse?lat=${lat}&lon=${lng}`);
       if (response.data && response.data.city) {
         setCityName(response.data.city);
       }
