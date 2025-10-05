@@ -64,18 +64,16 @@ export const AppNavigator = () => {
           ),
         }}
       />
-      {userRole === 'organizer' && (
-        <Tab.Screen
-          name="MyEvents"
-          component={MyEventsScreen}
-          options={{
-            tabBarLabel: 'My Events',
-            tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 24 }}>📅</Text>
-            ),
-          }}
-        />
-      )}
+      <Tab.Screen
+        name="MyEvents"
+        component={MyEventsScreen}
+        options={{
+          tabBarLabel: 'My Events',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 24 }}>📅</Text>
+          ),
+        }}
+      />
       <Tab.Screen
         name="Messages"
         component={MessagesScreen}

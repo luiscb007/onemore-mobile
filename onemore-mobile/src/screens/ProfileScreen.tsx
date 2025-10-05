@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,10 +10,12 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { useAuth } from '../contexts/AuthContext';
 import { RoleSwitcher } from '../components/RoleSwitcher';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { api } from '../api/client';
+import { queryClient } from '../lib/queryClient';
 
 export const ProfileScreen = () => {
   const { user, logout, refreshUser, userRole, setUserRole } = useAuth();
@@ -22,10 +24,31 @@ export const ProfileScreen = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deletionReason, setDeletionReason] = useState('');
   const [deletionFeedback, setDeletionFeedback] = useState('');
+  const [searchRadius, setSearchRadius] = useState(100);
 
   const { data: stats } = useQuery<{ eventsCreated: number; eventsAttended: number; averageRating: number }>({
     queryKey: [`/api/users/${user?.id}/stats`],
     enabled: !!user?.id,
+  });
+
+  useEffect(() => {
+    if (user?.searchRadius !== undefined) {
+      setSearchRadius(user.searchRadius);
+    }
+  }, [user?.searchRadius]);
+
+  const updateRadiusMutation = useMutation({
+    mutationFn: async (radius: number) => {
+      const response = await api.put('/api/user/search-radius', { radius });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      refreshUser();
+    },
+    onError: (error: any) => {
+      Alert.alert('Error', error.response?.data?.message || 'Failed to update search radius');
+    },
   });
 
   const sendFeedbackMutation = useMutation({
@@ -163,10 +186,26 @@ export const ProfileScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Account Settings</Text>
         
-        <View style={styles.settingItem}>
-          <View>
+        <View style={[styles.settingItem, styles.settingItemColumn]}>
+          <View style={styles.radiusHeader}>
             <Text style={styles.settingLabel}>Search Radius</Text>
-            <Text style={styles.settingValue}>{user.searchRadius} km</Text>
+            <Text style={styles.radiusValue}>{searchRadius} km</Text>
+          </View>
+          <Slider
+            style={styles.slider}
+            value={searchRadius}
+            onValueChange={setSearchRadius}
+            onSlidingComplete={(value) => updateRadiusMutation.mutate(value)}
+            minimumValue={0}
+            maximumValue={100}
+            step={1}
+            minimumTrackTintColor="#007AFF"
+            maximumTrackTintColor="#D1D1D6"
+            thumbTintColor="#007AFF"
+          />
+          <View style={styles.radiusLabels}>
+            <Text style={styles.radiusLabelText}>0 km</Text>
+            <Text style={styles.radiusLabelText}>100 km</Text>
           </View>
         </View>
 
@@ -459,6 +498,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+  },
+  settingItemColumn: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
+  radiusHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  radiusValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#007AFF',
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+  },
+  radiusLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: -8,
+  },
+  radiusLabelText: {
+    fontSize: 12,
+    color: '#94a3b8',
   },
   settingLabel: {
     fontSize: 16,

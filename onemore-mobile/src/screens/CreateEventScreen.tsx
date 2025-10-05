@@ -16,9 +16,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '../lib/queryClient';
 import { useNavigation } from '@react-navigation/native';
 import { eventsApi } from '../api/events';
+import { AddressAutocomplete } from '../components/AddressAutocomplete';
 
 const createEventSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -78,7 +80,6 @@ const categories = [
 
 export const CreateEventScreen = () => {
   const navigation = useNavigation();
-  const queryClient = useQueryClient();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showRecurrenceEndPicker, setShowRecurrenceEndPicker] = useState(false);
@@ -98,8 +99,8 @@ export const CreateEventScreen = () => {
       date: new Date(),
       time: new Date(),
       address: '',
-      latitude: '37.7749',
-      longitude: '-122.4194',
+      latitude: '',
+      longitude: '',
       priceAmount: '',
       priceCurrencyCode: 'USD',
       capacity: '',
@@ -296,28 +297,25 @@ export const CreateEventScreen = () => {
             <Controller
               control={control}
               name="address"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  style={[styles.input, errors.address && styles.inputError]}
-                  placeholder="Enter event location"
-                  onBlur={(e) => {
-                    onBlur();
-                    // TODO: Implement geocoding to get lat/lng from address
-                    // For now, using default coordinates
-                    if (value && value.length > 0) {
-                      setValue('latitude', '37.7749'); // San Francisco default
-                      setValue('longitude', '-122.4194');
-                    }
-                  }}
-                  onChangeText={onChange}
+              render={({ field: { onChange, value } }) => (
+                <AddressAutocomplete
                   value={value}
+                  onChange={onChange}
+                  onSelectAddress={(address, lat, lon) => {
+                    onChange(address);
+                    setValue('latitude', lat);
+                    setValue('longitude', lon);
+                  }}
+                  onClearCoordinates={() => {
+                    setValue('latitude', '');
+                    setValue('longitude', '');
+                  }}
+                  placeholder="Search for event location..."
+                  error={!!errors.address}
                 />
               )}
             />
             {errors.address && <Text style={styles.errorText}>{errors.address.message}</Text>}
-            <Text style={styles.warningText}>
-              ⚠️ Location coordinates need geocoding integration. Using default coordinates for now.
-            </Text>
           </View>
 
           {/* Price */}
