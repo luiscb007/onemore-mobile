@@ -10,10 +10,15 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@react-native-community/datetimepicker": "^8.4.5",
+    "@react-native-picker/picker": "^2.11.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "bcryptjs": "^3.0.2",
+    "expo-image-picker": "^17.0.8",
     "expo-secure-store": "^15.0.7",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "react-hook-form": "^7.64.0"
   }
 }

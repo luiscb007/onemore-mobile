@@ -1,13 +1,16 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { LoginScreen } from '../screens/LoginScreen';
+import { CreateEventScreen } from '../screens/CreateEventScreen';
 import { useAuth } from '../contexts/AuthContext';
-import { ActivityIndicator, View, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
 export const AppNavigator = () => {
   const { user, loading } = useAuth();
@@ -29,41 +32,75 @@ export const AppNavigator = () => {
     );
   }
 
+  const MainTabs = () => (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: '#007AFF',
+        tabBarInactiveTintColor: '#999',
+        tabBarStyle: {
+          paddingBottom: 8,
+          paddingTop: 8,
+          height: 60,
+        },
+      }}
+    >
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          tabBarLabel: 'Discover',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 24 }}>🎉</Text>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="CreateEventTab"
+        component={View}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate('CreateEvent');
+          },
+        })}
+        options={{
+          tabBarLabel: 'Create',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 24 }}>➕</Text>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarLabel: 'Profile',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 24 }}>👤</Text>
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+
   return (
     <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: '#007AFF',
-          tabBarInactiveTintColor: '#999',
-          tabBarStyle: {
-            paddingBottom: 8,
-            paddingTop: 8,
-            height: 60,
-          },
-        }}
-      >
-        <Tab.Screen
-          name="Home"
-          component={HomeScreen}
+      <Stack.Navigator>
+        <Stack.Screen 
+          name="MainTabs" 
+          component={MainTabs}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen 
+          name="CreateEvent" 
+          component={CreateEventScreen}
           options={{
-            tabBarLabel: 'Discover',
-            tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 24 }}>🎉</Text>
-            ),
+            title: 'Create Event',
+            headerBackTitle: 'Back',
           }}
         />
-        <Tab.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{
-            tabBarLabel: 'Profile',
-            tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 24 }}>👤</Text>
-            ),
-          }}
-        />
-      </Tab.Navigator>
+      </Stack.Navigator>
     </NavigationContainer>
   );
 };
