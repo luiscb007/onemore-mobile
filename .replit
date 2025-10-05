@@ -9,8 +9,8 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 42263
-externalPort = 3000
+localPort = 8081
+externalPort = 8081
 
 [workflows]
 runButton = "Project"
@@ -62,19 +62,34 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "OneMore Mobile App"
+args = "Backend API"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Expo Mobile Dev"
 
 [[workflows.workflow]]
-name = "OneMore Mobile App"
+name = "Backend API"
 author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd onemore-web/OneMore && PORT=5000 npm run dev"
+waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "webview"
 
+[[workflows.workflow]]
+name = "Expo Mobile Dev"
+author = "agent"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd onemore-mobile && EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0 npx expo start --web --port 5000"
-waitForPort = 5000
+args = "cd onemore-mobile && EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0 npx expo start --tunnel"
+
+[workflows.workflow.metadata]
+outputType = "console"
 
 [agent]
 expertMode = true
