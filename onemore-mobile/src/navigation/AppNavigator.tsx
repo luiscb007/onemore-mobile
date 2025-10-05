@@ -54,9 +54,9 @@ export const AppNavigator = () => {
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarLabel: userRole === 'organizer' ? 'Discover' : 'Events',
+          tabBarLabel: 'Discover',
           tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 24 }}>🎉</Text>
+            <Text style={{ fontSize: 24 }}>🔍</Text>
           ),
         }}
       />
@@ -79,22 +79,6 @@ export const AppNavigator = () => {
           tabBarLabel: 'Messages',
           tabBarIcon: ({ color }) => (
             <Text style={{ fontSize: 24 }}>💬</Text>
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="CreateEventTab"
-        component={View}
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            e.preventDefault();
-            navigation.navigate('CreateEvent');
-          },
-        })}
-        options={{
-          tabBarLabel: 'Create',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 24 }}>➕</Text>
           ),
         }}
       />

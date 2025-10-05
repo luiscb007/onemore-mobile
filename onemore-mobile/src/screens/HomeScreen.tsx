@@ -12,13 +12,15 @@ import {
   TextInput,
   Modal,
   Switch,
+  ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { eventsApi } from '../api/events';
 import { useAuth } from '../contexts/AuthContext';
 import type { EventWithDetails } from '../types';
 import { format, addDays } from 'date-fns';
-import { Search, SlidersHorizontal } from 'lucide-react-native';
+import { Search, SlidersHorizontal, MapPin, RefreshCw, Calendar, Plus } from 'lucide-react-native';
+import Slider from '@react-native-community/slider';
 
 export const HomeScreen = () => {
   const { user } = useAuth();
@@ -31,11 +33,31 @@ export const HomeScreen = () => {
   const [hidePast, setHidePast] = useState(true);
   const [sortBy, setSortBy] = useState<'date' | 'distance' | 'popularity'>('date');
   const [showFilters, setShowFilters] = useState(false);
+  const [dateRange, setDateRange] = useState<[number, number]>([0, 60]);
+  const [locationLoading, setLocationLoading] = useState(false);
 
   const categories = ['all', 'arts', 'community', 'culture', 'sports', 'workshops'];
 
+  const formatDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const loadEvents = async () => {
     try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const startDate = new Date(today);
+      startDate.setDate(today.getDate() + dateRange[0]);
+      const dateFrom = formatDate(startDate);
+      
+      const endDate = new Date(today);
+      endDate.setDate(today.getDate() + dateRange[1]);
+      const dateTo = formatDate(endDate);
+
       const params = {
         category: selectedCategory !== 'all' ? selectedCategory : undefined,
         userId: user?.id,
@@ -44,6 +66,9 @@ export const HomeScreen = () => {
         hidePast,
         search: searchQuery || undefined,
         userRadius: user?.searchRadius ?? undefined,
+        dateFrom,
+        dateTo,
+        sortBy,
       };
       
       let data = await eventsApi.getEvents(params);
@@ -77,7 +102,7 @@ export const HomeScreen = () => {
       }, 300);
       return () => clearTimeout(timeoutId);
     }
-  }, [selectedCategory, user, searchQuery, hidePast, sortBy]);
+  }, [selectedCategory, user, searchQuery, hidePast, sortBy, dateRange]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -188,32 +213,135 @@ export const HomeScreen = () => {
     );
   }
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const startDate = new Date(today);
+  startDate.setDate(today.getDate() + dateRange[0]);
+  const endDate = new Date(today);
+  endDate.setDate(today.getDate() + dateRange[1]);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Discover Events</Text>
-        {user?.currentLatitude && user?.currentLongitude && (
-          <Text style={styles.headerSubtitle}>📍 Events near you</Text>
-        )}
+        <View style={styles.headerLeft}>
+          <View style={styles.logo}>
+            <Text style={styles.logoText}>1+</Text>
+          </View>
+          <Text style={styles.headerTitle}>OneMore</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.createButton}
+          onPress={() => navigation.navigate('CreateEvent' as never)}
+        >
+          <Plus size={20} color="#fff" />
+        </TouchableOpacity>
       </View>
+
+      <View style={styles.controlsRow}>
+        <View style={styles.hidePastRow}>
+          <Text style={styles.controlLabel}>Hide past</Text>
+          <Switch
+            value={hidePast}
+            onValueChange={setHidePast}
+            trackColor={{ false: '#cbd5e1', true: '#22c55e' }}
+            thumbColor="#fff"
+          />
+        </View>
+        <View style={styles.sortRow}>
+          <Text style={styles.controlLabel}>Sort by:</Text>
+          <TouchableOpacity
+            style={styles.sortDropdown}
+            onPress={() => setShowFilters(true)}
+          >
+            <Text style={styles.sortDropdownText}>
+              {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {user?.currentLatitude && user?.currentLongitude && (
+        <View style={styles.locationBanner}>
+          <View style={styles.locationInfo}>
+            <MapPin size={16} color="#64748b" />
+            <Text style={styles.locationText}>
+              Within {user.searchRadius || 50} km
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.refreshButton}
+            onPress={() => {
+              setLocationLoading(true);
+              setTimeout(() => setLocationLoading(false), 1000);
+            }}
+          >
+            <RefreshCw size={16} color="#64748b" style={{ 
+              transform: [{ rotate: locationLoading ? '360deg' : '0deg' }] 
+            }} />
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
           <Search size={20} color="#64748b" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search events..."
+            placeholder="Search events by title or description..."
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor="#94a3b8"
           />
         </View>
-        <TouchableOpacity
-          style={styles.filterButton}
-          onPress={() => setShowFilters(true)}
-        >
-          <SlidersHorizontal size={20} color="#fff" />
-        </TouchableOpacity>
+      </View>
+
+      <View style={styles.dateRangeContainer}>
+        <View style={styles.dateRow}>
+          <View style={styles.dateLabel}>
+            <Calendar size={12} color="#64748b" />
+            <Text style={styles.dateText}>Events from:</Text>
+          </View>
+          <Text style={styles.dateValue}>
+            {startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </Text>
+        </View>
+        <View style={styles.dateRow}>
+          <View style={styles.dateLabel}>
+            <Calendar size={12} color="#64748b" />
+            <Text style={styles.dateText}>Events to:</Text>
+          </View>
+          <Text style={styles.dateValue}>
+            {endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </Text>
+        </View>
+        <View style={styles.sliderRow}>
+          <Text style={styles.sliderLabel}>Today</Text>
+          <View style={styles.sliderWrapper}>
+            <Text style={styles.sliderHelpText}>Start day: {dateRange[0]}</Text>
+            <Slider
+              style={styles.slider}
+              minimumValue={0}
+              maximumValue={dateRange[1]}
+              step={1}
+              value={dateRange[0]}
+              onValueChange={(value: number) => setDateRange([value, dateRange[1]])}
+              minimumTrackTintColor="#007AFF"
+              maximumTrackTintColor="#cbd5e1"
+            />
+            <Text style={styles.sliderHelpText}>End day: {dateRange[1]}</Text>
+            <Slider
+              style={styles.slider}
+              minimumValue={dateRange[0]}
+              maximumValue={60}
+              step={1}
+              value={dateRange[1]}
+              onValueChange={(value: number) => setDateRange([dateRange[0], value])}
+              minimumTrackTintColor="#007AFF"
+              maximumTrackTintColor="#cbd5e1"
+            />
+          </View>
+          <Text style={styles.sliderLabel}>+2mo</Text>
+        </View>
       </View>
 
       <Modal
@@ -325,22 +453,153 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     backgroundColor: '#FFFFFF',
     paddingTop: 60,
-    paddingBottom: 16,
+    paddingBottom: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  logo: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FF5733',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '900',
+  },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '600',
     color: '#000',
   },
-  headerSubtitle: {
+  createButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#007AFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  controlsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  hidePastRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sortRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  controlLabel: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  sortDropdown: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 4,
+  },
+  sortDropdownText: {
+    fontSize: 12,
+    color: '#1e293b',
+  },
+  locationBanner: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  locationInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  locationText: {
     fontSize: 14,
-    color: '#666',
-    marginTop: 4,
+    color: '#64748b',
+  },
+  refreshButton: {
+    padding: 8,
+  },
+  dateRangeContainer: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    gap: 8,
+  },
+  dateRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dateLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  dateText: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  dateValue: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#1e293b',
+  },
+  sliderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  sliderWrapper: {
+    flex: 1,
+    gap: 4,
+  },
+  sliderHelpText: {
+    fontSize: 10,
+    color: '#94a3b8',
+    textAlign: 'center',
+  },
+  sliderLabel: {
+    fontSize: 12,
+    color: '#64748b',
+    minWidth: 35,
+    textAlign: 'center',
+  },
+  slider: {
+    flex: 1,
+    height: 30,
   },
   searchContainer: {
     flexDirection: 'row',
