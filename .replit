@@ -90,7 +90,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd onemore-mobile && EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0 npx expo start --tunnel"
+args = "cd onemore-mobile && npx expo start"
 
 [workflows.workflow.metadata]
 outputType = "console"
