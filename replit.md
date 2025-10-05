@@ -100,9 +100,11 @@ The mobile app migration is **100% complete** with full feature parity to the we
 - **MyEvents screen with 4 tabs** (Going, Liked, Passed, Organized) matching web app layout
 - EditEvent screen with full validation and prefilled data
 - Advanced filters (search, date range, sort, hide past toggle)
+- **Custom range slider** with dual draggable handles for flexible date filtering (0-60 days from today)
 - Complete messaging system (conversation list + chat threads with optimized mark-as-read)
 - Event interactions (going/like/pass) with visual feedback
 - **Discover screen filters out user's own events** (backend automatically excludes)
+- Reverse geocoding displays user's city name in Discover header using LocationIQ API
 
 ✅ **MVP Features Implemented:**
 - EventDetailScreen with comprehensive event information
