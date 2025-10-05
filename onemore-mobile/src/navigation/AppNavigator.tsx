@@ -5,6 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { LoginScreen } from '../screens/LoginScreen';
+import { RegisterScreen } from '../screens/RegisterScreen';
 import { CreateEventScreen } from '../screens/CreateEventScreen';
 import { MyEventsScreen } from '../screens/MyEventsScreen';
 import { EditEventScreen } from '../screens/EditEventScreen';
@@ -32,7 +33,10 @@ export const AppNavigator = () => {
   if (!user) {
     return (
       <NavigationContainer>
-        <LoginScreen />
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+        </Stack.Navigator>
       </NavigationContainer>
     );
   }

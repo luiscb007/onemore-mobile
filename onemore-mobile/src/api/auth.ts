@@ -7,6 +7,13 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface RegisterCredentials {
+  email: string;
+  password: string;
+  firstName?: string;
+  lastName?: string;
+}
+
 export interface AuthResponse {
   token: string;
   refreshToken?: string;
@@ -16,6 +23,18 @@ export interface AuthResponse {
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     const response = await apiClient.post('/auth/login', credentials);
+    const { token, refreshToken, user } = response.data;
+    
+    await tokenStorage.saveToken(token);
+    if (refreshToken) {
+      await tokenStorage.saveRefreshToken(refreshToken);
+    }
+    
+    return response.data;
+  },
+
+  register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
+    const response = await apiClient.post('/auth/register', credentials);
     const { token, refreshToken, user } = response.data;
     
     await tokenStorage.saveToken(token);

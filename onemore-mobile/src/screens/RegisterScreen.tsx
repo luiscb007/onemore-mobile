@@ -13,28 +13,46 @@ import {
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 
-type LoginScreenProps = {
+type RegisterScreenProps = {
   navigation: any;
 };
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  const { login, loading } = useAuth();
+export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
+  const { register, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please enter both email and password');
+      Alert.alert('Error', 'Please enter email and password');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await login({ email, password });
+      await register({
+        email,
+        password,
+        firstName: firstName || undefined,
+        lastName: lastName || undefined,
+      });
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Login failed. Please check your credentials.';
-      Alert.alert('Login Failed', message);
+      const message = error.response?.data?.message || 'Registration failed. Please try again.';
+      Alert.alert('Registration Failed', message);
     } finally {
       setIsSubmitting(false);
     }
@@ -56,10 +74,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <Text style={styles.logo}>OneMore</Text>
-          <Text style={styles.tagline}>Discover local events near you</Text>
+          <Text style={styles.tagline}>Create your account</Text>
 
           <View style={styles.form}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>Email *</Text>
             <TextInput
               style={styles.input}
               placeholder="your@email.com"
@@ -71,10 +89,30 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               editable={!isSubmitting}
             />
 
-            <Text style={styles.label}>Password</Text>
+            <Text style={styles.label}>First Name</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter your password"
+              placeholder="John"
+              value={firstName}
+              onChangeText={setFirstName}
+              autoCapitalize="words"
+              editable={!isSubmitting}
+            />
+
+            <Text style={styles.label}>Last Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Doe"
+              value={lastName}
+              onChangeText={setLastName}
+              autoCapitalize="words"
+              editable={!isSubmitting}
+            />
+
+            <Text style={styles.label}>Password *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="At least 6 characters"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -83,49 +121,44 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               editable={!isSubmitting}
             />
 
+            <Text style={styles.label}>Confirm Password *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Re-enter your password"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={!isSubmitting}
+            />
+
             <TouchableOpacity
-              style={[styles.loginButton, isSubmitting && styles.loginButtonDisabled]}
-              onPress={handleLogin}
+              style={[styles.registerButton, isSubmitting && styles.registerButtonDisabled]}
+              onPress={handleRegister}
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
-                <Text style={styles.loginButtonText}>Log In</Text>
+                <Text style={styles.registerButtonText}>Create Account</Text>
               )}
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.registerLink}
-              onPress={() => navigation.navigate('Register')}
+              style={styles.loginLink}
+              onPress={() => navigation.navigate('Login')}
               disabled={isSubmitting}
             >
-              <Text style={styles.registerLinkText}>
-                Don't have an account? <Text style={styles.registerLinkBold}>Sign Up</Text>
+              <Text style={styles.loginLinkText}>
+                Already have an account? <Text style={styles.loginLinkBold}>Log In</Text>
               </Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.infoBox}>
-            <Text style={styles.infoTitle}>🔐 Backend Setup Required</Text>
             <Text style={styles.infoText}>
-              This login form is ready to work with your backend. To enable authentication, add these endpoints to your Express server:
-            </Text>
-            <Text style={styles.codeText}>
-              POST /api/auth/login{'\n'}
-              → Accept: {`{ email, password }`}{'\n'}
-              → Return: {`{ token, user, refreshToken? }`}{'\n'}
-              {'\n'}
-              GET /api/auth/user{'\n'}
-              → Accept: Authorization: Bearer [token]{'\n'}
-              → Return: user object{'\n'}
-              {'\n'}
-              POST /api/auth/logout{'\n'}
-              → Accept: Authorization: Bearer [token]{'\n'}
-              → Return: success confirmation
-            </Text>
-            <Text style={styles.noteText}>
-              The mobile app will automatically store tokens securely and attach them to all API requests.
+              By creating an account, you'll be able to discover local events, connect with organizers, and manage your event preferences.
             </Text>
           </View>
         </View>
@@ -190,30 +223,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9F9F9',
     marginBottom: 8,
   },
-  loginButton: {
+  registerButton: {
     backgroundColor: '#007AFF',
     borderRadius: 8,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 16,
   },
-  loginButtonDisabled: {
+  registerButtonDisabled: {
     opacity: 0.6,
   },
-  loginButtonText: {
+  registerButtonText: {
     color: '#FFF',
     fontSize: 18,
     fontWeight: 'bold',
   },
-  registerLink: {
+  loginLink: {
     marginTop: 16,
     alignItems: 'center',
   },
-  registerLinkText: {
+  loginLinkText: {
     color: '#64748b',
     fontSize: 14,
   },
-  registerLinkBold: {
+  loginLinkBold: {
     color: '#007AFF',
     fontWeight: '600',
   },
@@ -222,32 +255,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 20,
   },
-  infoTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FFF',
-    marginBottom: 12,
-  },
   infoText: {
     fontSize: 14,
     color: '#FFF',
-    marginBottom: 12,
     lineHeight: 20,
-  },
-  codeText: {
-    fontSize: 12,
-    color: '#FFF',
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-    lineHeight: 18,
-  },
-  noteText: {
-    fontSize: 13,
-    color: '#FFF',
-    fontStyle: 'italic',
-    lineHeight: 18,
+    textAlign: 'center',
   },
 });

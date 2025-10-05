@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi } from '../api/auth';
 import { tokenStorage } from '../services/tokenStorage';
 import type { User } from '../types';
-import type { LoginCredentials } from '../api/auth';
+import type { LoginCredentials, RegisterCredentials } from '../api/auth';
 
 type UserRole = 'attendee' | 'organizer';
 
@@ -12,6 +12,7 @@ type AuthContextType = {
   loading: boolean;
   userRole: UserRole;
   login: (credentials: LoginCredentials) => Promise<void>;
+  register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   setUserRole: (role: UserRole) => Promise<void>;
@@ -73,6 +74,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const register = async (credentials: RegisterCredentials) => {
+    setLoading(true);
+    try {
+      const { user: registeredUser } = await authApi.register(credentials);
+      setUser(registeredUser);
+    } catch (error) {
+      console.error('Registration failed:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
     setLoading(true);
     try {
@@ -96,7 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, userRole, login, logout, refreshUser, setUserRole }}>
+    <AuthContext.Provider value={{ user, loading, userRole, login, register, logout, refreshUser, setUserRole }}>
       {children}
     </AuthContext.Provider>
   );
