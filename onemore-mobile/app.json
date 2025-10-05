@@ -13,7 +13,14 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.onemore.app",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "OneMore uses your location to show nearby events and calculate distances.",
+        "NSPhotoLibraryUsageDescription": "OneMore needs access to your photo library to let you upload event images.",
+        "NSCameraUsageDescription": "OneMore needs access to your camera to let you take photos for events."
+      }
     },
     "android": {
       "adaptiveIcon": {
