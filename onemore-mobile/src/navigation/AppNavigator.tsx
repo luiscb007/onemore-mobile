@@ -47,6 +47,7 @@ export const AppNavigator = () => {
         headerShown: false,
         tabBarActiveTintColor: '#007AFF',
         tabBarInactiveTintColor: '#999',
+        tabBarShowLabel: false,
         tabBarStyle: {
           paddingBottom: 8,
           paddingTop: 8,
@@ -58,7 +59,6 @@ export const AppNavigator = () => {
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarLabel: 'Discover',
           tabBarIcon: ({ color }) => (
             <Text style={{ fontSize: 24 }}>🔍</Text>
           ),
@@ -68,7 +68,6 @@ export const AppNavigator = () => {
         name="MyEvents"
         component={MyEventsScreen}
         options={{
-          tabBarLabel: 'My Events',
           tabBarIcon: ({ color }) => (
             <Text style={{ fontSize: 24 }}>📅</Text>
           ),
@@ -78,7 +77,6 @@ export const AppNavigator = () => {
         name="Messages"
         component={MessagesScreen}
         options={{
-          tabBarLabel: 'Messages',
           tabBarIcon: ({ color }) => (
             <Text style={{ fontSize: 24 }}>💬</Text>
           ),
@@ -88,7 +86,6 @@ export const AppNavigator = () => {
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarLabel: 'Profile',
           tabBarIcon: ({ color }) => (
             <Text style={{ fontSize: 24 }}>👤</Text>
           ),

@@ -33,7 +33,7 @@ export const HomeScreen = () => {
   const [hidePast, setHidePast] = useState(true);
   const [sortBy, setSortBy] = useState<'date' | 'distance' | 'popularity'>('date');
   const [showFilters, setShowFilters] = useState(false);
-  const [dateRange, setDateRange] = useState<[number, number]>([0, 60]);
+  const [daysAhead, setDaysAhead] = useState(60);
   const [locationLoading, setLocationLoading] = useState(false);
 
   const categories = ['all', 'arts', 'community', 'culture', 'sports', 'workshops'];
@@ -50,12 +50,10 @@ export const HomeScreen = () => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      const startDate = new Date(today);
-      startDate.setDate(today.getDate() + dateRange[0]);
-      const dateFrom = formatDate(startDate);
+      const dateFrom = formatDate(today);
       
       const endDate = new Date(today);
-      endDate.setDate(today.getDate() + dateRange[1]);
+      endDate.setDate(today.getDate() + daysAhead);
       const dateTo = formatDate(endDate);
 
       const params = {
@@ -102,7 +100,7 @@ export const HomeScreen = () => {
       }, 300);
       return () => clearTimeout(timeoutId);
     }
-  }, [selectedCategory, user, searchQuery, hidePast, sortBy, dateRange]);
+  }, [selectedCategory, user, searchQuery, hidePast, sortBy, daysAhead]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -215,10 +213,8 @@ export const HomeScreen = () => {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const startDate = new Date(today);
-  startDate.setDate(today.getDate() + dateRange[0]);
   const endDate = new Date(today);
-  endDate.setDate(today.getDate() + dateRange[1]);
+  endDate.setDate(today.getDate() + daysAhead);
 
   return (
     <View style={styles.container}>
@@ -296,52 +292,20 @@ export const HomeScreen = () => {
       </View>
 
       <View style={styles.dateRangeContainer}>
-        <View style={styles.dateRow}>
-          <View style={styles.dateLabel}>
-            <Calendar size={12} color="#64748b" />
-            <Text style={styles.dateText}>Events from:</Text>
-          </View>
-          <Text style={styles.dateValue}>
-            {startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-          </Text>
+        <View style={styles.dateHeader}>
+          <Text style={styles.dateLabel}>Show events up to</Text>
+          <Text style={styles.dateValue}>{daysAhead} days</Text>
         </View>
-        <View style={styles.dateRow}>
-          <View style={styles.dateLabel}>
-            <Calendar size={12} color="#64748b" />
-            <Text style={styles.dateText}>Events to:</Text>
-          </View>
-          <Text style={styles.dateValue}>
-            {endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-          </Text>
-        </View>
-        <View style={styles.sliderRow}>
-          <Text style={styles.sliderLabel}>Today</Text>
-          <View style={styles.sliderWrapper}>
-            <Text style={styles.sliderHelpText}>Start day: {dateRange[0]}</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={dateRange[1]}
-              step={1}
-              value={dateRange[0]}
-              onValueChange={(value: number) => setDateRange([value, dateRange[1]])}
-              minimumTrackTintColor="#007AFF"
-              maximumTrackTintColor="#cbd5e1"
-            />
-            <Text style={styles.sliderHelpText}>End day: {dateRange[1]}</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={dateRange[0]}
-              maximumValue={60}
-              step={1}
-              value={dateRange[1]}
-              onValueChange={(value: number) => setDateRange([dateRange[0], value])}
-              minimumTrackTintColor="#007AFF"
-              maximumTrackTintColor="#cbd5e1"
-            />
-          </View>
-          <Text style={styles.sliderLabel}>+2mo</Text>
-        </View>
+        <Slider
+          style={styles.slider}
+          value={daysAhead}
+          onValueChange={setDaysAhead}
+          minimumValue={1}
+          maximumValue={60}
+          step={1}
+          minimumTrackTintColor="#007AFF"
+          maximumTrackTintColor="#cbd5e1"
+        />
       </View>
 
       <Modal
@@ -558,44 +522,21 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e2e8f0',
     gap: 8,
   },
-  dateRow: {
+  dateHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 4,
   },
   dateLabel: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  dateText: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#334155',
   },
   dateValue: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#1e293b',
-  },
-  sliderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  sliderWrapper: {
-    flex: 1,
-    gap: 4,
-  },
-  sliderHelpText: {
-    fontSize: 10,
-    color: '#94a3b8',
-    textAlign: 'center',
-  },
-  sliderLabel: {
-    fontSize: 12,
-    color: '#64748b',
-    minWidth: 35,
-    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#007AFF',
   },
   slider: {
     flex: 1,
