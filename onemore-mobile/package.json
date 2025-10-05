@@ -23,6 +23,7 @@
     "date-fns": "^4.1.0",
     "expo": "~54.0.12",
     "expo-image-picker": "^17.0.8",
+    "expo-secure-store": "~12.8.1",
     "expo-status-bar": "~3.0.8",
     "lucide-react-native": "^0.468.0",
     "react": "19.1.0",

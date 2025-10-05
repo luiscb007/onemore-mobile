@@ -127,6 +127,15 @@ The mobile app migration is **100% complete** with full feature parity to the we
 🔧 **Testing & Integration:**
 The app is production-ready for iOS deployment. All REST API endpoints for events, messaging, waitlist, ratings, authentication, and user management are fully integrated. Backend JWT authentication endpoints are implemented and working.
 
+📱 **Native iOS Deployment:**
+The mobile app is configured for native iOS deployment using EAS Build:
+- **Bundle Identifier**: `com.onemore.app` (configured in app.json)
+- **Secure Storage**: expo-secure-store@~12.8.1 for encrypted token storage
+- **Build Profiles**: Development, Preview, and Production configured in eas.json
+- **Permissions**: Location, Camera, and Photo Library properly configured
+- **Deployment Guide**: See `onemore-mobile/iOS_DEPLOYMENT.md` for complete build and App Store submission instructions
+- **Current State**: Web bundle deployment for testing; ready to build as native iOS app with `eas build --platform ios`
+
 ### Geolocation & Location Services
 
 **Browser Geolocation (Web):**
