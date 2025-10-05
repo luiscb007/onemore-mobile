@@ -39,6 +39,13 @@ The mobile application is built with **React Native** using **Expo** framework f
 
 The mobile app is **fully functional on the client side** and requires only JWT authentication endpoints on the backend to work immediately.
 
+**Mobile Event Creation:**
+- CreateEvent screen fully implemented with all form fields from web app
+- Form validation using React Hook Form + Zod (title, description, category, date/time, price, capacity, recurring events)
+- Recurring event support with pattern selection (weekly/biweekly/monthly) and 2-month maximum constraint
+- Native date/time pickers for mobile UX
+- **Geocoding Limitation**: Location coordinates currently use placeholder values (San Francisco default). Full geocoding integration with OpenStreetMap Nominatim or similar service is needed to convert addresses to real latitude/longitude coordinates for accurate event positioning.
+
 ### Backend Architecture
 
 The backend is an **Express.js application written in TypeScript**, providing RESTful API endpoints with standardized error handling and request logging.
