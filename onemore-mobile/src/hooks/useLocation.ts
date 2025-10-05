@@ -119,6 +119,7 @@ export const useLocation = () => {
 
   const checkPermission = async () => {
     if (Platform.OS === 'web') {
+      setPermissionStatus('undetermined');
       return;
     }
 
