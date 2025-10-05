@@ -16,7 +16,7 @@ import { sendFeedbackEmail, sendAccountDeletionEmail } from "./services/emailSer
 // Note: These run AFTER authentication, so req.user.claims.sub is always available
 const createEventLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 100, // 100 events per hour
+  max: 10, // 10 events per hour
   message: "Too many events created. Please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
@@ -414,15 +414,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      // Check subscription tier limits (freemium model) - Temporarily disabled for testing
-      // const limitCheck = await checkUserLimits(userId, 'create');
-      // if (!limitCheck.allowed) {
-      //   return res.status(403).json({ 
-      //     message: limitCheck.reason,
-      //     upgradeRequired: limitCheck.upgradeRequired,
-      //     tier: limitCheck.tier
-      //   });
-      // }
+      // Check subscription tier limits (freemium model)
+      const limitCheck = await checkUserLimits(userId, 'create');
+      if (!limitCheck.allowed) {
+        return res.status(403).json({ 
+          message: limitCheck.reason,
+          upgradeRequired: limitCheck.upgradeRequired,
+          tier: limitCheck.tier
+        });
+      }
       
       // Sanitize input data first
       const sanitizedBody = sanitizeEventData(req.body);
@@ -475,8 +475,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const event = await storage.createEvent(validatedData);
       
-      // Increment monthly usage counter for event creation - Temporarily disabled for testing
-      // await storage.incrementMonthlyUsage(userId, 'create');
+      // Increment monthly usage counter for event creation
+      await storage.incrementMonthlyUsage(userId, 'create');
       
       res.status(201).json(event);
     } catch (error) {

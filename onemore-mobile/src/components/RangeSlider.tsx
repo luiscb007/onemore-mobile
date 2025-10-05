@@ -22,6 +22,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
   const [sliderLeft, setSliderLeft] = useState(0);
   const [isDraggingLow, setIsDraggingLow] = useState(false);
   const [isDraggingHigh, setIsDraggingHigh] = useState(false);
+  const sliderRef = useRef<View>(null);
 
   const getValueFromPosition = (position: number): number => {
     if (sliderWidth === 0) return min;
@@ -86,11 +87,12 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
   return (
     <View style={styles.container}>
       <View
+        ref={sliderRef}
         style={styles.rail}
         onLayout={(event) => {
-          const { width, x } = event.nativeEvent.layout;
+          const { width } = event.nativeEvent.layout;
           setSliderWidth(width);
-          event.currentTarget.measure((fx, fy, w, h, px, py) => {
+          sliderRef.current?.measure((fx, fy, w, h, px, py) => {
             setSliderLeft(px);
           });
         }}
