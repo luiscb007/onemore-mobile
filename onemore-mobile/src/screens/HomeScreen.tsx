@@ -297,7 +297,7 @@ export const HomeScreen = () => {
           <MapPin size={16} color="#64748b" />
           <Text style={styles.locationText}>
             {currentCoords?.latitude && currentCoords?.longitude 
-              ? `${cityName || 'Loading location...'} • Within ${user?.searchRadius || 50} km`
+              ? cityName || 'Loading location...'
               : 'Enable location to discover nearby events'}
           </Text>
         </View>
