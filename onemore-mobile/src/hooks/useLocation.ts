@@ -42,48 +42,54 @@ export const useLocation = () => {
     }
   };
 
-  const requestWebLocation = async () => {
-    try {
-      setLoading(true);
-      if (!navigator.geolocation) {
-        setError('Geolocation not supported');
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const locationData = {
-            coords: {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            },
-          };
-          setLocation(locationData);
-          setPermissionStatus('granted');
-          await updateBackendLocation(
-            position.coords.latitude,
-            position.coords.longitude
-          );
+  const requestWebLocation = async (): Promise<{ latitude: number; longitude: number } | null> => {
+    return new Promise((resolve) => {
+      try {
+        setLoading(true);
+        if (!navigator.geolocation) {
+          setError('Geolocation not supported');
           setLoading(false);
-        },
-        (err) => {
-          setError('Failed to get location');
-          setPermissionStatus('denied');
-          console.error('Geolocation error:', err);
-          setLoading(false);
+          resolve(null);
+          return;
         }
-      );
-    } catch (err) {
-      setError('Failed to get location');
-      console.error('Location error:', err);
-      setLoading(false);
-    }
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const locationData = {
+              coords: {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+              },
+            };
+            setLocation(locationData);
+            setPermissionStatus('granted');
+            await updateBackendLocation(
+              position.coords.latitude,
+              position.coords.longitude
+            );
+            setLoading(false);
+            resolve({ latitude: position.coords.latitude, longitude: position.coords.longitude });
+          },
+          (err) => {
+            setError('Failed to get location');
+            setPermissionStatus('denied');
+            console.error('Geolocation error:', err);
+            setLoading(false);
+            resolve(null);
+          }
+        );
+      } catch (err) {
+        setError('Failed to get location');
+        console.error('Location error:', err);
+        setLoading(false);
+        resolve(null);
+      }
+    });
   };
 
-  const getCurrentLocation = async () => {
+  const getCurrentLocation = async (): Promise<{ latitude: number; longitude: number } | null> => {
     if (Platform.OS === 'web') {
-      await requestWebLocation();
-      return;
+      return await requestWebLocation();
     }
 
     try {
@@ -98,9 +104,15 @@ export const useLocation = () => {
         currentLocation.coords.latitude,
         currentLocation.coords.longitude
       );
+      
+      return {
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude
+      };
     } catch (err) {
       setError('Failed to get current location');
       console.error('Location error:', err);
+      return null;
     } finally {
       setLoading(false);
     }

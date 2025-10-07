@@ -27,7 +27,7 @@ import { useLocation } from '../hooks/useLocation';
 
 export const HomeScreen = () => {
   const { user, refreshUser } = useAuth();
-  const { getCurrentLocation } = useLocation();
+  const { location, getCurrentLocation } = useLocation();
   const navigation = useNavigation();
   const [events, setEvents] = useState<EventWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,6 +47,7 @@ export const HomeScreen = () => {
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [categoryLayoutWidth, setCategoryLayoutWidth] = useState(0);
   const [categoryContentWidth, setCategoryContentWidth] = useState(0);
+  const [currentCoords, setCurrentCoords] = useState<{latitude: number, longitude: number} | null>(null);
 
   const categories = ['all', 'arts', 'community', 'culture', 'sports', 'workshops'];
 
@@ -63,6 +64,7 @@ export const HomeScreen = () => {
 
   useEffect(() => {
     if (user?.currentLatitude && user?.currentLongitude) {
+      setCurrentCoords({ latitude: user.currentLatitude, longitude: user.currentLongitude });
       reverseGeocode(user.currentLatitude, user.currentLongitude);
     }
   }, [user?.currentLatitude, user?.currentLongitude]);
@@ -74,7 +76,7 @@ export const HomeScreen = () => {
     return `${year}-${month}-${day}`;
   };
 
-  const loadEvents = async () => {
+  const loadEvents = async (coords?: {latitude: number, longitude: number} | null) => {
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -87,11 +89,12 @@ export const HomeScreen = () => {
       endDate.setDate(today.getDate() + endDays);
       const dateTo = formatDate(endDate);
 
+      const effectiveCoords = coords ?? currentCoords;
       const params = {
         category: selectedCategory !== 'all' ? selectedCategory : undefined,
         userId: user?.id,
-        userLat: user?.currentLatitude ?? undefined,
-        userLng: user?.currentLongitude ?? undefined,
+        userLat: effectiveCoords?.latitude ?? user?.currentLatitude ?? undefined,
+        userLng: effectiveCoords?.longitude ?? user?.currentLongitude ?? undefined,
         hidePast,
         search: searchQuery || undefined,
         userRadius: user?.searchRadius ?? undefined,
@@ -303,11 +306,11 @@ export const HomeScreen = () => {
           onPress={async () => {
             setLocationLoading(true);
             try {
-              await getCurrentLocation();
-              await refreshUser();
-              const updatedUser = await authApi.getCurrentUser();
-              if (updatedUser?.currentLatitude && updatedUser?.currentLongitude) {
-                await reverseGeocode(updatedUser.currentLatitude, updatedUser.currentLongitude);
+              const coords = await getCurrentLocation();
+              if (coords) {
+                setCurrentCoords(coords);
+                await reverseGeocode(coords.latitude, coords.longitude);
+                await loadEvents(coords);
               }
             } catch (error) {
               console.error('Failed to refresh location:', error);
