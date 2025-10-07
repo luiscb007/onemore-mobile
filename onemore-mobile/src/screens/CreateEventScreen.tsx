@@ -88,6 +88,12 @@ const currencies = [
   { value: 'USD', label: '$ USD' },
 ];
 
+const recurrenceOptions = [
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'biweekly', label: 'Biweekly' },
+  { value: 'monthly', label: 'Monthly' },
+];
+
 export const CreateEventScreen = () => {
   const navigation = useNavigation();
   const { user } = useAuth();
@@ -424,18 +430,24 @@ export const CreateEventScreen = () => {
                   control={control}
                   name="recurrenceType"
                   render={({ field: { onChange, value } }) => (
-                    <View style={styles.pickerContainer}>
-                      <Picker
-                        selectedValue={value || 'none'}
-                        onValueChange={(val) => onChange(val === 'none' ? null : val)}
-                        style={styles.picker}
+                    <>
+                      <TouchableOpacity
+                        style={[styles.input, styles.selectButton]}
+                        onPress={() => setShowRecurrencePicker(true)}
                       >
-                        <Picker.Item label="Select pattern" value="none" />
-                        <Picker.Item label="Weekly" value="weekly" />
-                        <Picker.Item label="Biweekly" value="biweekly" />
-                        <Picker.Item label="Monthly" value="monthly" />
-                      </Picker>
-                    </View>
+                        <Text style={styles.selectButtonText}>
+                          {recurrenceOptions.find(r => r.value === value)?.label || 'Select pattern'}
+                        </Text>
+                      </TouchableOpacity>
+                      <OptionPicker
+                        visible={showRecurrencePicker}
+                        value={value || ''}
+                        options={recurrenceOptions}
+                        onSelect={onChange}
+                        onClose={() => setShowRecurrencePicker(false)}
+                        title="Select Recurrence Pattern"
+                      />
+                    </>
                   )}
                 />
                 {errors.recurrenceType && (
