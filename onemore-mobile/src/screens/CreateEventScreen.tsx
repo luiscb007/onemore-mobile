@@ -81,6 +81,13 @@ const categories = [
   { value: 'workshops', label: '📚 Workshops' },
 ];
 
+const currencies = [
+  { value: 'EUR', label: '€ EUR' },
+  { value: 'PLN', label: 'zł PLN' },
+  { value: 'GBP', label: '£ GBP' },
+  { value: 'USD', label: '$ USD' },
+];
+
 export const CreateEventScreen = () => {
   const navigation = useNavigation();
   const { user } = useAuth();
@@ -344,17 +351,24 @@ export const CreateEventScreen = () => {
                 control={control}
                 name="priceCurrencyCode"
                 render={({ field: { onChange, value } }) => (
-                  <View style={styles.pickerContainer}>
-                    <Picker
-                      selectedValue={value}
-                      onValueChange={onChange}
-                      style={styles.picker}
+                  <>
+                    <TouchableOpacity
+                      style={[styles.input, styles.selectButton]}
+                      onPress={() => setShowCurrencyPicker(true)}
                     >
-                      <Picker.Item label="€ EUR" value="EUR" />
-                      <Picker.Item label="zł PLN" value="PLN" />
-                      <Picker.Item label="£ GBP" value="GBP" />
-                    </Picker>
-                  </View>
+                      <Text style={styles.selectButtonText}>
+                        {currencies.find(c => c.value === value)?.label || 'Select'}
+                      </Text>
+                    </TouchableOpacity>
+                    <OptionPicker
+                      visible={showCurrencyPicker}
+                      value={value}
+                      options={currencies}
+                      onSelect={onChange}
+                      onClose={() => setShowCurrencyPicker(false)}
+                      title="Select Currency"
+                    />
+                  </>
                 )}
               />
             </View>
