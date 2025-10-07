@@ -175,6 +175,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reverse geocoding endpoint
+  app.get('/api/geocode/reverse', isAuthenticated, async (req: any, res) => {
+    try {
+      const { lat, lon } = req.query;
+      
+      if (!lat || !lon) {
+        return res.status(400).json({ message: "Latitude and longitude are required" });
+      }
+      
+      // Use Nominatim for reverse geocoding
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'OneMore Event Discovery App'
+          }
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error('Reverse geocoding failed');
+      }
+      
+      const data = await response.json();
+      
+      // Extract city name from the response
+      const city = data.address?.city || 
+                   data.address?.town || 
+                   data.address?.village || 
+                   data.address?.municipality ||
+                   data.address?.county ||
+                   'Unknown location';
+      
+      res.json({ city, fullAddress: data.display_name });
+    } catch (error) {
+      console.error("Reverse geocoding error:", error);
+      res.status(500).json({ message: "Failed to reverse geocode location" });
+    }
+  });
+
   // User location update
   app.post('/api/user/location', isAuthenticated, async (req: any, res) => {
     try {

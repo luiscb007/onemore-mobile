@@ -19,15 +19,16 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
   onValueChanged,
 }) => {
   const [sliderWidth, setSliderWidth] = useState(0);
-  const [sliderLeft, setSliderLeft] = useState(0);
+  const [sliderPageX, setSliderPageX] = useState(0);
   const [isDraggingLow, setIsDraggingLow] = useState(false);
   const [isDraggingHigh, setIsDraggingHigh] = useState(false);
   const sliderRef = useRef<View>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const lowStartX = useRef(0);
+  const highStartX = useRef(0);
 
   const getValueFromPosition = (position: number): number => {
     if (sliderWidth === 0) return min;
-    const percentage = position / sliderWidth;
+    const percentage = Math.max(0, Math.min(1, position / sliderWidth));
     const value = min + percentage * (max - min);
     const steppedValue = Math.round(value / step) * step;
     return Math.max(min, Math.min(max, steppedValue));
@@ -42,13 +43,14 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => {
+      onPanResponderGrant: (evt, gestureState) => {
         setIsDraggingLow(true);
+        lowStartX.current = gestureState.x0;
       },
       onPanResponderMove: (evt, gestureState) => {
-        const touchX = gestureState.moveX - sliderLeft;
-        const newPosition = Math.max(0, Math.min(sliderWidth, touchX));
-        const newValue = getValueFromPosition(newPosition);
+        const relativeX = gestureState.x0 - sliderPageX + gestureState.dx;
+        const clampedX = Math.max(0, Math.min(sliderWidth, relativeX));
+        const newValue = getValueFromPosition(clampedX);
         
         if (newValue <= high) {
           onValueChanged(newValue, high);
@@ -64,13 +66,14 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => {
+      onPanResponderGrant: (evt, gestureState) => {
         setIsDraggingHigh(true);
+        highStartX.current = gestureState.x0;
       },
       onPanResponderMove: (evt, gestureState) => {
-        const touchX = gestureState.moveX - sliderLeft;
-        const newPosition = Math.max(0, Math.min(sliderWidth, touchX));
-        const newValue = getValueFromPosition(newPosition);
+        const relativeX = gestureState.x0 - sliderPageX + gestureState.dx;
+        const clampedX = Math.max(0, Math.min(sliderWidth, relativeX));
+        const newValue = getValueFromPosition(clampedX);
         
         if (newValue >= low) {
           onValueChanged(low, newValue);
@@ -91,16 +94,15 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
         ref={sliderRef}
         style={styles.rail}
         onLayout={(event) => {
-          const { width, x } = event.nativeEvent.layout;
+          const { width } = event.nativeEvent.layout;
           setSliderWidth(width);
           
-          // Use measure to get absolute position on screen
+          // Get absolute position on screen
           setTimeout(() => {
             sliderRef.current?.measure((fx, fy, w, h, px, py) => {
-              setSliderLeft(px);
-              setIsInitialized(true);
+              setSliderPageX(px);
             });
-          }, 0);
+          }, 100);
         }}
       >
         <View
