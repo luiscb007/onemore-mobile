@@ -24,6 +24,12 @@ The mobile application is a **React Native** app built with **Expo** for iOS. It
 - **Smart Arrow States**: Arrows auto-enable/disable based on scroll position and content width, with visual feedback (opacity and color changes)
 - **Date Range Slider**: Custom horizontal range slider with dual handles using absolute touch positioning for smooth dragging on both web and native
 
+**Create Event Features:**
+- **Custom OptionPicker Component**: Reusable modal-based dropdown selector following CalendarPicker/TimePicker pattern, replaces unreliable native iOS Picker
+- **Smart Currency Defaulting**: Cascading defaults from user.defaultCurrencyCode (location-based from backend) → EUR fallback
+- **Strict Type Safety**: Full TypeScript integration with EventCategory enum types, coordinate conversion (string to number), and Zod superRefine validation
+- **Recurrence Validation**: Context-aware validation ensuring pattern and end date are selected when recurring events are enabled, with empty string → null coercion
+
 The mobile app is production-ready for iOS deployment.
 
 ### Backend Architecture
