@@ -16,7 +16,15 @@ The web application uses **React 18** and **TypeScript** with **Vite** for build
 
 ### Mobile Frontend Architecture
 
-The mobile application is a **React Native** app built with **Expo** for iOS. It features **React Navigation** for navigation, **TanStack React Query** for API state, **React Context** for authentication, and **Expo SecureStore** for secure token storage. It is fully functional on the client side, requiring only JWT authentication endpoints on the backend. Event creation includes form validation using **React Hook Form** + **Zod** and supports recurring events. Geocoding integration is planned for accurate location data. The mobile app is production-ready for iOS deployment.
+The mobile application is a **React Native** app built with **Expo** for iOS. It features **React Navigation** for navigation, **TanStack React Query** for API state, **React Context** for authentication, and **Expo SecureStore** for secure token storage. It is fully functional on the client side, requiring only JWT authentication endpoints on the backend. Event creation includes form validation using **React Hook Form** + **Zod** and supports recurring events. Geocoding integration is implemented with reverse geocoding displaying city names in the HomeScreen. 
+
+**HomeScreen Features:**
+- **Location Display**: Shows current city name with MapPin icon and search radius, includes refresh button with loading animation
+- **Category Navigation**: Horizontal scrollable category carousel with left/right arrow buttons for incremental navigation (200px scroll per click)
+- **Smart Arrow States**: Arrows auto-enable/disable based on scroll position and content width, with visual feedback (opacity and color changes)
+- **Date Range Slider**: Custom horizontal range slider with dual handles using absolute touch positioning for smooth dragging on both web and native
+
+The mobile app is production-ready for iOS deployment.
 
 ### Backend Architecture
 
