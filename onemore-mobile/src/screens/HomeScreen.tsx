@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -20,7 +20,7 @@ import { apiClient } from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 import type { EventWithDetails } from '../types';
 import { format, addDays } from 'date-fns';
-import { Search, SlidersHorizontal, MapPin, RefreshCw, Calendar, Plus } from 'lucide-react-native';
+import { Search, SlidersHorizontal, MapPin, RefreshCw, Calendar, Plus, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { RangeSlider } from '../components/RangeSlider';
 
 export const HomeScreen = () => {
@@ -38,6 +38,12 @@ export const HomeScreen = () => {
   const [endDays, setEndDays] = useState(60);
   const [locationLoading, setLocationLoading] = useState(false);
   const [cityName, setCityName] = useState<string>('');
+  const categoryScrollRef = useRef<ScrollView>(null);
+  const [scrollOffset, setScrollOffset] = useState(0);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [categoryLayoutWidth, setCategoryLayoutWidth] = useState(0);
+  const [categoryContentWidth, setCategoryContentWidth] = useState(0);
 
   const categories = ['all', 'arts', 'community', 'culture', 'sports', 'workshops'];
 
@@ -399,26 +405,86 @@ export const HomeScreen = () => {
         </View>
       </Modal>
 
-      <View style={styles.categoryScroll}>
-        {categories.map((category) => (
-          <TouchableOpacity
-            key={category}
-            style={[
-              styles.categoryButton,
-              selectedCategory === category && styles.categoryButtonActive,
-            ]}
-            onPress={() => setSelectedCategory(category)}
-          >
-            <Text
+      <View style={styles.categoryContainer}>
+        <TouchableOpacity
+          style={[styles.categoryArrow, !canScrollLeft && styles.categoryArrowDisabled]}
+          onPress={() => {
+            const newOffset = Math.max(0, scrollOffset - 200);
+            categoryScrollRef.current?.scrollTo({ x: newOffset, animated: true });
+            setScrollOffset(newOffset);
+          }}
+          disabled={!canScrollLeft}
+        >
+          <ChevronLeft size={20} color={canScrollLeft ? "#64748b" : "#cbd5e1"} />
+        </TouchableOpacity>
+        
+        <ScrollView
+          ref={categoryScrollRef}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoryScroll}
+          contentContainerStyle={styles.categoryScrollContent}
+          onScroll={(event) => {
+            const offset = event.nativeEvent.contentOffset.x;
+            const contentWidth = event.nativeEvent.contentSize.width;
+            const layoutWidth = event.nativeEvent.layoutMeasurement.width;
+            
+            setScrollOffset(offset);
+            setCanScrollLeft(offset > 5);
+            setCanScrollRight(offset + layoutWidth < contentWidth - 5);
+          }}
+          scrollEventThrottle={16}
+          onContentSizeChange={(contentWidth, contentHeight) => {
+            setCategoryContentWidth(contentWidth);
+            if (categoryLayoutWidth > 0) {
+              setCanScrollRight(contentWidth > categoryLayoutWidth);
+            }
+          }}
+          onLayout={(event) => {
+            const layoutWidth = event.nativeEvent.layout.width;
+            setCategoryLayoutWidth(layoutWidth);
+            if (categoryContentWidth > 0) {
+              setCanScrollRight(categoryContentWidth > layoutWidth);
+            }
+          }}
+        >
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category}
               style={[
-                styles.categoryButtonText,
-                selectedCategory === category && styles.categoryButtonTextActive,
+                styles.categoryButton,
+                selectedCategory === category && styles.categoryButtonActive,
               ]}
+              onPress={() => setSelectedCategory(category)}
             >
-              {category}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  styles.categoryButtonText,
+                  selectedCategory === category && styles.categoryButtonTextActive,
+                ]}
+              >
+                {category === 'all' ? '⭐ All' : 
+                 category === 'arts' ? '🎨 Arts' :
+                 category === 'community' ? '💛 Community' :
+                 category === 'culture' ? '🎭 Culture' :
+                 category === 'sports' ? '⚽ Sports' :
+                 category === 'workshops' ? '🛠️ Workshops' :
+                 category}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+        
+        <TouchableOpacity
+          style={[styles.categoryArrow, !canScrollRight && styles.categoryArrowDisabled]}
+          onPress={() => {
+            categoryScrollRef.current?.scrollTo({ x: scrollOffset + 200, animated: true });
+            setScrollOffset(scrollOffset + 200);
+          }}
+          disabled={!canScrollRight}
+        >
+          <ChevronRight size={20} color={canScrollRight ? "#64748b" : "#cbd5e1"} />
+        </TouchableOpacity>
       </View>
 
       <FlatList
@@ -699,13 +765,29 @@ const styles = StyleSheet.create({
   sortButtonTextActive: {
     color: '#fff',
   },
-  categoryScroll: {
+  categoryContainer: {
     flexDirection: 'row',
-    backgroundColor: '#FFF',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    alignItems: 'center',
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    borderBottomColor: '#e2e8f0',
+    paddingVertical: 8,
+  },
+  categoryArrow: {
+    paddingHorizontal: 8,
+    paddingVertical: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  categoryArrowDisabled: {
+    opacity: 0.3,
+  },
+  categoryScroll: {
+    flex: 1,
+  },
+  categoryScrollContent: {
+    paddingHorizontal: 8,
+    alignItems: 'center',
   },
   categoryButton: {
     paddingHorizontal: 16,
