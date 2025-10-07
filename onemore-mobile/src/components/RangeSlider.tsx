@@ -19,12 +19,19 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
   onValueChanged,
 }) => {
   const [sliderWidth, setSliderWidth] = useState(0);
-  const [sliderPageX, setSliderPageX] = useState(0);
   const [isDraggingLow, setIsDraggingLow] = useState(false);
   const [isDraggingHigh, setIsDraggingHigh] = useState(false);
+  
   const sliderRef = useRef<View>(null);
-  const lowStartX = useRef(0);
-  const highStartX = useRef(0);
+  const dragStartPosRef = useRef(0);
+  const sliderWidthRef = useRef(0);
+  const lowRef = useRef(low);
+  const highRef = useRef(high);
+
+  // Keep refs in sync with props and state
+  lowRef.current = low;
+  highRef.current = high;
+  sliderWidthRef.current = sliderWidth;
 
   const getValueFromPosition = (position: number): number => {
     if (sliderWidth === 0) return min;
@@ -45,15 +52,23 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: (evt, gestureState) => {
         setIsDraggingLow(true);
-        lowStartX.current = gestureState.x0;
+        // Calculate position from value inline using current slider width
+        const percentage = (lowRef.current - min) / (max - min);
+        dragStartPosRef.current = percentage * sliderWidthRef.current;
       },
       onPanResponderMove: (evt, gestureState) => {
-        const relativeX = gestureState.x0 - sliderPageX + gestureState.dx;
-        const clampedX = Math.max(0, Math.min(sliderWidth, relativeX));
-        const newValue = getValueFromPosition(clampedX);
+        const newPos = dragStartPosRef.current + gestureState.dx;
+        const clampedPos = Math.max(0, Math.min(sliderWidthRef.current, newPos));
         
-        if (newValue <= high) {
-          onValueChanged(newValue, high);
+        // Calculate value from position inline using current slider width
+        if (sliderWidthRef.current === 0) return;
+        const percentage = Math.max(0, Math.min(1, clampedPos / sliderWidthRef.current));
+        const value = min + percentage * (max - min);
+        const steppedValue = Math.round(value / step) * step;
+        const newValue = Math.max(min, Math.min(max, steppedValue));
+        
+        if (newValue <= highRef.current) {
+          onValueChanged(newValue, highRef.current);
         }
       },
       onPanResponderRelease: () => {
@@ -68,15 +83,23 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: (evt, gestureState) => {
         setIsDraggingHigh(true);
-        highStartX.current = gestureState.x0;
+        // Calculate position from value inline using current slider width
+        const percentage = (highRef.current - min) / (max - min);
+        dragStartPosRef.current = percentage * sliderWidthRef.current;
       },
       onPanResponderMove: (evt, gestureState) => {
-        const relativeX = gestureState.x0 - sliderPageX + gestureState.dx;
-        const clampedX = Math.max(0, Math.min(sliderWidth, relativeX));
-        const newValue = getValueFromPosition(clampedX);
+        const newPos = dragStartPosRef.current + gestureState.dx;
+        const clampedPos = Math.max(0, Math.min(sliderWidthRef.current, newPos));
         
-        if (newValue >= low) {
-          onValueChanged(low, newValue);
+        // Calculate value from position inline using current slider width
+        if (sliderWidthRef.current === 0) return;
+        const percentage = Math.max(0, Math.min(1, clampedPos / sliderWidthRef.current));
+        const value = min + percentage * (max - min);
+        const steppedValue = Math.round(value / step) * step;
+        const newValue = Math.max(min, Math.min(max, steppedValue));
+        
+        if (newValue >= lowRef.current) {
+          onValueChanged(lowRef.current, newValue);
         }
       },
       onPanResponderRelease: () => {
@@ -96,13 +119,6 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
         onLayout={(event) => {
           const { width } = event.nativeEvent.layout;
           setSliderWidth(width);
-          
-          // Get absolute position on screen
-          setTimeout(() => {
-            sliderRef.current?.measure((fx, fy, w, h, px, py) => {
-              setSliderPageX(px);
-            });
-          }, 100);
         }}
       >
         <View
