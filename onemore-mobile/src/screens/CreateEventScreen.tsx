@@ -79,6 +79,14 @@ const categories = [
   { value: 'workshops', label: '📚 Workshops' },
 ];
 
+// Helper function to format date in local time as YYYY-MM-DD
+const formatLocalDate = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const CreateEventScreen = () => {
   const navigation = useNavigation();
   const { user } = useAuth();
@@ -237,24 +245,49 @@ export const CreateEventScreen = () => {
                 name="date"
                 render={({ field: { value } }) => (
                   <>
-                    <TouchableOpacity
-                      style={styles.dateButton}
-                      onPress={() => setShowDatePicker(true)}
-                    >
-                      <Text>{value.toLocaleDateString()}</Text>
-                    </TouchableOpacity>
-                    {showDatePicker && (
-                      <DateTimePicker
-                        value={value}
-                        mode="date"
-                        display="default"
-                        onChange={(event, selectedDate) => {
-                          setShowDatePicker(Platform.OS === 'ios');
-                          if (selectedDate) {
-                            setValue('date', selectedDate);
+                    {Platform.OS === 'web' ? (
+                      <input
+                        type="date"
+                        value={formatLocalDate(value)}
+                        onChange={(e) => {
+                          // Parse date in local time to avoid timezone issues
+                          const [year, month, day] = e.target.value.split('-').map(Number);
+                          const newDate = new Date(year, month - 1, day);
+                          if (!isNaN(newDate.getTime())) {
+                            setValue('date', newDate);
                           }
                         }}
+                        style={{
+                          borderWidth: 1,
+                          borderColor: '#ddd',
+                          borderRadius: 8,
+                          padding: 12,
+                          fontSize: 16,
+                          width: '100%',
+                        }}
                       />
+                    ) : (
+                      <>
+                        <TouchableOpacity
+                          style={styles.dateButton}
+                          onPress={() => setShowDatePicker(true)}
+                        >
+                          <Text>{value.toLocaleDateString()}</Text>
+                        </TouchableOpacity>
+                        {showDatePicker && (
+                          <DateTimePicker
+                            value={value}
+                            mode="date"
+                            display="default"
+                            onChange={(event, selectedDate) => {
+                              setShowDatePicker(Platform.OS === 'ios');
+                              if (selectedDate) {
+                                setValue('date', selectedDate);
+                              }
+                            }}
+                          />
+                        )}
+                      </>
                     )}
                   </>
                 )}
@@ -268,24 +301,47 @@ export const CreateEventScreen = () => {
                 name="time"
                 render={({ field: { value } }) => (
                   <>
-                    <TouchableOpacity
-                      style={styles.dateButton}
-                      onPress={() => setShowTimePicker(true)}
-                    >
-                      <Text>{value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
-                    </TouchableOpacity>
-                    {showTimePicker && (
-                      <DateTimePicker
-                        value={value}
-                        mode="time"
-                        display="default"
-                        onChange={(event, selectedTime) => {
-                          setShowTimePicker(Platform.OS === 'ios');
-                          if (selectedTime) {
-                            setValue('time', selectedTime);
-                          }
+                    {Platform.OS === 'web' ? (
+                      <input
+                        type="time"
+                        value={value.toTimeString().slice(0, 5)}
+                        onChange={(e) => {
+                          const [hours, minutes] = e.target.value.split(':');
+                          const newTime = new Date(value);
+                          newTime.setHours(parseInt(hours), parseInt(minutes));
+                          setValue('time', newTime);
+                        }}
+                        style={{
+                          borderWidth: 1,
+                          borderColor: '#ddd',
+                          borderRadius: 8,
+                          padding: 12,
+                          fontSize: 16,
+                          width: '100%',
                         }}
                       />
+                    ) : (
+                      <>
+                        <TouchableOpacity
+                          style={styles.dateButton}
+                          onPress={() => setShowTimePicker(true)}
+                        >
+                          <Text>{value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                        </TouchableOpacity>
+                        {showTimePicker && (
+                          <DateTimePicker
+                            value={value}
+                            mode="time"
+                            display="default"
+                            onChange={(event, selectedTime) => {
+                              setShowTimePicker(Platform.OS === 'ios');
+                              if (selectedTime) {
+                                setValue('time', selectedTime);
+                              }
+                            }}
+                          />
+                        )}
+                      </>
                     )}
                   </>
                 )}
@@ -431,27 +487,53 @@ export const CreateEventScreen = () => {
                   name="recurrenceEndDate"
                   render={({ field: { value } }) => (
                     <>
-                      <TouchableOpacity
-                        style={styles.dateButton}
-                        onPress={() => setShowRecurrenceEndPicker(true)}
-                      >
-                        <Text>
-                          {value ? value.toLocaleDateString() : 'Select end date'}
-                        </Text>
-                      </TouchableOpacity>
-                      {showRecurrenceEndPicker && (
-                        <DateTimePicker
-                          value={value || new Date()}
-                          mode="date"
-                          display="default"
-                          minimumDate={watch('date')}
-                          onChange={(event, selectedDate) => {
-                            setShowRecurrenceEndPicker(Platform.OS === 'ios');
-                            if (selectedDate) {
-                              setValue('recurrenceEndDate', selectedDate);
+                      {Platform.OS === 'web' ? (
+                        <input
+                          type="date"
+                          value={value ? formatLocalDate(value) : ''}
+                          min={formatLocalDate(watch('date'))}
+                          onChange={(e) => {
+                            // Parse date in local time to avoid timezone issues
+                            const [year, month, day] = e.target.value.split('-').map(Number);
+                            const newDate = new Date(year, month - 1, day);
+                            if (!isNaN(newDate.getTime())) {
+                              setValue('recurrenceEndDate', newDate);
                             }
                           }}
+                          style={{
+                            borderWidth: 1,
+                            borderColor: '#ddd',
+                            borderRadius: 8,
+                            padding: 12,
+                            fontSize: 16,
+                            width: '100%',
+                          }}
                         />
+                      ) : (
+                        <>
+                          <TouchableOpacity
+                            style={styles.dateButton}
+                            onPress={() => setShowRecurrenceEndPicker(true)}
+                          >
+                            <Text>
+                              {value ? value.toLocaleDateString() : 'Select end date'}
+                            </Text>
+                          </TouchableOpacity>
+                          {showRecurrenceEndPicker && (
+                            <DateTimePicker
+                              value={value || new Date()}
+                              mode="date"
+                              display="default"
+                              minimumDate={watch('date')}
+                              onChange={(event, selectedDate) => {
+                                setShowRecurrenceEndPicker(Platform.OS === 'ios');
+                                if (selectedDate) {
+                                  setValue('recurrenceEndDate', selectedDate);
+                                }
+                              }}
+                            />
+                          )}
+                        </>
                       )}
                     </>
                   )}
