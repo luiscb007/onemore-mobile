@@ -286,28 +286,35 @@ export const HomeScreen = () => {
         </View>
       </View>
 
-      {user?.currentLatitude && user?.currentLongitude && (
-        <View style={styles.locationBanner}>
-          <View style={styles.locationInfo}>
-            <MapPin size={16} color="#64748b" />
-            <Text style={styles.locationText}>
-              {cityName || 'Loading location...'} • Within {user.searchRadius || 50} km
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={styles.refreshButton}
-            onPress={() => {
-              setLocationLoading(true);
-              reverseGeocode(user.currentLatitude!, user.currentLongitude!);
-              setTimeout(() => setLocationLoading(false), 1000);
-            }}
-          >
-            <RefreshCw size={16} color="#64748b" style={{ 
-              transform: [{ rotate: locationLoading ? '360deg' : '0deg' }] 
-            }} />
-          </TouchableOpacity>
+      <View style={styles.locationBanner}>
+        <View style={styles.locationInfo}>
+          <MapPin size={16} color="#64748b" />
+          <Text style={styles.locationText}>
+            {user?.currentLatitude && user?.currentLongitude 
+              ? `${cityName || 'Loading location...'} • Within ${user.searchRadius || 50} km`
+              : 'Enable location to discover nearby events'}
+          </Text>
         </View>
-      )}
+        <TouchableOpacity
+          style={styles.refreshButton}
+          onPress={() => {
+            if (user?.currentLatitude && user?.currentLongitude) {
+              setLocationLoading(true);
+              reverseGeocode(user.currentLatitude, user.currentLongitude);
+              setTimeout(() => setLocationLoading(false), 1000);
+            }
+          }}
+          disabled={!user?.currentLatitude || !user?.currentLongitude}
+        >
+          <RefreshCw 
+            size={16} 
+            color={user?.currentLatitude && user?.currentLongitude ? "#64748b" : "#cbd5e1"} 
+            style={{ 
+              transform: [{ rotate: locationLoading ? '360deg' : '0deg' }] 
+            }} 
+          />
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>

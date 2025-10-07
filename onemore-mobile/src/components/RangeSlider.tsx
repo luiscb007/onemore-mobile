@@ -23,6 +23,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
   const [isDraggingLow, setIsDraggingLow] = useState(false);
   const [isDraggingHigh, setIsDraggingHigh] = useState(false);
   const sliderRef = useRef<View>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const getValueFromPosition = (position: number): number => {
     if (sliderWidth === 0) return min;
@@ -90,11 +91,16 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
         ref={sliderRef}
         style={styles.rail}
         onLayout={(event) => {
-          const { width } = event.nativeEvent.layout;
+          const { width, x } = event.nativeEvent.layout;
           setSliderWidth(width);
-          sliderRef.current?.measure((fx, fy, w, h, px, py) => {
-            setSliderLeft(px);
-          });
+          
+          // Use measure to get absolute position on screen
+          setTimeout(() => {
+            sliderRef.current?.measure((fx, fy, w, h, px, py) => {
+              setSliderLeft(px);
+              setIsInitialized(true);
+            });
+          }, 0);
         }}
       >
         <View
@@ -111,7 +117,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
           style={[
             styles.thumb,
             {
-              left: lowPos - 10,
+              left: lowPos - 14,
               transform: [{ scale: isDraggingLow ? 1.2 : 1 }],
             },
           ]}
@@ -121,7 +127,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
           style={[
             styles.thumb,
             {
-              left: highPos - 10,
+              left: highPos - 14,
               transform: [{ scale: isDraggingHigh ? 1.2 : 1 }],
             },
           ]}
@@ -150,16 +156,17 @@ const styles = StyleSheet.create({
   },
   thumb: {
     position: 'absolute',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: '#007AFF',
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: '#fff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
     elevation: 4,
+    top: -12,
   },
 });
