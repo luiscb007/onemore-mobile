@@ -13,7 +13,7 @@ import {
 import Slider from '@react-native-community/slider';
 import { useAuth } from '../contexts/AuthContext';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { api } from '../api/client';
+import { apiClient } from '../api/client';
 import { queryClient } from '../lib/queryClient';
 
 export const ProfileScreen = () => {
@@ -27,6 +27,10 @@ export const ProfileScreen = () => {
 
   const { data: stats } = useQuery<{ eventsCreated: number; eventsAttended: number; averageRating: number }>({
     queryKey: [`/api/users/${user?.id}/stats`],
+    queryFn: async () => {
+      const response = await apiClient.get(`/api/users/${user?.id}/stats`);
+      return response.data;
+    },
     enabled: !!user?.id,
   });
 
@@ -38,7 +42,7 @@ export const ProfileScreen = () => {
 
   const updateRadiusMutation = useMutation({
     mutationFn: async (radius: number) => {
-      const response = await api.put('/api/user/search-radius', { radius });
+      const response = await apiClient.put('/api/user/search-radius', { radius });
       return response.data;
     },
     onSuccess: () => {
@@ -52,7 +56,7 @@ export const ProfileScreen = () => {
 
   const sendFeedbackMutation = useMutation({
     mutationFn: async (feedbackText: string) => {
-      const response = await api.post('/api/feedback', { feedback: feedbackText });
+      const response = await apiClient.post('/api/feedback', { feedback: feedbackText });
       return response.data;
     },
     onSuccess: () => {
@@ -67,7 +71,7 @@ export const ProfileScreen = () => {
 
   const deleteAccountMutation = useMutation({
     mutationFn: async () => {
-      const response = await api.delete('/api/user/delete', {
+      const response = await apiClient.delete('/api/user/delete', {
         data: { reason: deletionReason, feedback: deletionFeedback }
       });
       return response.data;
@@ -246,7 +250,7 @@ export const ProfileScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Location</Text>
         
-        {user.currentLatitude !== null && user.currentLongitude !== null ? (
+        {typeof user.currentLatitude === 'number' && typeof user.currentLongitude === 'number' ? (
           <View style={styles.settingItem}>
             <Text style={styles.settingLabel}>Current Location</Text>
             <Text style={styles.settingValue}>
