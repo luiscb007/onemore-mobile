@@ -8,6 +8,7 @@ export function setupJWTRoutes(app: Express) {
   app.post('/api/auth/login', async (req, res) => {
     try {
       const { email, password } = req.body;
+      console.log('[JWT Login] Attempt for email:', email);
 
       if (!email || !password) {
         return res.status(400).json({ message: 'Email and password are required' });
@@ -15,12 +16,14 @@ export function setupJWTRoutes(app: Express) {
 
       // Find user by email
       const user = await storage.getUserByEmail(email);
+      console.log('[JWT Login] User found:', user ? 'YES' : 'NO');
 
       if (!user) {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
 
       // Check if user has a password (might be OAuth-only user)
+      console.log('[JWT Login] Has password hash:', !!user.passwordHash);
       if (!user.passwordHash) {
         return res.status(401).json({ 
           message: 'This account uses web login. Please log in through the website first to set up mobile access.' 
@@ -29,6 +32,7 @@ export function setupJWTRoutes(app: Express) {
 
       // Verify password
       const isValid = await verifyPassword(password, user.passwordHash);
+      console.log('[JWT Login] Password valid:', isValid);
 
       if (!isValid) {
         return res.status(401).json({ message: 'Invalid credentials' });
