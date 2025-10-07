@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { apiClient } from '../api/client';
+import * as Location from 'expo-location';
 
 type LocationObject = {
   coords: {
@@ -25,7 +26,6 @@ export const useLocation = () => {
 
     try {
       setLoading(true);
-      const Location = await import('expo-location');
       const { status } = await Location.requestForegroundPermissionsAsync();
       setPermissionStatus(status as PermissionStatus);
       
@@ -97,7 +97,6 @@ export const useLocation = () => {
 
     try {
       setLoading(true);
-      const Location = await import('expo-location');
       const currentLocation = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
@@ -139,7 +138,6 @@ export const useLocation = () => {
     }
 
     try {
-      const Location = await import('expo-location');
       const { status } = await Location.getForegroundPermissionsAsync();
       setPermissionStatus(status as PermissionStatus);
       
