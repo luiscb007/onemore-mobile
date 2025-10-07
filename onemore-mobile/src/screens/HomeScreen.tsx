@@ -89,12 +89,12 @@ export const HomeScreen = () => {
       endDate.setDate(today.getDate() + endDays);
       const dateTo = formatDate(endDate);
 
-      const effectiveCoords = coords ?? currentCoords;
+      const effectiveCoords = coords !== undefined ? coords : currentCoords;
       const params = {
         category: selectedCategory !== 'all' ? selectedCategory : undefined,
         userId: user?.id,
-        userLat: effectiveCoords?.latitude ?? user?.currentLatitude ?? undefined,
-        userLng: effectiveCoords?.longitude ?? user?.currentLongitude ?? undefined,
+        userLat: effectiveCoords?.latitude ?? undefined,
+        userLng: effectiveCoords?.longitude ?? undefined,
         hidePast,
         search: searchQuery || undefined,
         userRadius: user?.searchRadius ?? undefined,
@@ -296,8 +296,8 @@ export const HomeScreen = () => {
         <View style={styles.locationInfo}>
           <MapPin size={16} color="#64748b" />
           <Text style={styles.locationText}>
-            {user?.currentLatitude && user?.currentLongitude 
-              ? `${cityName || 'Loading location...'} • Within ${user.searchRadius || 50} km`
+            {currentCoords?.latitude && currentCoords?.longitude 
+              ? `${cityName || 'Loading location...'} • Within ${user?.searchRadius || 50} km`
               : 'Enable location to discover nearby events'}
           </Text>
         </View>
@@ -308,12 +308,21 @@ export const HomeScreen = () => {
             try {
               const coords = await getCurrentLocation();
               if (coords) {
+                // Location successful - update everything
                 setCurrentCoords(coords);
                 await reverseGeocode(coords.latitude, coords.longitude);
                 await loadEvents(coords);
+              } else {
+                // Location unavailable/denied - clear location state
+                setCurrentCoords(null);
+                setCityName('');
+                await loadEvents(null);
               }
             } catch (error) {
               console.error('Failed to refresh location:', error);
+              setCurrentCoords(null);
+              setCityName('');
+              await loadEvents(null);
             } finally {
               setLocationLoading(false);
             }
