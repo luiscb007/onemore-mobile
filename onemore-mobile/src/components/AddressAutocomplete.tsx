@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { MapPin } from 'lucide-react-native';
-import { api } from '../api/client';
+import { apiClient } from '../api/client';
 
 interface AddressResult {
   place_id: string;
@@ -38,7 +38,7 @@ export function AddressAutocomplete({
   const [suggestions, setSuggestions] = useState<AddressResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     if (debounceRef.current) {
@@ -55,7 +55,7 @@ export function AddressAutocomplete({
 
     debounceRef.current = setTimeout(async () => {
       try {
-        const response = await api.get(`/api/geocode/autocomplete?q=${encodeURIComponent(value)}`);
+        const response = await apiClient.get(`/geocode/autocomplete?q=${encodeURIComponent(value)}`);
         setSuggestions(response.data);
         setShowSuggestions(true);
       } catch (error) {
