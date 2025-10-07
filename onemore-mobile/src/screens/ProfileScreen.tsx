@@ -26,9 +26,9 @@ export const ProfileScreen = () => {
   const [searchRadius, setSearchRadius] = useState(100);
 
   const { data: stats } = useQuery<{ eventsCreated: number; eventsAttended: number; averageRating: number }>({
-    queryKey: [`/api/users/${user?.id}/stats`],
+    queryKey: [`/users/${user?.id}/stats`],
     queryFn: async () => {
-      const response = await apiClient.get(`/api/users/${user?.id}/stats`);
+      const response = await apiClient.get(`/users/${user?.id}/stats`);
       return response.data;
     },
     enabled: !!user?.id,
@@ -42,11 +42,11 @@ export const ProfileScreen = () => {
 
   const updateRadiusMutation = useMutation({
     mutationFn: async (radius: number) => {
-      const response = await apiClient.put('/api/user/search-radius', { radius });
+      const response = await apiClient.put('/user/search-radius', { radius });
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      queryClient.invalidateQueries({ queryKey: ['/auth/user'] });
       refreshUser();
     },
     onError: (error: any) => {
@@ -56,7 +56,7 @@ export const ProfileScreen = () => {
 
   const sendFeedbackMutation = useMutation({
     mutationFn: async (feedbackText: string) => {
-      const response = await apiClient.post('/api/feedback', { feedback: feedbackText });
+      const response = await apiClient.post('/feedback', { feedback: feedbackText });
       return response.data;
     },
     onSuccess: () => {
@@ -71,7 +71,7 @@ export const ProfileScreen = () => {
 
   const deleteAccountMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiClient.delete('/api/user/delete', {
+      const response = await apiClient.delete('/user/delete', {
         data: { reason: deletionReason, feedback: deletionFeedback }
       });
       return response.data;
