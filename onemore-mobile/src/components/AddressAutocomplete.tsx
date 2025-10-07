@@ -103,7 +103,7 @@ export function AddressAutocomplete({
         <View style={styles.suggestionsContainer}>
           <FlatList
             data={suggestions}
-            keyExtractor={(item) => item.place_id}
+            keyExtractor={(item, index) => `${item.place_id}-${index}`}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.suggestionItem}
@@ -116,6 +116,8 @@ export function AddressAutocomplete({
               </TouchableOpacity>
             )}
             keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled
+            scrollEnabled={false}
           />
         </View>
       )}
