@@ -19,7 +19,6 @@ export const LocationPermissionPrompt: React.FC = () => {
 
   const handleAllow = async () => {
     await requestLocationPermission();
-    setShowPrompt(false);
   };
 
   const handleNotNow = () => {

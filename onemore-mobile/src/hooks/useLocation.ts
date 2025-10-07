@@ -36,6 +36,7 @@ export const useLocation = () => {
       }
     } catch (err) {
       setError('Failed to request location permission');
+      setPermissionStatus('denied');
       console.error('Location permission error:', err);
     } finally {
       setLoading(false);
@@ -48,6 +49,7 @@ export const useLocation = () => {
         setLoading(true);
         if (!navigator.geolocation) {
           setError('Geolocation not supported');
+          setPermissionStatus('denied');
           setLoading(false);
           resolve(null);
           return;
@@ -80,6 +82,7 @@ export const useLocation = () => {
         );
       } catch (err) {
         setError('Failed to get location');
+        setPermissionStatus('denied');
         console.error('Location error:', err);
         setLoading(false);
         resolve(null);
