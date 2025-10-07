@@ -126,6 +126,13 @@ export const CreateEventScreen = () => {
 
   const isRecurring = watch('isRecurring');
 
+  // Update currency when user's default currency changes (location-based)
+  React.useEffect(() => {
+    if (user?.defaultCurrencyCode) {
+      setValue('priceCurrencyCode', user.defaultCurrencyCode);
+    }
+  }, [user?.defaultCurrencyCode, setValue]);
+
   const createEventMutation = useMutation({
     mutationFn: async (data: CreateEventForm) => {
       const dateTime = new Date(data.date);
