@@ -11,10 +11,9 @@ import {
   Switch,
   KeyboardAvoidingView,
 } from 'react-native';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Picker } from '@react-native-picker/picker';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '../lib/queryClient';
 import { useNavigation } from '@react-navigation/native';
@@ -24,6 +23,7 @@ import { CalendarPicker } from '../components/CalendarPicker';
 import { TimePicker } from '../components/TimePicker';
 import { OptionPicker } from '../components/OptionPicker';
 import { useAuth } from '../contexts/AuthContext';
+import type { EventCategory } from '../types';
 
 const createEventSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -34,41 +34,44 @@ const createEventSchema = z.object({
   address: z.string().min(1, 'Address is required'),
   latitude: z.string().min(1, 'Location coordinates required'),
   longitude: z.string().min(1, 'Location coordinates required'),
-  priceAmount: z.string().optional(),
-  priceCurrencyCode: z.string().default('EUR'),
-  capacity: z.string().optional(),
+  priceAmount: z.string().optional().default(''),
+  priceCurrencyCode: z.string().optional().default('EUR'),
+  capacity: z.string().optional().default(''),
   isRecurring: z.boolean().default(false),
-  recurrenceType: z.string().nullable().refine(
-    (val, ctx) => {
-      const isRecurring = ctx.parent?.isRecurring;
-      if (isRecurring && (!val || val === '')) {
-        return false;
+  recurrenceType: z.string().nullable(),
+  recurrenceEndDate: z.date().nullable(),
+}).superRefine((data, ctx) => {
+  // Validate recurrence type is selected when recurring
+  if (data.isRecurring) {
+    if (!data.recurrenceType || data.recurrenceType === '' || data.recurrenceType === 'none') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Recurrence pattern is required when recurring is enabled',
+        path: ['recurrenceType'],
+      });
+    }
+    
+    if (!data.recurrenceEndDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'End date is required when recurring is enabled',
+        path: ['recurrenceEndDate'],
+      });
+    }
+    
+    // Check 2-month maximum constraint
+    if (data.recurrenceEndDate && data.date) {
+      const twoMonthsLater = new Date(data.date);
+      twoMonthsLater.setMonth(twoMonthsLater.getMonth() + 2);
+      if (data.recurrenceEndDate > twoMonthsLater) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'End date must be within 2 months of start date',
+          path: ['recurrenceEndDate'],
+        });
       }
-      return true;
-    },
-    { message: 'Recurrence pattern is required when recurring is enabled' }
-  ),
-  recurrenceEndDate: z.date().nullable().refine(
-    (val, ctx) => {
-      const isRecurring = ctx.parent?.isRecurring;
-      if (isRecurring && !val) {
-        return false;
-      }
-      // Check 2-month maximum constraint
-      if (isRecurring && val) {
-        const startDate = ctx.parent?.date;
-        if (startDate) {
-          const twoMonthsLater = new Date(startDate);
-          twoMonthsLater.setMonth(twoMonthsLater.getMonth() + 2);
-          if (val > twoMonthsLater) {
-            return false;
-          }
-        }
-      }
-      return true;
-    },
-    { message: 'End date must be within 2 months of start date' }
-  ),
+    }
+  }
 });
 
 type CreateEventForm = z.infer<typeof createEventSchema>;
@@ -147,16 +150,16 @@ export const CreateEventScreen = () => {
       const eventData = {
         title: data.title,
         description: data.description,
-        category: data.category,
+        category: data.category as EventCategory,
         date: dateTime.toISOString(),
-        latitude: data.latitude,
-        longitude: data.longitude,
+        latitude: parseFloat(data.latitude),
+        longitude: parseFloat(data.longitude),
         address: data.address,
         priceAmount: data.priceAmount ? parseFloat(data.priceAmount) : null,
         priceCurrencyCode: data.priceCurrencyCode,
         capacity: data.capacity ? parseInt(data.capacity, 10) : null,
         isRecurring: data.isRecurring,
-        recurrenceType: data.isRecurring ? data.recurrenceType : null,
+        recurrenceType: data.isRecurring ? (data.recurrenceType || null) : null,
         recurrenceEndDate: data.isRecurring && data.recurrenceEndDate 
           ? data.recurrenceEndDate.toISOString() 
           : null,
@@ -175,7 +178,7 @@ export const CreateEventScreen = () => {
     },
   });
 
-  const onSubmit = (data: CreateEventForm) => {
+  const onSubmit: SubmitHandler<CreateEventForm> = (data) => {
     createEventMutation.mutate(data);
   };
 

@@ -16,7 +16,7 @@ export interface OptionItem {
 
 interface OptionPickerProps {
   visible: boolean;
-  value: string;
+  value: string | null;
   options: OptionItem[];
   onSelect: (value: string) => void;
   onClose: () => void;
