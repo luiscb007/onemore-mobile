@@ -16,15 +16,18 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { eventsApi } from '../api/events';
+import { authApi } from '../api/auth';
 import { apiClient } from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 import type { EventWithDetails } from '../types';
 import { format, addDays } from 'date-fns';
 import { Search, SlidersHorizontal, MapPin, RefreshCw, Calendar, Plus, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { RangeSlider } from '../components/RangeSlider';
+import { useLocation } from '../hooks/useLocation';
 
 export const HomeScreen = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
+  const { getCurrentLocation } = useLocation();
   const navigation = useNavigation();
   const [events, setEvents] = useState<EventWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -297,18 +300,25 @@ export const HomeScreen = () => {
         </View>
         <TouchableOpacity
           style={styles.refreshButton}
-          onPress={() => {
-            if (user?.currentLatitude && user?.currentLongitude) {
-              setLocationLoading(true);
-              reverseGeocode(user.currentLatitude, user.currentLongitude);
-              setTimeout(() => setLocationLoading(false), 1000);
+          onPress={async () => {
+            setLocationLoading(true);
+            try {
+              await getCurrentLocation();
+              await refreshUser();
+              const updatedUser = await authApi.getCurrentUser();
+              if (updatedUser?.currentLatitude && updatedUser?.currentLongitude) {
+                await reverseGeocode(updatedUser.currentLatitude, updatedUser.currentLongitude);
+              }
+            } catch (error) {
+              console.error('Failed to refresh location:', error);
+            } finally {
+              setLocationLoading(false);
             }
           }}
-          disabled={!user?.currentLatitude || !user?.currentLongitude}
         >
           <RefreshCw 
             size={16} 
-            color={user?.currentLatitude && user?.currentLongitude ? "#64748b" : "#cbd5e1"} 
+            color="#64748b"
             style={{ 
               transform: [{ rotate: locationLoading ? '360deg' : '0deg' }] 
             }} 
