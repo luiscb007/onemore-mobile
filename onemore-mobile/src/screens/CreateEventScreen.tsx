@@ -22,6 +22,7 @@ import { eventsApi } from '../api/events';
 import { AddressAutocomplete } from '../components/AddressAutocomplete';
 import { CalendarPicker } from '../components/CalendarPicker';
 import { TimePicker } from '../components/TimePicker';
+import { OptionPicker } from '../components/OptionPicker';
 import { useAuth } from '../contexts/AuthContext';
 
 const createEventSchema = z.object({
@@ -86,6 +87,9 @@ export const CreateEventScreen = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showRecurrenceEndPicker, setShowRecurrenceEndPicker] = useState(false);
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
+  const [showRecurrencePicker, setShowRecurrencePicker] = useState(false);
 
   const {
     control,
@@ -190,17 +194,24 @@ export const CreateEventScreen = () => {
               control={control}
               name="category"
               render={({ field: { onChange, value } }) => (
-                <View style={styles.pickerContainer}>
-                  <Picker
-                    selectedValue={value}
-                    onValueChange={onChange}
-                    style={styles.picker}
+                <>
+                  <TouchableOpacity
+                    style={[styles.input, styles.selectButton]}
+                    onPress={() => setShowCategoryPicker(true)}
                   >
-                    {categories.map((cat) => (
-                      <Picker.Item key={cat.value} label={cat.label} value={cat.value} />
-                    ))}
-                  </Picker>
-                </View>
+                    <Text style={styles.selectButtonText}>
+                      {categories.find(c => c.value === value)?.label || 'Select category'}
+                    </Text>
+                  </TouchableOpacity>
+                  <OptionPicker
+                    visible={showCategoryPicker}
+                    value={value}
+                    options={categories}
+                    onSelect={onChange}
+                    onClose={() => setShowCategoryPicker(false)}
+                    title="Select Category"
+                  />
+                </>
               )}
             />
             {errors.category && <Text style={styles.errorText}>{errors.category.message}</Text>}
@@ -536,6 +547,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     justifyContent: 'center',
+  },
+  selectButton: {
+    justifyContent: 'center',
+  },
+  selectButtonText: {
+    fontSize: 16,
+    color: '#1e293b',
   },
   switchContainer: {
     flexDirection: 'row',
