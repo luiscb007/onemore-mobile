@@ -353,8 +353,7 @@ export const HomeScreen = () => {
 
       <View style={styles.dateRangeContainer}>
         <View style={styles.dateHeader}>
-          <Text style={styles.dateLabel}>Events starting in</Text>
-          <Text style={styles.dateValue}>{startDays} - {endDays} days</Text>
+          <Text style={styles.dateLabel}>Events between</Text>
         </View>
         <View style={styles.rangeSliderContainer}>
           <RangeSlider
