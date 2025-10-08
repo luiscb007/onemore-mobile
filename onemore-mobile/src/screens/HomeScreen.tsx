@@ -69,6 +69,12 @@ export const HomeScreen = () => {
     }
   }, [user?.currentLatitude, user?.currentLongitude]);
 
+  useEffect(() => {
+    if (user?.searchRadius !== undefined && currentCoords) {
+      loadEvents(currentCoords);
+    }
+  }, [user?.searchRadius]);
+
   const formatDate = (date: Date): string => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
