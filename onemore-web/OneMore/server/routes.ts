@@ -234,6 +234,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       await storage.updateUserLocation(userId, lat, lon);
+      
+      // Auto-detect and update currency based on new location
+      try {
+        const user = await storage.getUser(userId);
+        const lastCheckLat = user?.lastCurrencyCheckLatitude ? parseFloat(user.lastCurrencyCheckLatitude) : null;
+        const lastCheckLon = user?.lastCurrencyCheckLongitude ? parseFloat(user.lastCurrencyCheckLongitude) : null;
+        
+        if (shouldUpdateCurrency(lat, lon, lastCheckLat, lastCheckLon, user?.lastCurrencyCheck || null)) {
+          const currency = await detectCurrencyFromCoordinates(lat, lon);
+          await storage.updateUserCurrency(userId, currency, lat, lon);
+          console.log(`Updated user ${userId} currency to ${currency}`);
+        }
+      } catch (currencyError) {
+        console.error("Error auto-detecting currency:", currencyError);
+        // Don't fail the location update if currency detection fails
+      }
+      
       res.json({ success: true });
     } catch (error) {
       console.error("Error updating location:", error);
