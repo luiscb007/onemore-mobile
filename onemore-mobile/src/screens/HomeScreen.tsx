@@ -303,29 +303,31 @@ export const HomeScreen = () => {
         </View>
         <TouchableOpacity
           style={styles.refreshButton}
-          onPress={async () => {
+          onPress={() => {
             setLocationLoading(true);
-            try {
-              const coords = await getCurrentLocation();
-              if (coords) {
-                // Location successful - update everything
-                setCurrentCoords(coords);
-                await reverseGeocode(coords.latitude, coords.longitude);
-                await loadEvents(coords);
-              } else {
-                // Location unavailable/denied - clear location state
+            (async () => {
+              try {
+                const coords = await getCurrentLocation();
+                if (coords) {
+                  // Location successful - update everything
+                  setCurrentCoords(coords);
+                  await reverseGeocode(coords.latitude, coords.longitude);
+                  await loadEvents(coords);
+                } else {
+                  // Location unavailable/denied - clear location state
+                  setCurrentCoords(null);
+                  setCityName('');
+                  await loadEvents(null);
+                }
+              } catch (error) {
+                console.error('Failed to refresh location:', error);
                 setCurrentCoords(null);
                 setCityName('');
                 await loadEvents(null);
+              } finally {
+                setLocationLoading(false);
               }
-            } catch (error) {
-              console.error('Failed to refresh location:', error);
-              setCurrentCoords(null);
-              setCityName('');
-              await loadEvents(null);
-            } finally {
-              setLocationLoading(false);
-            }
+            })();
           }}
         >
           <RefreshCw 
