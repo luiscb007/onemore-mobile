@@ -525,7 +525,11 @@ export const HomeScreen = () => {
             </Text>
           </View>
         ) : (
-          events.map((item) => renderEvent({ item }))
+          events.map((item) => (
+            <React.Fragment key={item.id}>
+              {renderEvent({ item })}
+            </React.Fragment>
+          ))
         )}
       </ScrollView>
     </View>
