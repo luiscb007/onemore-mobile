@@ -195,8 +195,14 @@ export const CreateEventScreen = () => {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={100}
     >
-      <ScrollView style={styles.scrollView} keyboardShouldPersistTaps="handled">
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={true}
+      >
         <View style={styles.form}>
           <Text style={styles.sectionTitle}>Event Details</Text>
 
@@ -532,6 +538,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 100,
   },
   form: {
     padding: 16,
