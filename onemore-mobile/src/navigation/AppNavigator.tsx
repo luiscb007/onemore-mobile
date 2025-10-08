@@ -2,6 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { LoginScreen } from '../screens/LoginScreen';
@@ -41,20 +42,23 @@ export const AppNavigator = () => {
     );
   }
 
-  const MainTabs = () => (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: '#999',
-        tabBarShowLabel: false,
-        tabBarStyle: {
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 60,
-        },
-      }}
-    >
+  const MainTabs = () => {
+    const insets = useSafeAreaInsets();
+    
+    return (
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: '#007AFF',
+          tabBarInactiveTintColor: '#999',
+          tabBarShowLabel: false,
+          tabBarStyle: {
+            paddingBottom: insets.bottom + 8,
+            paddingTop: 8,
+            height: 60 + insets.bottom,
+          },
+        }}
+      >
       <Tab.Screen
         name="Home"
         component={HomeScreen}
@@ -91,8 +95,9 @@ export const AppNavigator = () => {
           ),
         }}
       />
-    </Tab.Navigator>
-  );
+      </Tab.Navigator>
+    );
+  };
 
   return (
     <NavigationContainer>
