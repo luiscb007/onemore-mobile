@@ -156,6 +156,12 @@ export const MyEventsScreen = () => {
   const renderEventCard = ({ item }: { item: EventWithDetails }) => {
     const isPastEvent = new Date(item.date) < new Date();
     const isOrganizedTab = activeTab === 'organized';
+    const isGoing = item.userInteraction?.type === 'going';
+    
+    // Check if event ended at least 8 hours ago for rating
+    const eventDateTime = new Date(item.date + ' ' + item.time);
+    const eightHoursAfterEvent = new Date(eventDateTime.getTime() + (8 * 60 * 60 * 1000));
+    const canRate = isGoing && new Date() >= eightHoursAfterEvent;
 
     return (
       <View style={styles.eventCard}>
@@ -256,33 +262,44 @@ export const MyEventsScreen = () => {
               <Text style={styles.actionBtnText}>Pass</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.actionBtn}
-              onPress={(e) => {
-                e.stopPropagation();
-                const organizerName = item.organizer ? 
-                  `${item.organizer.firstName || ''} ${item.organizer.lastName || ''}`.trim() || 'Organizer' 
-                  : 'Organizer';
-                createConversationMutation.mutate({ 
-                  organizerId: item.organizerId, 
-                  eventId: item.id,
-                  organizerName 
-                });
-              }}
-              disabled={createConversationMutation.isPending}
-            >
-              <Text style={styles.actionBtnText}>Message</Text>
-            </TouchableOpacity>
+            {isGoing && (
+              <TouchableOpacity
+                style={styles.actionBtn}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  const organizerName = item.organizer ? 
+                    `${item.organizer.firstName || ''} ${item.organizer.lastName || ''}`.trim() || 'Organizer' 
+                    : 'Organizer';
+                  createConversationMutation.mutate({ 
+                    organizerId: item.organizerId, 
+                    eventId: item.id,
+                    organizerName 
+                  });
+                }}
+                disabled={createConversationMutation.isPending}
+              >
+                <Text style={styles.actionBtnText}>Message</Text>
+              </TouchableOpacity>
+            )}
 
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.actionBtnRate]}
-              onPress={(e) => {
-                e.stopPropagation();
-                (navigation as any).navigate('EventDetail', { eventId: item.id });
-              }}
-            >
-              <Text style={styles.actionBtnText}>⭐ Rate</Text>
-            </TouchableOpacity>
+            {isGoing && (
+              <TouchableOpacity
+                style={[
+                  styles.actionBtn, 
+                  canRate && styles.actionBtnRate,
+                  !canRate && styles.actionBtnDisabled
+                ]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  if (canRate) {
+                    (navigation as any).navigate('EventDetail', { eventId: item.id });
+                  }
+                }}
+                disabled={!canRate}
+              >
+                <Text style={[styles.actionBtnText, !canRate && styles.actionBtnTextDisabled]}>⭐ Rate</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
       </View>
@@ -589,5 +606,13 @@ const styles = StyleSheet.create({
   },
   actionBtnTextActive: {
     color: '#fff',
+  },
+  actionBtnDisabled: {
+    backgroundColor: '#f1f5f9',
+    borderColor: '#e2e8f0',
+    opacity: 0.5,
+  },
+  actionBtnTextDisabled: {
+    color: '#94a3b8',
   },
 });
