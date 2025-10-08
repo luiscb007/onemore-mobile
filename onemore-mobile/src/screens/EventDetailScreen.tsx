@@ -195,45 +195,8 @@ export const EventDetailScreen = () => {
           </View>
         )}
 
-        <View style={styles.actionsSection}>
-          <Text style={styles.sectionTitle}>Actions</Text>
-          
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={[styles.actionButton, event.userInteraction?.type === 'going' && styles.actionButtonActive]}
-              onPress={() => interactMutation.mutate('going')}
-              disabled={interactMutation.isPending}
-            >
-              <ThumbsUp size={20} color={event.userInteraction?.type === 'going' ? '#fff' : '#64748b'} />
-              <Text style={[styles.actionButtonText, event.userInteraction?.type === 'going' && styles.actionButtonTextActive]}>
-                Going
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.actionButton, event.userInteraction?.type === 'like' && styles.actionButtonActive]}
-              onPress={() => interactMutation.mutate('like')}
-              disabled={interactMutation.isPending}
-            >
-              <Heart size={20} color={event.userInteraction?.type === 'like' ? '#fff' : '#64748b'} />
-              <Text style={[styles.actionButtonText, event.userInteraction?.type === 'like' && styles.actionButtonTextActive]}>
-                Interested
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.actionButton, event.userInteraction?.type === 'pass' && styles.actionButtonActive]}
-              onPress={() => interactMutation.mutate('pass')}
-              disabled={interactMutation.isPending}
-            >
-              <ThumbsDown size={20} color={event.userInteraction?.type === 'pass' ? '#fff' : '#64748b'} />
-              <Text style={[styles.actionButtonText, event.userInteraction?.type === 'pass' && styles.actionButtonTextActive]}>
-                Pass
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {canJoinWaitlist && (
+        {canJoinWaitlist && (
+          <View style={styles.actionsSection}>
             <TouchableOpacity
               style={styles.waitlistButton}
               onPress={() => joinWaitlistMutation.mutate()}
@@ -241,9 +204,11 @@ export const EventDetailScreen = () => {
             >
               <Text style={styles.waitlistButtonText}>Join Waitlist</Text>
             </TouchableOpacity>
-          )}
+          </View>
+        )}
 
-          {isOnWaitlist && (
+        {isOnWaitlist && (
+          <View style={styles.actionsSection}>
             <View style={styles.waitlistInfo}>
               <Text style={styles.waitlistText}>
                 You're on the waitlist (Position: {waitlistStatus.position})
@@ -256,9 +221,11 @@ export const EventDetailScreen = () => {
                 <Text style={styles.leaveWaitlistButtonText}>Leave Waitlist</Text>
               </TouchableOpacity>
             </View>
-          )}
+          </View>
+        )}
 
-          {ratingEligibility?.canRate && (
+        {ratingEligibility?.canRate && (
+          <View style={styles.actionsSection}>
             <TouchableOpacity
               style={styles.rateButton}
               onPress={() => setShowRatingModal(true)}
@@ -266,21 +233,8 @@ export const EventDetailScreen = () => {
               <Star size={20} color="#f59e0b" />
               <Text style={styles.rateButtonText}>Rate This Event</Text>
             </TouchableOpacity>
-          )}
-
-          {user && event.organizerId !== user.id && (
-            <TouchableOpacity
-              style={styles.messageButton}
-              onPress={() => createConversationMutation.mutate()}
-              disabled={createConversationMutation.isPending}
-            >
-              <MessageCircle size={20} color="#3b82f6" />
-              <Text style={styles.messageButtonText}>
-                {createConversationMutation.isPending ? 'Opening...' : 'Message Organizer'}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+          </View>
+        )}
       </ScrollView>
 
       <Modal
