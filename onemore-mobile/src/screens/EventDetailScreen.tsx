@@ -16,6 +16,7 @@ import { ArrowLeft, Calendar, MapPin, Users, Star, Heart, ThumbsUp, ThumbsDown, 
 import { eventsApi, type Event } from '../api/events';
 import { waitlistApi } from '../api/waitlist';
 import { ratingsApi } from '../api/ratings';
+import { messagingApi } from '../api/messaging';
 import { MapPreview } from '../components/MapPreview';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -86,6 +87,20 @@ export const EventDetailScreen = () => {
     },
   });
 
+  const createConversationMutation = useMutation({
+    mutationFn: () => messagingApi.createConversation({
+      otherUserId: event!.organizerId,
+      eventId: eventId,
+    }),
+    onSuccess: (conversation) => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      navigation.navigate('Messages' as never, { conversationId: conversation.id } as never);
+    },
+    onError: () => {
+      Alert.alert('Error', 'Failed to start conversation. Please try again.');
+    },
+  });
+
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
@@ -149,7 +164,7 @@ export const EventDetailScreen = () => {
 
           <View style={styles.infoRow}>
             <MapPin size={20} color="#64748b" />
-            <Text style={styles.infoText}>{event.location}</Text>
+            <Text style={styles.infoText}>{event.address}</Text>
           </View>
 
           {organizerRating && organizerRating.totalRatings > 0 && (
@@ -167,7 +182,7 @@ export const EventDetailScreen = () => {
             <MapPreview
               latitude={event.latitude}
               longitude={event.longitude}
-              address={event.location}
+              address={event.address}
             />
           </View>
         )}
@@ -248,22 +263,13 @@ export const EventDetailScreen = () => {
           {user && event.organizerId !== user.id && (
             <TouchableOpacity
               style={styles.messageButton}
-              onPress={() => {
-                Alert.alert(
-                  'Message Organizer',
-                  'This feature will open a conversation with the event organizer.',
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    {
-                      text: 'Continue',
-                      onPress: () => navigation.navigate('Messages' as never),
-                    },
-                  ]
-                );
-              }}
+              onPress={() => createConversationMutation.mutate()}
+              disabled={createConversationMutation.isPending}
             >
               <MessageCircle size={20} color="#3b82f6" />
-              <Text style={styles.messageButtonText}>Message Organizer</Text>
+              <Text style={styles.messageButtonText}>
+                {createConversationMutation.isPending ? 'Opening...' : 'Message Organizer'}
+              </Text>
             </TouchableOpacity>
           )}
         </View>
