@@ -162,13 +162,6 @@ export const HomeScreen = () => {
         onPress={() => navigation.navigate('EventDetail' as never, { eventId: item.id } as never)}
         activeOpacity={0.7}
       >
-        {item.imageUrl && (
-          <Image
-            source={{ uri: item.imageUrl }}
-            style={styles.eventImage}
-            resizeMode="cover"
-          />
-        )}
         <View style={styles.eventContent}>
           <View style={styles.categoryBadge}>
             <Text style={styles.categoryText}>{item.category.toUpperCase()}</Text>
