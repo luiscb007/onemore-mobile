@@ -165,6 +165,7 @@ export const CreateEventScreen = () => {
           : null,
       };
 
+      console.log('Sending event data:', JSON.stringify(eventData, null, 2));
       return await eventsApi.createEvent(eventData);
     },
     onSuccess: () => {
@@ -174,7 +175,15 @@ export const CreateEventScreen = () => {
     },
     onError: (error: any) => {
       const message = error.response?.data?.message || 'Failed to create event';
-      Alert.alert('Error', message);
+      const errors = error.response?.data?.errors;
+      console.error('Event creation error:', JSON.stringify(error.response?.data, null, 2));
+      
+      if (errors && errors.length > 0) {
+        const errorDetails = errors.map((e: any) => `${e.path?.join('.')}: ${e.message}`).join('\n');
+        Alert.alert('Error', `${message}\n\n${errorDetails}`);
+      } else {
+        Alert.alert('Error', message);
+      }
     },
   });
 
