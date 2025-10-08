@@ -253,7 +253,7 @@ export const HomeScreen = () => {
   endDate.setDate(today.getDate() + endDays);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.outerContainer}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.logo}>
@@ -517,31 +517,38 @@ export const HomeScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={events}
-        renderItem={renderEvent}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
-        ListEmptyComponent={
+      >
+        {events.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>No events found</Text>
             <Text style={styles.emptyStateSubtext}>
               Try changing the category or check back later
             </Text>
           </View>
-        }
-      />
+        ) : (
+          events.map((item) => renderEvent({ item }))
+        )}
+      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  outerContainer: {
     flex: 1,
     backgroundColor: '#F5F5F5',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
   },
   centered: {
     flex: 1,
