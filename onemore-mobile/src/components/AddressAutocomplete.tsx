@@ -102,7 +102,7 @@ export function AddressAutocomplete({
       {showSuggestions && suggestions.length > 0 && (
         <View style={styles.suggestionsContainer}>
           <FlatList
-            data={suggestions}
+            data={suggestions.slice(0, 4)}
             keyExtractor={(item, index) => `${item.place_id}-${index}`}
             renderItem={({ item }) => (
               <TouchableOpacity
@@ -117,7 +117,7 @@ export function AddressAutocomplete({
             )}
             keyboardShouldPersistTaps="handled"
             nestedScrollEnabled
-            scrollEnabled={false}
+            scrollEnabled={true}
           />
         </View>
       )}
@@ -155,21 +155,17 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   suggestionsContainer: {
-    position: 'absolute',
-    top: 52,
-    left: 0,
-    right: 0,
+    marginTop: 8,
     backgroundColor: '#fff',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    maxHeight: 200,
+    maxHeight: 180,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    zIndex: 1000,
   },
   suggestionItem: {
     flexDirection: 'row',
