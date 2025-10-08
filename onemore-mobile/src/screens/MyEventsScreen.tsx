@@ -8,11 +8,13 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
-import { Plus, Calendar, MapPin, Users, DollarSign } from 'lucide-react-native';
+import { Plus, Calendar, MapPin, Users, DollarSign, Heart, ThumbsDown, MessageCircle, Star } from 'lucide-react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { eventsApi } from '../api/events';
+import { messagingApi } from '../api/messaging';
+import { ratingsApi } from '../api/ratings';
 import type { EventWithDetails } from '../types';
 
 type TabType = 'going' | 'liked' | 'passed' | 'organized';
@@ -20,6 +22,7 @@ type TabType = 'going' | 'liked' | 'passed' | 'organized';
 export const MyEventsScreen = () => {
   const { user } = useAuth();
   const navigation = useNavigation();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<TabType>('going');
 
   const { data: goingEvents = [], isLoading: goingLoading, refetch: refetchGoing, isRefetching: goingRefetching } = useQuery({
@@ -130,21 +133,42 @@ export const MyEventsScreen = () => {
     }
   };
 
+  const interactMutation = useMutation({
+    mutationFn: ({ eventId, type }: { eventId: string; type: 'going' | 'like' | 'pass' }) =>
+      eventsApi.interactWithEvent(eventId, type),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-events'] });
+    },
+  });
+
+  const createConversationMutation = useMutation({
+    mutationFn: ({ organizerId, eventId, organizerName }: { organizerId: string; eventId: string; organizerName: string }) =>
+      messagingApi.createConversation({ otherUserId: organizerId, eventId }).then(conv => ({ conv, organizerName })),
+    onSuccess: ({ conv, organizerName }) => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      navigation.navigate('Chat' as never, { 
+        conversationId: conv.id,
+        otherUserName: organizerName 
+      } as never);
+    },
+  });
+
   const renderEventCard = ({ item }: { item: EventWithDetails }) => {
     const isPastEvent = new Date(item.date) < new Date();
     const isOrganizedTab = activeTab === 'organized';
 
     return (
-      <TouchableOpacity
-        style={[styles.eventCard, isPastEvent && styles.pastEventCard]}
-        onPress={() => {
-          if (isOrganizedTab) {
-            (navigation as any).navigate('EditEvent', { eventId: item.id });
-          } else {
-            (navigation as any).navigate('EventDetail', { eventId: item.id });
-          }
-        }}
-      >
+      <View style={styles.eventCard}>
+        <TouchableOpacity
+          style={[isPastEvent && styles.pastEventCard]}
+          onPress={() => {
+            if (isOrganizedTab) {
+              (navigation as any).navigate('EditEvent', { eventId: item.id });
+            } else {
+              (navigation as any).navigate('EventDetail', { eventId: item.id });
+            }
+          }}
+        >
         <View style={styles.eventHeader}>
           <Text style={styles.eventTitle} numberOfLines={2}>
             {item.title}
@@ -191,7 +215,77 @@ export const MyEventsScreen = () => {
         <View style={styles.categoryBadge}>
           <Text style={styles.categoryText}>{item.category}</Text>
         </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+
+        {!isOrganizedTab && (
+          <View style={styles.actionsRow}>
+            <TouchableOpacity
+              style={[styles.actionBtn, item.userInteraction?.type === 'going' && styles.actionBtnGoing]}
+              onPress={(e) => {
+                e.stopPropagation();
+                interactMutation.mutate({ eventId: item.id, type: 'going' });
+              }}
+              disabled={interactMutation.isPending}
+            >
+              <Text style={[styles.actionBtnText, item.userInteraction?.type === 'going' && styles.actionBtnTextActive]}>
+                Going
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionBtn, item.userInteraction?.type === 'like' && styles.actionBtnLike]}
+              onPress={(e) => {
+                e.stopPropagation();
+                interactMutation.mutate({ eventId: item.id, type: 'like' });
+              }}
+              disabled={interactMutation.isPending}
+            >
+              <Text style={[styles.actionBtnText, item.userInteraction?.type === 'like' && styles.actionBtnTextActive]}>
+                Like ❤️
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={(e) => {
+                e.stopPropagation();
+                interactMutation.mutate({ eventId: item.id, type: 'pass' });
+              }}
+              disabled={interactMutation.isPending}
+            >
+              <Text style={styles.actionBtnText}>Pass</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={(e) => {
+                e.stopPropagation();
+                const organizerName = item.organizer ? 
+                  `${item.organizer.firstName || ''} ${item.organizer.lastName || ''}`.trim() || 'Organizer' 
+                  : 'Organizer';
+                createConversationMutation.mutate({ 
+                  organizerId: item.organizerId, 
+                  eventId: item.id,
+                  organizerName 
+                });
+              }}
+              disabled={createConversationMutation.isPending}
+            >
+              <Text style={styles.actionBtnText}>Message</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionBtn, styles.actionBtnRate]}
+              onPress={(e) => {
+                e.stopPropagation();
+                (navigation as any).navigate('EventDetail', { eventId: item.id });
+              }}
+            >
+              <Text style={styles.actionBtnText}>⭐ Rate</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
     );
   };
 
@@ -364,10 +458,11 @@ const styles = StyleSheet.create({
   eventCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 16,
+    padding: 0,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#e2e8f0',
+    overflow: 'hidden',
   },
   pastEventCard: {
     opacity: 0.6,
@@ -377,6 +472,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 12,
+    padding: 16,
+    paddingBottom: 0,
   },
   eventTitle: {
     fontSize: 18,
@@ -398,6 +495,7 @@ const styles = StyleSheet.create({
   },
   eventDetails: {
     gap: 8,
+    paddingHorizontal: 16,
   },
   detailRow: {
     flexDirection: 'row',
@@ -416,6 +514,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
     marginTop: 12,
+    marginHorizontal: 16,
+    marginBottom: 12,
   },
   categoryText: {
     fontSize: 12,
@@ -452,5 +552,42 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: '#f8fafc',
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+  },
+  actionBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  actionBtnGoing: {
+    backgroundColor: '#ff6b6b',
+    borderColor: '#ff6b6b',
+  },
+  actionBtnLike: {
+    backgroundColor: '#fff',
+    borderColor: '#e2e8f0',
+  },
+  actionBtnRate: {
+    backgroundColor: '#fef3c7',
+    borderColor: '#fef3c7',
+  },
+  actionBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748b',
+  },
+  actionBtnTextActive: {
+    color: '#fff',
   },
 });
