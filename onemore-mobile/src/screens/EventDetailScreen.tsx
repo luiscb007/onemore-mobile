@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Calendar, MapPin, Users, Star, Heart, ThumbsUp, ThumbsDown } from 'lucide-react-native';
+import { ArrowLeft, Calendar, MapPin, Users, Star, Heart, ThumbsUp, ThumbsDown, MessageCircle } from 'lucide-react-native';
 import { eventsApi, type Event } from '../api/events';
 import { waitlistApi } from '../api/waitlist';
 import { ratingsApi } from '../api/ratings';
@@ -113,7 +113,7 @@ export const EventDetailScreen = () => {
     });
   };
 
-  const isFull = event.attendeesCount >= event.maxAttendees;
+  const isFull = (event.interactionCounts?.going || 0) >= event.maxAttendees;
   const canJoinWaitlist = isFull && !waitlistStatus?.isOnWaitlist;
   const isOnWaitlist = waitlistStatus?.isOnWaitlist;
 
@@ -136,13 +136,13 @@ export const EventDetailScreen = () => {
         <View style={styles.infoSection}>
           <View style={styles.infoRow}>
             <Calendar size={20} color="#64748b" />
-            <Text style={styles.infoText}>{formatDate(event.startTime)}</Text>
+            <Text style={styles.infoText}>{formatDate(event.date)}</Text>
           </View>
           
           <View style={styles.infoRow}>
             <Users size={20} color="#64748b" />
             <Text style={styles.infoText}>
-              {event.attendeesCount} / {event.maxAttendees} attending
+              {event.interactionCounts?.going || 0} / {event.maxAttendees} attending
               {isFull && ' (FULL)'}
             </Text>
           </View>
@@ -242,6 +242,28 @@ export const EventDetailScreen = () => {
             >
               <Star size={20} color="#f59e0b" />
               <Text style={styles.rateButtonText}>Rate This Event</Text>
+            </TouchableOpacity>
+          )}
+
+          {user && event.organizerId !== user.id && (
+            <TouchableOpacity
+              style={styles.messageButton}
+              onPress={() => {
+                Alert.alert(
+                  'Message Organizer',
+                  'This feature will open a conversation with the event organizer.',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: 'Continue',
+                      onPress: () => navigation.navigate('Messages' as never),
+                    },
+                  ]
+                );
+              }}
+            >
+              <MessageCircle size={20} color="#3b82f6" />
+              <Text style={styles.messageButtonText}>Message Organizer</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -455,6 +477,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#f59e0b',
+  },
+  messageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#3b82f6',
+    gap: 8,
+    marginTop: 12,
+  },
+  messageButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#3b82f6',
   },
   errorText: {
     fontSize: 16,
