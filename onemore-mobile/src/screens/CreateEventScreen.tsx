@@ -147,11 +147,17 @@ export const CreateEventScreen = () => {
       const dateTime = new Date(data.date);
       dateTime.setHours(data.time.getHours(), data.time.getMinutes(), 0, 0);
 
+      // Format time as HH:MM string (required by backend)
+      const hours = data.time.getHours().toString().padStart(2, '0');
+      const minutes = data.time.getMinutes().toString().padStart(2, '0');
+      const timeString = `${hours}:${minutes}`;
+
       const eventData = {
         title: data.title,
         description: data.description,
         category: data.category as EventCategory,
         date: dateTime.toISOString(),
+        time: timeString,
         latitude: data.latitude,
         longitude: data.longitude,
         address: data.address,
