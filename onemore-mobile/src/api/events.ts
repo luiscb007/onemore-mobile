@@ -43,7 +43,7 @@ export const eventsApi = {
   },
 
   getOrganizerEvents: async (organizerId: string): Promise<EventWithDetails[]> => {
-    const response = await apiClient.get(`/organizers/${organizerId}/events`);
+    const response = await apiClient.get(`/events/organizer/${organizerId}`);
     return response.data;
   },
 

@@ -175,6 +175,7 @@ export const CreateEventScreen = () => {
       return await eventsApi.createEvent(eventData);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['organizer-events'] });
       queryClient.invalidateQueries({ queryKey: ['/api/events'] });
       Alert.alert('Success', 'Event created successfully! 🎉');
       navigation.goBack();
