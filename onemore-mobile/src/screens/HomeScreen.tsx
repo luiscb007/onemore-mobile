@@ -14,7 +14,7 @@ import {
   Switch,
   ScrollView,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { eventsApi } from '../api/events';
 import { authApi } from '../api/auth';
 import { apiClient } from '../api/client';
@@ -48,6 +48,7 @@ export const HomeScreen = () => {
   const [categoryLayoutWidth, setCategoryLayoutWidth] = useState(0);
   const [categoryContentWidth, setCategoryContentWidth] = useState(0);
   const [currentCoords, setCurrentCoords] = useState<{latitude: number, longitude: number} | null>(null);
+  const previousRadiusRef = useRef<number | undefined>(undefined);
 
   const categories = ['all', 'arts', 'community', 'culture', 'sports', 'workshops'];
 
@@ -69,11 +70,16 @@ export const HomeScreen = () => {
     }
   }, [user?.currentLatitude, user?.currentLongitude]);
 
-  useEffect(() => {
-    if (user?.searchRadius !== undefined && currentCoords) {
-      loadEvents(currentCoords);
-    }
-  }, [user?.searchRadius]);
+  useFocusEffect(
+    React.useCallback(() => {
+      const currentRadius = user?.searchRadius;
+      
+      if (currentRadius !== undefined && currentRadius !== previousRadiusRef.current && currentCoords) {
+        loadEvents(currentCoords);
+        previousRadiusRef.current = currentRadius;
+      }
+    }, [user?.searchRadius, currentCoords])
+  );
 
   const formatDate = (date: Date): string => {
     const year = date.getFullYear();
@@ -137,6 +143,9 @@ export const HomeScreen = () => {
     if (user) {
       const timeoutId = setTimeout(() => {
         loadEvents();
+        if (user.searchRadius !== undefined) {
+          previousRadiusRef.current = user.searchRadius;
+        }
       }, 300);
       return () => clearTimeout(timeoutId);
     }
