@@ -455,11 +455,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Event not found" });
       }
 
-      // Only allow the organizer to view full event details
-      if (event.organizerId !== userId) {
-        return res.status(403).json({ message: "Not authorized to view this event" });
-      }
-
+      // Events are viewable by all authenticated users
       res.json(event);
     } catch (error) {
       console.error("Error fetching event:", error);
