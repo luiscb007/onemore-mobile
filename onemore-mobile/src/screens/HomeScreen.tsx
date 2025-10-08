@@ -269,7 +269,14 @@ export const HomeScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.controlsRow}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+      >
+        <View style={styles.controlsRow}>
         <View style={styles.hidePastRow}>
           <Text style={styles.controlLabel}>Hide past</Text>
           <Switch
@@ -515,15 +522,8 @@ export const HomeScreen = () => {
         >
           <ChevronRight size={20} color={canScrollRight ? "#64748b" : "#cbd5e1"} />
         </TouchableOpacity>
-      </View>
+        </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
-      >
         {events.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>No events found</Text>
