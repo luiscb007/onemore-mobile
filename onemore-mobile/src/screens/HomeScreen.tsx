@@ -861,7 +861,7 @@ const styles = StyleSheet.create({
   },
   eventImage: {
     width: '100%',
-    height: 200,
+    height: 120,
   },
   eventContent: {
     padding: 16,
