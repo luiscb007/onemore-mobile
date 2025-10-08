@@ -13,7 +13,7 @@ import {
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Calendar, MapPin, Users, Star, Heart, ThumbsUp, ThumbsDown, MessageCircle } from 'lucide-react-native';
-import { eventsApi, type Event } from '../api/events';
+import { eventsApi } from '../api/events';
 import { waitlistApi } from '../api/waitlist';
 import { ratingsApi } from '../api/ratings';
 import { messagingApi } from '../api/messaging';
@@ -39,7 +39,7 @@ export const EventDetailScreen = () => {
   const { data: waitlistStatus } = useQuery({
     queryKey: ['waitlist', eventId],
     queryFn: () => waitlistApi.getStatus(eventId),
-    enabled: !!event && event.attendeesCount >= event.maxAttendees,
+    enabled: !!event && event.capacity != null && (event.interactionCounts?.going || 0) >= event.capacity,
   });
 
   const { data: ratingEligibility } = useQuery({
@@ -94,7 +94,13 @@ export const EventDetailScreen = () => {
     }),
     onSuccess: (conversation) => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
-      navigation.navigate('Messages' as never, { conversationId: conversation.id } as never);
+      const organizerName = event?.organizer ? 
+        `${event.organizer.firstName || ''} ${event.organizer.lastName || ''}`.trim() || 'Organizer' 
+        : 'Organizer';
+      navigation.navigate('Chat' as never, { 
+        conversationId: conversation.id,
+        otherUserName: organizerName 
+      } as never);
     },
     onError: () => {
       Alert.alert('Error', 'Failed to start conversation. Please try again.');
@@ -128,7 +134,7 @@ export const EventDetailScreen = () => {
     });
   };
 
-  const isFull = (event.interactionCounts?.going || 0) >= event.maxAttendees;
+  const isFull = event.capacity != null && (event.interactionCounts?.going || 0) >= event.capacity;
   const canJoinWaitlist = isFull && !waitlistStatus?.isOnWaitlist;
   const isOnWaitlist = waitlistStatus?.isOnWaitlist;
 
@@ -157,8 +163,10 @@ export const EventDetailScreen = () => {
           <View style={styles.infoRow}>
             <Users size={20} color="#64748b" />
             <Text style={styles.infoText}>
-              {event.interactionCounts?.going || 0} / {event.maxAttendees} attending
-              {isFull && ' (FULL)'}
+              {event.capacity != null 
+                ? `${event.interactionCounts?.going || 0} / ${event.capacity} attending${isFull ? ' (FULL)' : ''}`
+                : `${event.interactionCounts?.going || 0} attending`
+              }
             </Text>
           </View>
 
@@ -192,34 +200,34 @@ export const EventDetailScreen = () => {
           
           <View style={styles.actionButtons}>
             <TouchableOpacity
-              style={[styles.actionButton, event.userInteraction === 'going' && styles.actionButtonActive]}
+              style={[styles.actionButton, event.userInteraction?.type === 'going' && styles.actionButtonActive]}
               onPress={() => interactMutation.mutate('going')}
               disabled={interactMutation.isPending}
             >
-              <ThumbsUp size={20} color={event.userInteraction === 'going' ? '#fff' : '#64748b'} />
-              <Text style={[styles.actionButtonText, event.userInteraction === 'going' && styles.actionButtonTextActive]}>
+              <ThumbsUp size={20} color={event.userInteraction?.type === 'going' ? '#fff' : '#64748b'} />
+              <Text style={[styles.actionButtonText, event.userInteraction?.type === 'going' && styles.actionButtonTextActive]}>
                 Going
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.actionButton, event.userInteraction === 'like' && styles.actionButtonActive]}
+              style={[styles.actionButton, event.userInteraction?.type === 'like' && styles.actionButtonActive]}
               onPress={() => interactMutation.mutate('like')}
               disabled={interactMutation.isPending}
             >
-              <Heart size={20} color={event.userInteraction === 'like' ? '#fff' : '#64748b'} />
-              <Text style={[styles.actionButtonText, event.userInteraction === 'like' && styles.actionButtonTextActive]}>
+              <Heart size={20} color={event.userInteraction?.type === 'like' ? '#fff' : '#64748b'} />
+              <Text style={[styles.actionButtonText, event.userInteraction?.type === 'like' && styles.actionButtonTextActive]}>
                 Interested
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.actionButton, event.userInteraction === 'pass' && styles.actionButtonActive]}
+              style={[styles.actionButton, event.userInteraction?.type === 'pass' && styles.actionButtonActive]}
               onPress={() => interactMutation.mutate('pass')}
               disabled={interactMutation.isPending}
             >
-              <ThumbsDown size={20} color={event.userInteraction === 'pass' ? '#fff' : '#64748b'} />
-              <Text style={[styles.actionButtonText, event.userInteraction === 'pass' && styles.actionButtonTextActive]}>
+              <ThumbsDown size={20} color={event.userInteraction?.type === 'pass' ? '#fff' : '#64748b'} />
+              <Text style={[styles.actionButtonText, event.userInteraction?.type === 'pass' && styles.actionButtonTextActive]}>
                 Pass
               </Text>
             </TouchableOpacity>
