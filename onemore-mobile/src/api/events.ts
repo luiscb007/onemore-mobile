@@ -57,10 +57,13 @@ export const eventsApi = {
     rating: number,
     comment?: string
   ): Promise<{ rating: any; organizerSummary: any }> => {
-    const response = await apiClient.post(`/events/${eventId}/rating`, { 
+    console.log('eventsApi.rateEvent: Sending request with rating:', rating, 'type:', typeof rating);
+    const payload = { 
       rating, 
       comment: comment || null 
-    });
+    };
+    console.log('eventsApi.rateEvent: Full payload:', JSON.stringify(payload));
+    const response = await apiClient.post(`/events/${eventId}/rating`, payload);
     return response.data;
   },
 

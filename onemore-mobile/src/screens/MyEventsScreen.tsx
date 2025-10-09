@@ -534,6 +534,7 @@ export const MyEventsScreen = () => {
             setExistingRating(null);
           }}
           onSubmit={async (rating) => {
+            console.log('MyEventsScreen: onSubmit called with rating:', rating, 'type:', typeof rating);
             await ratingMutation.mutateAsync({
               eventId: selectedEventForRating.id,
               rating,

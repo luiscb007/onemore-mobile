@@ -32,27 +32,29 @@ export default function RatingModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const hasExistingRating = existingRating !== null && existingRating !== undefined;
 
-  // Update rating when existingRating changes or modal becomes visible
+  // Initialize rating only when modal becomes visible, not when existingRating changes
   useEffect(() => {
-    if (visible && existingRating) {
-      setRating(existingRating);
-    } else if (visible && !existingRating) {
-      setRating(0);
+    if (visible) {
+      setRating(existingRating || 0);
     }
-  }, [visible, existingRating]);
+  }, [visible]);
 
   const handleSubmit = async () => {
-    if (rating === 0) {
+    console.log('RatingModal: handleSubmit called with rating:', rating);
+    
+    if (!rating || rating < 1 || rating > 5) {
+      console.error('RatingModal: Invalid rating value:', rating);
       return;
     }
 
     setIsSubmitting(true);
     try {
+      console.log('RatingModal: Submitting rating:', rating);
       await onSubmit(rating);
       setRating(0);
       onClose();
     } catch (error) {
-      console.error('Error submitting rating:', error);
+      console.error('RatingModal: Error submitting rating:', error);
     } finally {
       setIsSubmitting(false);
     }
