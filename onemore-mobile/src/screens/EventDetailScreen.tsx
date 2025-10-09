@@ -83,7 +83,8 @@ export const EventDetailScreen = () => {
     mutationFn: () => ratingsApi.submitRating(eventId, rating, comment || undefined),
     onSuccess: () => {
       setShowRatingModal(false);
-      queryClient.invalidateQueries({ queryKey: ['organizerRating'] });
+      queryClient.invalidateQueries({ queryKey: ['organizerRating'], exact: false });
+      queryClient.invalidateQueries({ queryKey: ['ratingEligibility', eventId] });
       Alert.alert('Success', 'Thank you for your rating!');
     },
   });
