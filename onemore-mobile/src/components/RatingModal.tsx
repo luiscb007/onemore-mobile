@@ -16,6 +16,7 @@ interface RatingModalProps {
   visible: boolean;
   eventTitle: string;
   organizerName: string;
+  existingRating?: number | null;
   onClose: () => void;
   onSubmit: (rating: number) => Promise<void>;
 }
@@ -24,11 +25,13 @@ export default function RatingModal({
   visible,
   eventTitle,
   organizerName,
+  existingRating,
   onClose,
   onSubmit,
 }: RatingModalProps) {
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState(existingRating || 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const hasExistingRating = existingRating !== null && existingRating !== undefined;
 
   const handleSubmit = async () => {
     if (rating === 0) {
@@ -71,11 +74,21 @@ export default function RatingModal({
           <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
             <View style={styles.modalContent}>
               <ScrollView showsVerticalScrollIndicator={false}>
-                <Text style={styles.title}>Rate Event</Text>
+                <Text style={styles.title}>
+                  {hasExistingRating ? 'Update Your Rating' : 'Rate Event'}
+                </Text>
                 <Text style={styles.eventTitle} numberOfLines={2}>
                   {eventTitle}
                 </Text>
                 <Text style={styles.organizerName}>by {organizerName}</Text>
+                
+                {hasExistingRating && (
+                  <View style={styles.alreadyRatedBadge}>
+                    <Text style={styles.alreadyRatedText}>
+                      You've already rated this event
+                    </Text>
+                  </View>
+                )}
 
                 <View style={styles.starsContainer}>
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -120,7 +133,9 @@ export default function RatingModal({
                     {isSubmitting ? (
                       <ActivityIndicator color="white" />
                     ) : (
-                      <Text style={styles.submitButtonText}>Submit Rating</Text>
+                      <Text style={styles.submitButtonText}>
+                        {hasExistingRating ? 'Update Rating' : 'Submit Rating'}
+                      </Text>
                     )}
                   </TouchableOpacity>
                 </View>
@@ -170,8 +185,21 @@ const styles = StyleSheet.create({
   organizerName: {
     fontSize: 14,
     color: '#6B7280',
-    marginBottom: 24,
+    marginBottom: 16,
     textAlign: 'center',
+  },
+  alreadyRatedBadge: {
+    backgroundColor: '#DBEAFE',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginBottom: 16,
+    alignSelf: 'center',
+  },
+  alreadyRatedText: {
+    fontSize: 13,
+    color: '#1E40AF',
+    fontWeight: '600',
   },
   starsContainer: {
     flexDirection: 'row',

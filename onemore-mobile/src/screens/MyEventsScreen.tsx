@@ -27,7 +27,9 @@ export const MyEventsScreen = () => {
   const [activeTab, setActiveTab] = useState<TabType>('going');
   const [ratingModalVisible, setRatingModalVisible] = useState(false);
   const [selectedEventForRating, setSelectedEventForRating] = useState<EventWithDetails | null>(null);
+  const [existingRating, setExistingRating] = useState<number | null>(null);
   const [ratedEventIds, setRatedEventIds] = useState<Set<string>>(new Set());
+  const [isLoadingRating, setIsLoadingRating] = useState(false);
 
   const { data: goingEvents = [], isLoading: goingLoading, refetch: refetchGoing, isRefetching: goingRefetching } = useQuery({
     queryKey: ['user-events', 'going'],
@@ -355,22 +357,36 @@ export const MyEventsScreen = () => {
                         hasRated && styles.actionBtnRated,
                         !canRate && !hasRated && styles.actionBtnDisabled
                       ]}
-                      onPress={(e) => {
+                      onPress={async (e) => {
                         e.stopPropagation();
-                        if (canRate && !hasRated) {
+                        if (canRate) {
                           setSelectedEventForRating(item);
-                          setRatingModalVisible(true);
+                          setIsLoadingRating(true);
+                          try {
+                            const existingRatingData = await eventsApi.getUserEventRating(item.id);
+                            setExistingRating(existingRatingData?.rating || null);
+                          } catch (error) {
+                            console.error('Error fetching existing rating:', error);
+                            setExistingRating(null);
+                          } finally {
+                            setIsLoadingRating(false);
+                            setRatingModalVisible(true);
+                          }
                         }
                       }}
-                      disabled={!canRate || hasRated}
+                      disabled={!canRate}
                     >
-                      <Text style={[
-                        styles.actionBtnText, 
-                        !canRate && !hasRated && styles.actionBtnTextDisabled,
-                        hasRated && styles.actionBtnTextRated
-                      ]}>
-                        {hasRated ? '⭐ Rated' : canRate ? '⭐ Rate' : '⭐ Rate (8h)'}
-                      </Text>
+                      {isLoadingRating && selectedEventForRating?.id === item.id ? (
+                        <ActivityIndicator size="small" color="#3B82F6" />
+                      ) : (
+                        <Text style={[
+                          styles.actionBtnText, 
+                          !canRate && !hasRated && styles.actionBtnTextDisabled,
+                          hasRated && styles.actionBtnTextRated
+                        ]}>
+                          {hasRated ? '⭐ Rated' : canRate ? '⭐ Rate' : '⭐ Rate (8h)'}
+                        </Text>
+                      )}
                     </TouchableOpacity>
                   </View>
                 ) : (
@@ -499,9 +515,11 @@ export const MyEventsScreen = () => {
           visible={ratingModalVisible}
           eventTitle={selectedEventForRating.title}
           organizerName={`${selectedEventForRating.organizer?.firstName || ''} ${selectedEventForRating.organizer?.lastName || ''}`.trim()}
+          existingRating={existingRating}
           onClose={() => {
             setRatingModalVisible(false);
             setSelectedEventForRating(null);
+            setExistingRating(null);
           }}
           onSubmit={async (rating) => {
             await ratingMutation.mutateAsync({
