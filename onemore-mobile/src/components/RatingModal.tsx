@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -32,6 +32,15 @@ export default function RatingModal({
   const [rating, setRating] = useState(existingRating || 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const hasExistingRating = existingRating !== null && existingRating !== undefined;
+
+  // Update rating when existingRating changes or modal becomes visible
+  useEffect(() => {
+    if (visible && existingRating) {
+      setRating(existingRating);
+    } else if (visible && !existingRating) {
+      setRating(0);
+    }
+  }, [visible, existingRating]);
 
   const handleSubmit = async () => {
     if (rating === 0) {
