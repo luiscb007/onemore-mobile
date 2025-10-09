@@ -157,9 +157,14 @@ export const MyEventsScreen = () => {
     const isPastEvent = new Date(item.date) < new Date();
     const isOrganizedTab = activeTab === 'organized';
     const isGoing = item.userInteraction?.type === 'going';
+    const isLiked = item.userInteraction?.type === 'like';
+    const isPassed = item.userInteraction?.type === 'pass';
+    
+    // Check if event has started
+    const eventDateTime = new Date(`${item.date} ${item.time}`);
+    const hasEventStarted = new Date() >= eventDateTime;
     
     // Check if event started at least 8 hours ago for rating
-    const eventDateTime = new Date(`${item.date} ${item.time}`);
     const eightHoursAfterEventStart = new Date(eventDateTime.getTime() + (8 * 60 * 60 * 1000));
     const canRate = isGoing && new Date() >= eightHoursAfterEventStart;
 
@@ -229,85 +234,123 @@ export const MyEventsScreen = () => {
         </TouchableOpacity>
 
         {!isOrganizedTab && (
-          <View style={styles.actionsRow}>
-            <TouchableOpacity
-              style={[styles.actionBtn, item.userInteraction?.type === 'going' && styles.actionBtnGoing]}
-              onPress={(e) => {
-                e.stopPropagation();
-                interactMutation.mutate({ eventId: item.id, type: 'going' });
-              }}
-              disabled={interactMutation.isPending}
-            >
-              <Text style={[styles.actionBtnText, item.userInteraction?.type === 'going' && styles.actionBtnTextActive]}>
-                Going
-              </Text>
-            </TouchableOpacity>
+          <>
+            {!hasEventStarted ? (
+              // Before event starts: Show Going/Like/Pass + Message (if going)
+              <View style={styles.actionsRow}>
+                <TouchableOpacity
+                  style={[styles.actionBtn, isGoing && styles.actionBtnGoing]}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    interactMutation.mutate({ eventId: item.id, type: 'going' });
+                  }}
+                  disabled={interactMutation.isPending}
+                >
+                  <Text style={[styles.actionBtnText, isGoing && styles.actionBtnTextActive]}>
+                    Going
+                  </Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.actionBtn, item.userInteraction?.type === 'like' && styles.actionBtnLike]}
-              onPress={(e) => {
-                e.stopPropagation();
-                interactMutation.mutate({ eventId: item.id, type: 'like' });
-              }}
-              disabled={interactMutation.isPending}
-            >
-              <Text style={[styles.actionBtnText, item.userInteraction?.type === 'like' && styles.actionBtnTextActive]}>
-                Like ❤️
-              </Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.actionBtn, isLiked && styles.actionBtnLike]}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    interactMutation.mutate({ eventId: item.id, type: 'like' });
+                  }}
+                  disabled={interactMutation.isPending}
+                >
+                  <Text style={[styles.actionBtnText, isLiked && styles.actionBtnTextActive]}>
+                    Like ❤️
+                  </Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.actionBtn}
-              onPress={(e) => {
-                e.stopPropagation();
-                interactMutation.mutate({ eventId: item.id, type: 'pass' });
-              }}
-              disabled={interactMutation.isPending}
-            >
-              <Text style={styles.actionBtnText}>Pass</Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.actionBtn}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    interactMutation.mutate({ eventId: item.id, type: 'pass' });
+                  }}
+                  disabled={interactMutation.isPending}
+                >
+                  <Text style={styles.actionBtnText}>Pass</Text>
+                </TouchableOpacity>
 
-            {isGoing && (
-              <TouchableOpacity
-                style={styles.actionBtn}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  const organizerName = item.organizer ? 
-                    `${item.organizer.firstName || ''} ${item.organizer.lastName || ''}`.trim() || 'Organizer' 
-                    : 'Organizer';
-                  createConversationMutation.mutate({ 
-                    organizerId: item.organizerId, 
-                    eventId: item.id,
-                    organizerName 
-                  });
-                }}
-                disabled={createConversationMutation.isPending}
-              >
-                <Text style={styles.actionBtnText}>Message</Text>
-              </TouchableOpacity>
+                {isGoing && (
+                  <TouchableOpacity
+                    style={styles.actionBtn}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      const organizerName = item.organizer ? 
+                        `${item.organizer.firstName || ''} ${item.organizer.lastName || ''}`.trim() || 'Organizer' 
+                        : 'Organizer';
+                      createConversationMutation.mutate({ 
+                        organizerId: item.organizerId, 
+                        eventId: item.id,
+                        organizerName 
+                      });
+                    }}
+                    disabled={createConversationMutation.isPending}
+                  >
+                    <Text style={styles.actionBtnText}>Message</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ) : (
+              // After event starts
+              <>
+                {isGoing ? (
+                  // Going: Show Message + Rate
+                  <View style={styles.actionsRow}>
+                    <TouchableOpacity
+                      style={styles.actionBtn}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        const organizerName = item.organizer ? 
+                          `${item.organizer.firstName || ''} ${item.organizer.lastName || ''}`.trim() || 'Organizer' 
+                          : 'Organizer';
+                        createConversationMutation.mutate({ 
+                          organizerId: item.organizerId, 
+                          eventId: item.id,
+                          organizerName 
+                        });
+                      }}
+                      disabled={createConversationMutation.isPending}
+                    >
+                      <Text style={styles.actionBtnText}>Message</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.actionBtn, 
+                        canRate && styles.actionBtnRate,
+                        !canRate && styles.actionBtnDisabled
+                      ]}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        if (canRate) {
+                          (navigation as any).navigate('EventDetail', { eventId: item.id });
+                        }
+                      }}
+                      disabled={!canRate}
+                    >
+                      <Text style={[styles.actionBtnText, !canRate && styles.actionBtnTextDisabled]}>
+                        {canRate ? '⭐ Rate' : '⭐ Rate (8h)'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  // Liked or Passed: Show status badge
+                  <View style={styles.statusBadgeContainer}>
+                    <View style={styles.statusBadge}>
+                      <Text style={styles.statusBadgeText}>
+                        {isLiked ? '❤️ You liked this' : '❌ You passed on this'}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              </>
             )}
-
-            {isGoing && (
-              <TouchableOpacity
-                style={[
-                  styles.actionBtn, 
-                  canRate && styles.actionBtnRate,
-                  !canRate && styles.actionBtnDisabled
-                ]}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  if (canRate) {
-                    (navigation as any).navigate('EventDetail', { eventId: item.id });
-                  }
-                }}
-                disabled={!canRate}
-              >
-                <Text style={[styles.actionBtnText, !canRate && styles.actionBtnTextDisabled]}>
-                  {canRate ? '⭐ Rate' : '⭐ Rate (8h)'}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
+          </>
         )}
       </View>
     );
@@ -626,5 +669,21 @@ const styles = StyleSheet.create({
   },
   actionBtnTextDisabled: {
     color: '#64748b',
+  },
+  statusBadgeContainer: {
+    padding: 12,
+    paddingTop: 0,
+  },
+  statusBadge: {
+    backgroundColor: '#f1f5f9',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  statusBadgeText: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '500',
   },
 });
