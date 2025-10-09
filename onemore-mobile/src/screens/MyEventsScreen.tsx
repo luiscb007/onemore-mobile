@@ -179,6 +179,11 @@ export const MyEventsScreen = () => {
           <Text style={styles.eventTitle} numberOfLines={2}>
             {item.title}
           </Text>
+          {item.organizer && !isOrganizedTab && (
+            <Text style={styles.organizerText}>
+              By {item.organizer.firstName || ''} {item.organizer.lastName || ''}
+            </Text>
+          )}
           {item.status === 'cancelled' && (
             <View style={styles.cancelledBadge}>
               <Text style={styles.cancelledText}>Cancelled</Text>
@@ -498,6 +503,12 @@ const styles = StyleSheet.create({
     color: '#1e293b',
     flex: 1,
     marginRight: 8,
+  },
+  organizerText: {
+    fontSize: 13,
+    color: '#64748b',
+    marginBottom: 4,
+    fontStyle: 'italic',
   },
   cancelledBadge: {
     backgroundColor: '#fee2e2',

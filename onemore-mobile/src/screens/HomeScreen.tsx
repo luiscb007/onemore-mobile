@@ -182,6 +182,11 @@ export const HomeScreen = () => {
             <Text style={styles.categoryText}>{item.category.toUpperCase()}</Text>
           </View>
           <Text style={styles.eventTitle}>{item.title}</Text>
+          {item.organizer && (
+            <Text style={styles.organizerText}>
+              By {item.organizer.firstName || ''} {item.organizer.lastName || ''}
+            </Text>
+          )}
           <Text style={styles.eventDescription} numberOfLines={2}>
             {item.description}
           </Text>
@@ -895,7 +900,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#000',
+    marginBottom: 4,
+  },
+  organizerText: {
+    fontSize: 13,
+    color: '#64748b',
     marginBottom: 8,
+    fontStyle: 'italic',
   },
   eventDescription: {
     fontSize: 14,

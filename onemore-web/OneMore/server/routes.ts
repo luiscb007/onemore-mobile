@@ -822,14 +822,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/conversations', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { eventId, organizerId, attendeeId } = req.body;
+      const { eventId, organizerId, attendeeId, otherUserId } = req.body;
+
+      // Support both old format (organizerId + attendeeId) and new format (otherUserId)
+      let finalOrganizerId: string;
+      let finalAttendeeId: string;
+
+      if (otherUserId) {
+        // New format: determine roles based on event
+        const event = await storage.getEventById(eventId);
+        if (!event) {
+          return res.status(404).json({ message: "Event not found" });
+        }
+
+        if (event.organizerId === userId) {
+          // Current user is organizer, other user is attendee
+          finalOrganizerId = userId;
+          finalAttendeeId = otherUserId;
+        } else {
+          // Current user is attendee, other user is organizer
+          finalOrganizerId = otherUserId;
+          finalAttendeeId = userId;
+        }
+      } else {
+        // Old format: use provided organizerId and attendeeId
+        finalOrganizerId = organizerId;
+        finalAttendeeId = attendeeId;
+      }
 
       // Validate that the user is either the organizer or attendee
-      if (userId !== organizerId && userId !== attendeeId) {
+      if (userId !== finalOrganizerId && userId !== finalAttendeeId) {
         return res.status(403).json({ message: "Not authorized to create this conversation" });
       }
 
-      const conversation = await storage.createOrGetConversation(eventId, organizerId, attendeeId);
+      const conversation = await storage.createOrGetConversation(eventId, finalOrganizerId, finalAttendeeId);
       res.json(conversation);
     } catch (error) {
       console.error("Error creating conversation:", error);
