@@ -7,7 +7,6 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   ActivityIndicator,
 } from 'react-native';
 import { Star } from 'lucide-react-native';
@@ -82,73 +81,71 @@ export default function RatingModal({
         >
           <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
             <View style={styles.modalContent}>
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <Text style={styles.title}>
-                  {hasExistingRating ? 'Update Your Rating' : 'Rate Event'}
-                </Text>
-                <Text style={styles.eventTitle} numberOfLines={2}>
-                  {eventTitle}
-                </Text>
-                <Text style={styles.organizerName}>by {organizerName}</Text>
-                
-                {hasExistingRating && (
-                  <View style={styles.alreadyRatedBadge}>
-                    <Text style={styles.alreadyRatedText}>
-                      You've already rated this event
-                    </Text>
-                  </View>
-                )}
-
-                <View style={styles.starsContainer}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <TouchableOpacity
-                      key={star}
-                      onPress={() => setRating(star)}
-                      style={styles.starButton}
-                    >
-                      <Star
-                        size={40}
-                        color={star <= rating ? '#FFD700' : '#D1D5DB'}
-                        fill={star <= rating ? '#FFD700' : 'transparent'}
-                      />
-                    </TouchableOpacity>
-                  ))}
-                </View>
-
-                {rating > 0 && (
-                  <Text style={styles.ratingText}>
-                    {rating} {rating === 1 ? 'Star' : 'Stars'}
+              <Text style={styles.title}>
+                {hasExistingRating ? 'Update Your Rating' : 'Rate Event'}
+              </Text>
+              <Text style={styles.eventTitle} numberOfLines={2}>
+                {eventTitle}
+              </Text>
+              <Text style={styles.organizerName}>by {organizerName}</Text>
+              
+              {hasExistingRating && (
+                <View style={styles.alreadyRatedBadge}>
+                  <Text style={styles.alreadyRatedText}>
+                    You've already rated this event
                   </Text>
-                )}
-
-                <View style={styles.buttonContainer}>
-                  <TouchableOpacity
-                    style={[styles.button, styles.cancelButton]}
-                    onPress={handleClose}
-                    disabled={isSubmitting}
-                  >
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.button,
-                      styles.submitButton,
-                      rating === 0 && styles.submitButtonDisabled,
-                    ]}
-                    onPress={handleSubmit}
-                    disabled={rating === 0 || isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <ActivityIndicator color="white" />
-                    ) : (
-                      <Text style={styles.submitButtonText}>
-                        {hasExistingRating ? 'Update Rating' : 'Submit Rating'}
-                      </Text>
-                    )}
-                  </TouchableOpacity>
                 </View>
-              </ScrollView>
+              )}
+
+              <View style={styles.starsContainer}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity
+                    key={star}
+                    onPress={() => setRating(star)}
+                    style={styles.starButton}
+                  >
+                    <Star
+                      size={40}
+                      color={star <= rating ? '#FFD700' : '#D1D5DB'}
+                      fill={star <= rating ? '#FFD700' : 'transparent'}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {rating > 0 && (
+                <Text style={styles.ratingText}>
+                  {rating} {rating === 1 ? 'Star' : 'Stars'}
+                </Text>
+              )}
+
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={handleClose}
+                  disabled={isSubmitting}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    styles.submitButton,
+                    rating === 0 && styles.submitButtonDisabled,
+                  ]}
+                  onPress={handleSubmit}
+                  disabled={rating === 0 || isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text style={styles.submitButtonText}>
+                      {hasExistingRating ? 'Update Rating' : 'Submit Rating'}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
           </TouchableOpacity>
         </TouchableOpacity>
@@ -176,7 +173,6 @@ const styles = StyleSheet.create({
     padding: 24,
     width: '90%',
     maxWidth: 400,
-    maxHeight: '80%',
   },
   title: {
     fontSize: 24,
