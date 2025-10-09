@@ -783,11 +783,15 @@ export class DatabaseStorage implements IStorage {
       
       const interactionCounts = await this.getEventInteractionCounts(row.event.id);
       
+      // Check if user has rated this event
+      const userRating = await this.getUserEventRating(userId, row.event.id);
+      
       eventsWithDetails.push({
         ...row.event,
         organizer: row.organizer,
         userInteraction: row.interaction,
         interactionCounts,
+        userRating: userRating || null,
       });
     }
 

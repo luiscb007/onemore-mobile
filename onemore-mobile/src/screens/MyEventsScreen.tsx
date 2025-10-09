@@ -187,7 +187,7 @@ export const MyEventsScreen = () => {
     // Check if event started at least 8 hours ago for rating
     const eightHoursAfterEventStart = new Date(eventDateTime.getTime() + (8 * 60 * 60 * 1000));
     const canRate = isGoing && new Date() >= eightHoursAfterEventStart;
-    const hasRated = ratedEventIds.has(item.id);
+    const hasRated = !!(item.userRating && item.userRating.rating) || ratedEventIds.has(item.id);
 
     return (
       <View style={styles.eventCard}>
@@ -359,22 +359,34 @@ export const MyEventsScreen = () => {
                       ]}
                       onPress={async (e) => {
                         e.stopPropagation();
-                        if (canRate) {
+                        if (canRate && !hasRated) {
                           setSelectedEventForRating(item);
                           setIsLoadingRating(true);
+                          let shouldOpenModal = false;
                           try {
                             const existingRatingData = await eventsApi.getUserEventRating(item.id);
-                            setExistingRating(existingRatingData?.rating || null);
+                            // If existing rating found, don't open modal - user has already rated
+                            if (existingRatingData && existingRatingData.rating) {
+                              Alert.alert('Already Rated', 'You have already rated this event.');
+                              setRatedEventIds(prev => new Set(prev).add(item.id));
+                            } else {
+                              // No existing rating, safe to open modal
+                              setExistingRating(null);
+                              shouldOpenModal = true;
+                            }
                           } catch (error) {
                             console.error('Error fetching existing rating:', error);
                             setExistingRating(null);
+                            shouldOpenModal = true;
                           } finally {
                             setIsLoadingRating(false);
-                            setRatingModalVisible(true);
+                            if (shouldOpenModal) {
+                              setRatingModalVisible(true);
+                            }
                           }
                         }
                       }}
-                      disabled={!canRate}
+                      disabled={!canRate || hasRated}
                     >
                       {isLoadingRating && selectedEventForRating?.id === item.id ? (
                         <ActivityIndicator size="small" color="#3B82F6" />

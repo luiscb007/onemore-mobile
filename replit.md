@@ -30,6 +30,13 @@ The mobile application is a **React Native** app built with **Expo** for iOS. It
 - **Strict Type Safety**: Full TypeScript integration with EventCategory enum types, coordinate conversion (string to number), and Zod superRefine validation
 - **Recurrence Validation**: Context-aware validation ensuring pattern and end date are selected when recurring events are enabled, with empty string → null coercion
 
+**Rating System Features:**
+- **Persistent Rating State**: Backend includes userRating field in event responses to track rated status across sessions
+- **Smart Duplicate Prevention**: Rate button disabled based on backend data (userRating field), not just local state
+- **Pre-filled Updates**: Modal shows existing rating when users attempt to rate again, allowing updates
+- **Optimistic UI**: Local ratedEventIds provides immediate feedback while backend data refetches
+- **Type-Safe Implementation**: Full TypeScript integration with OrganizerRating type including all fields (updatedAt, createdAt)
+
 The mobile app is production-ready for iOS deployment.
 
 ### Backend Architecture

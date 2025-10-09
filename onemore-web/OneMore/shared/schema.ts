@@ -387,6 +387,7 @@ export type EventWithDetails = Event & {
     average: number;
     count: number;
   };
+  userRating?: OrganizerRating | null; // User's rating for this event
   distance?: number; // Distance in kilometers from user to event
 };
 

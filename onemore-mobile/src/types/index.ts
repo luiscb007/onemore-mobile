@@ -49,6 +49,17 @@ export type Event = {
   updatedAt: string;
 };
 
+export type OrganizerRating = {
+  id: string;
+  eventId: string;
+  organizerId: string;
+  attendeeId: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type EventWithDetails = Event & {
   organizer: User;
   userInteraction?: EventInteraction;
@@ -61,6 +72,7 @@ export type EventWithDetails = Event & {
     average: number;
     count: number;
   };
+  userRating?: OrganizerRating | null; // User's rating for this event
   distance?: number;
 };
 
