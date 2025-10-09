@@ -158,10 +158,10 @@ export const MyEventsScreen = () => {
     const isOrganizedTab = activeTab === 'organized';
     const isGoing = item.userInteraction?.type === 'going';
     
-    // Check if event ended at least 8 hours ago for rating
-    const eventDateTime = new Date(item.date + ' ' + item.time);
-    const eightHoursAfterEvent = new Date(eventDateTime.getTime() + (8 * 60 * 60 * 1000));
-    const canRate = isGoing && new Date() >= eightHoursAfterEvent;
+    // Check if event started at least 8 hours ago for rating
+    const eventDateTime = new Date(`${item.date} ${item.time}`);
+    const eightHoursAfterEventStart = new Date(eventDateTime.getTime() + (8 * 60 * 60 * 1000));
+    const canRate = isGoing && new Date() >= eightHoursAfterEventStart;
 
     return (
       <View style={styles.eventCard}>
@@ -302,7 +302,9 @@ export const MyEventsScreen = () => {
                 }}
                 disabled={!canRate}
               >
-                <Text style={[styles.actionBtnText, !canRate && styles.actionBtnTextDisabled]}>⭐ Rate</Text>
+                <Text style={[styles.actionBtnText, !canRate && styles.actionBtnTextDisabled]}>
+                  {canRate ? '⭐ Rate' : '⭐ Rate (8h)'}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -619,11 +621,10 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   actionBtnDisabled: {
-    backgroundColor: '#f1f5f9',
-    borderColor: '#e2e8f0',
-    opacity: 0.5,
+    backgroundColor: '#e2e8f0',
+    borderColor: '#cbd5e1',
   },
   actionBtnTextDisabled: {
-    color: '#94a3b8',
+    color: '#64748b',
   },
 });
