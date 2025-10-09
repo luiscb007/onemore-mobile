@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Calendar, MapPin, Users, Star, Heart, ThumbsUp, ThumbsDown, MessageCircle } from 'lucide-react-native';
+import { ArrowLeft, Calendar, MapPin, Users, Star, Heart, ThumbsUp, ThumbsDown, MessageCircle, User } from 'lucide-react-native';
 import { eventsApi } from '../api/events';
 import { waitlistApi } from '../api/waitlist';
 import { ratingsApi } from '../api/ratings';
@@ -172,13 +172,47 @@ export const EventDetailScreen = () => {
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.title}>{event.title}</Text>
-        
-        {event.description && (
-          <Text style={styles.description}>{event.description}</Text>
-        )}
+        <View style={styles.titleCard}>
+          <Text style={styles.title}>{event.title}</Text>
+          {event.description && (
+            <Text style={styles.description}>{event.description}</Text>
+          )}
+        </View>
 
-        <View style={styles.infoSection}>
+        <View style={styles.organizerCard}>
+          <View style={styles.organizerHeader}>
+            <View style={styles.organizerIcon}>
+              <User size={20} color="#ef4444" />
+            </View>
+            <View style={styles.organizerInfo}>
+              <Text style={styles.organizerLabel}>Organized by</Text>
+              <Text style={styles.organizerName}>
+                {event.organizer ? 
+                  `${event.organizer.firstName || ''} ${event.organizer.lastName || ''}`.trim() || 'Organizer' 
+                  : 'Organizer'}
+              </Text>
+            </View>
+          </View>
+          {organizerRating && organizerRating.totalRatings > 0 && (
+            <View style={styles.ratingRow}>
+              <View style={styles.starsDisplay}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    size={16}
+                    color={star <= Math.round(organizerRating.averageRating) ? '#f59e0b' : '#cbd5e1'}
+                    fill={star <= Math.round(organizerRating.averageRating) ? '#f59e0b' : 'transparent'}
+                  />
+                ))}
+              </View>
+              <Text style={styles.ratingText}>
+                {organizerRating.averageRating.toFixed(1)} ({organizerRating.totalRatings} {organizerRating.totalRatings === 1 ? 'rating' : 'ratings'})
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.detailsCard}>
           <View style={styles.infoRow}>
             <Calendar size={20} color="#64748b" />
             <Text style={styles.infoText}>{formatDate(event.date)}</Text>
@@ -202,15 +236,6 @@ export const EventDetailScreen = () => {
             <MapPin size={20} color="#3b82f6" />
             <Text style={styles.addressLink}>{event.address}</Text>
           </TouchableOpacity>
-
-          {organizerRating && organizerRating.totalRatings > 0 && (
-            <View style={styles.infoRow}>
-              <Star size={20} color="#f59e0b" />
-              <Text style={styles.infoText}>
-                Organizer: {organizerRating.averageRating.toFixed(1)} ({organizerRating.totalRatings} ratings)
-              </Text>
-            </View>
-          )}
         </View>
 
         {canJoinWaitlist && (
@@ -319,7 +344,7 @@ export const EventDetailScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f8fafc',
   },
   centerContainer: {
     flex: 1,
@@ -332,6 +357,7 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 16,
     paddingHorizontal: 16,
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
@@ -351,20 +377,95 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 100,
   },
+  titleCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#1e293b',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   description: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#64748b',
-    lineHeight: 24,
-    marginBottom: 20,
+    lineHeight: 22,
   },
-  infoSection: {
-    marginBottom: 20,
+  organizerCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  organizerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  organizerIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#fee2e2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  organizerInfo: {
+    flex: 1,
+  },
+  organizerLabel: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginBottom: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  organizerName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  starsDisplay: {
+    flexDirection: 'row',
+    gap: 4,
+    marginRight: 8,
+  },
+  ratingText: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  detailsCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   infoRow: {
     flexDirection: 'row',
@@ -373,17 +474,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   infoText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#475569',
+    flex: 1,
   },
   addressLink: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#3b82f6',
     textDecorationLine: 'underline',
     flex: 1,
   },
   actionsSection: {
-    marginTop: 8,
+    marginTop: 0,
   },
   sectionTitle: {
     fontSize: 18,
