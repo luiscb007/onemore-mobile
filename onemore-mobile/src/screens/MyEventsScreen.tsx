@@ -160,8 +160,9 @@ export const MyEventsScreen = () => {
     const isLiked = item.userInteraction?.type === 'like';
     const isPassed = item.userInteraction?.type === 'pass';
     
-    // Check if event has started
-    const eventDateTime = new Date(`${item.date} ${item.time}`);
+    // Parse event date and time correctly
+    const dateOnly = item.date.split('T')[0]; // Get YYYY-MM-DD from ISO string
+    const eventDateTime = new Date(`${dateOnly}T${item.time}:00`); // Combine date with event time
     const hasEventStarted = new Date() >= eventDateTime;
     
     // Check if event started at least 8 hours ago for rating
