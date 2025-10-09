@@ -51,4 +51,21 @@ export const eventsApi = {
     const response = await apiClient.get(`/user/events/${type}`);
     return response.data;
   },
+
+  rateEvent: async (
+    eventId: string,
+    rating: number,
+    comment?: string
+  ): Promise<{ rating: any; organizerSummary: any }> => {
+    const response = await apiClient.post(`/api/events/${eventId}/rating`, { 
+      rating, 
+      comment: comment || null 
+    });
+    return response.data;
+  },
+
+  getUserEventRating: async (eventId: string): Promise<any> => {
+    const response = await apiClient.get(`/api/events/${eventId}/rating/me`);
+    return response.data;
+  },
 };

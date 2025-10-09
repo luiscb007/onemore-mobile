@@ -151,7 +151,8 @@ export const organizerRatings = pgTable(
     eventId: varchar("event_id").notNull().references(() => events.id),
     organizerId: varchar("organizer_id").notNull().references(() => users.id),
     attendeeId: varchar("attendee_id").notNull().references(() => users.id),
-    rating: integer("rating").notNull(), // 0-5 stars
+    rating: integer("rating").notNull(), // 1-5 stars
+    comment: text("comment"), // Optional comment
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
   },
@@ -343,7 +344,8 @@ export const insertOrganizerRatingSchema = createInsertSchema(organizerRatings)
     updatedAt: true,
   })
   .extend({
-    rating: z.number().min(0).max(5),
+    rating: z.number().min(1).max(5),
+    comment: z.string().optional(),
   });
 
 export const insertMonthlyUsageSchema = createInsertSchema(monthlyUsage).omit({

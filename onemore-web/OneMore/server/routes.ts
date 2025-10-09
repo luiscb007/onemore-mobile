@@ -991,19 +991,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const eventId = req.params.eventId;
-      const { rating } = req.body;
+      const { rating, comment } = req.body;
       
       // Extract parent event ID from composite IDs (for recurring events)
       const parentEventId = getParentEventId(eventId);
 
       // Validate rating
       const ratingSchema = z.object({
-        rating: z.number().min(0).max(5),
+        rating: z.number().min(1).max(5),
+        comment: z.string().optional(),
       });
 
-      const validationResult = ratingSchema.safeParse({ rating });
+      const validationResult = ratingSchema.safeParse({ rating, comment });
       if (!validationResult.success) {
-        return res.status(400).json({ message: "Rating must be between 0 and 5" });
+        return res.status(400).json({ message: "Rating must be between 1 and 5" });
       }
 
       // Check eligibility
@@ -1024,6 +1025,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         organizerId: event.organizerId,
         attendeeId: userId,
         rating: validationResult.data.rating,
+        comment: validationResult.data.comment || null,
       };
 
       const submittedRating = await storage.upsertOrganizerRating(ratingData);

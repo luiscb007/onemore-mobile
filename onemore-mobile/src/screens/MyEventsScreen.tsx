@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
@@ -14,7 +15,7 @@ import { Plus, Calendar, MapPin, Users, DollarSign, Heart, ThumbsDown, MessageCi
 import { useAuth } from '../contexts/AuthContext';
 import { eventsApi } from '../api/events';
 import { messagingApi } from '../api/messaging';
-import { ratingsApi } from '../api/ratings';
+import RatingModal from '../components/RatingModal';
 import type { EventWithDetails } from '../types';
 
 type TabType = 'going' | 'liked' | 'passed' | 'organized';
@@ -24,6 +25,8 @@ export const MyEventsScreen = () => {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<TabType>('going');
+  const [ratingModalVisible, setRatingModalVisible] = useState(false);
+  const [selectedEventForRating, setSelectedEventForRating] = useState<EventWithDetails | null>(null);
 
   const { data: goingEvents = [], isLoading: goingLoading, refetch: refetchGoing, isRefetching: goingRefetching } = useQuery({
     queryKey: ['user-events', 'going'],
@@ -150,6 +153,18 @@ export const MyEventsScreen = () => {
         conversationId: conv.id,
         otherUserName: organizerName 
       } as never);
+    },
+  });
+
+  const ratingMutation = useMutation({
+    mutationFn: ({ eventId, rating, comment }: { eventId: string; rating: number; comment: string }) =>
+      eventsApi.rateEvent(eventId, rating, comment),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-events'] });
+      Alert.alert('Success', 'Thank you for your rating!');
+    },
+    onError: (error: any) => {
+      Alert.alert('Error', error.response?.data?.message || 'Failed to submit rating');
     },
   });
 
@@ -329,7 +344,8 @@ export const MyEventsScreen = () => {
                       onPress={(e) => {
                         e.stopPropagation();
                         if (canRate) {
-                          (navigation as any).navigate('EventDetail', { eventId: item.id });
+                          setSelectedEventForRating(item);
+                          setRatingModalVisible(true);
                         }
                       }}
                       disabled={!canRate}
@@ -459,6 +475,25 @@ export const MyEventsScreen = () => {
       </View>
 
       {renderContent()}
+
+      {selectedEventForRating && (
+        <RatingModal
+          visible={ratingModalVisible}
+          eventTitle={selectedEventForRating.title}
+          organizerName={`${selectedEventForRating.organizer?.firstName || ''} ${selectedEventForRating.organizer?.lastName || ''}`.trim()}
+          onClose={() => {
+            setRatingModalVisible(false);
+            setSelectedEventForRating(null);
+          }}
+          onSubmit={async (rating, comment) => {
+            await ratingMutation.mutateAsync({
+              eventId: selectedEventForRating.id,
+              rating,
+              comment,
+            });
+          }}
+        />
+      )}
     </View>
   );
 };

@@ -1204,6 +1204,7 @@ export class DatabaseStorage implements IStorage {
         .update(organizerRatings)
         .set({
           rating: rating.rating,
+          comment: rating.comment,
           updatedAt: new Date(),
         })
         .where(eq(organizerRatings.id, existing.id))
