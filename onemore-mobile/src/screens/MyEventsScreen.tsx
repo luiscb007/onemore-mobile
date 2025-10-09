@@ -27,6 +27,7 @@ export const MyEventsScreen = () => {
   const [activeTab, setActiveTab] = useState<TabType>('going');
   const [ratingModalVisible, setRatingModalVisible] = useState(false);
   const [selectedEventForRating, setSelectedEventForRating] = useState<EventWithDetails | null>(null);
+  const [ratedEventIds, setRatedEventIds] = useState<Set<string>>(new Set());
 
   const { data: goingEvents = [], isLoading: goingLoading, refetch: refetchGoing, isRefetching: goingRefetching } = useQuery({
     queryKey: ['user-events', 'going'],
@@ -159,7 +160,8 @@ export const MyEventsScreen = () => {
   const ratingMutation = useMutation({
     mutationFn: ({ eventId, rating, comment }: { eventId: string; rating: number; comment: string }) =>
       eventsApi.rateEvent(eventId, rating, comment),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      setRatedEventIds(prev => new Set(prev).add(variables.eventId));
       queryClient.invalidateQueries({ queryKey: ['user-events'] });
       Alert.alert('Success', 'Thank you for your rating!');
     },
@@ -183,6 +185,7 @@ export const MyEventsScreen = () => {
     // Check if event started at least 8 hours ago for rating
     const eightHoursAfterEventStart = new Date(eventDateTime.getTime() + (8 * 60 * 60 * 1000));
     const canRate = isGoing && new Date() >= eightHoursAfterEventStart;
+    const hasRated = ratedEventIds.has(item.id);
 
     return (
       <View style={styles.eventCard}>
@@ -201,9 +204,19 @@ export const MyEventsScreen = () => {
             {item.title}
           </Text>
           {item.organizer && !isOrganizedTab && (
-            <Text style={styles.organizerText}>
-              By {item.organizer.firstName || ''} {item.organizer.lastName || ''}
-            </Text>
+            <View style={styles.organizerRow}>
+              <Text style={styles.organizerText}>
+                By {item.organizer.firstName || ''} {item.organizer.lastName || ''}
+              </Text>
+              {item.organizerRating && item.organizerRating.count > 0 && (
+                <View style={styles.ratingContainer}>
+                  <Star size={12} color="#FFD700" fill="#FFD700" />
+                  <Text style={styles.ratingText}>
+                    {item.organizerRating.average.toFixed(1)} ({item.organizerRating.count})
+                  </Text>
+                </View>
+              )}
+            </View>
           )}
           {item.status === 'cancelled' && (
             <View style={styles.cancelledBadge}>
@@ -338,20 +351,25 @@ export const MyEventsScreen = () => {
                     <TouchableOpacity
                       style={[
                         styles.actionBtn, 
-                        canRate && styles.actionBtnRate,
-                        !canRate && styles.actionBtnDisabled
+                        canRate && !hasRated && styles.actionBtnRate,
+                        hasRated && styles.actionBtnRated,
+                        !canRate && !hasRated && styles.actionBtnDisabled
                       ]}
                       onPress={(e) => {
                         e.stopPropagation();
-                        if (canRate) {
+                        if (canRate && !hasRated) {
                           setSelectedEventForRating(item);
                           setRatingModalVisible(true);
                         }
                       }}
-                      disabled={!canRate}
+                      disabled={!canRate || hasRated}
                     >
-                      <Text style={[styles.actionBtnText, !canRate && styles.actionBtnTextDisabled]}>
-                        {canRate ? '⭐ Rate' : '⭐ Rate (8h)'}
+                      <Text style={[
+                        styles.actionBtnText, 
+                        !canRate && !hasRated && styles.actionBtnTextDisabled,
+                        hasRated && styles.actionBtnTextRated
+                      ]}>
+                        {hasRated ? '⭐ Rated' : canRate ? '⭐ Rate' : '⭐ Rate (8h)'}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -585,11 +603,26 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 8,
   },
+  organizerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+    gap: 8,
+  },
   organizerText: {
     fontSize: 13,
     color: '#64748b',
-    marginBottom: 4,
     fontStyle: 'italic',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  ratingText: {
+    fontSize: 11,
+    color: '#64748b',
+    fontWeight: '500',
   },
   cancelledBadge: {
     backgroundColor: '#fee2e2',
@@ -691,6 +724,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fef3c7',
     borderColor: '#fef3c7',
   },
+  actionBtnRated: {
+    backgroundColor: '#dcfce7',
+    borderColor: '#dcfce7',
+  },
   actionBtnText: {
     fontSize: 12,
     fontWeight: '600',
@@ -698,6 +735,9 @@ const styles = StyleSheet.create({
   },
   actionBtnTextActive: {
     color: '#fff',
+  },
+  actionBtnTextRated: {
+    color: '#16a34a',
   },
   actionBtnDisabled: {
     backgroundColor: '#e2e8f0',
