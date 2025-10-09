@@ -9,6 +9,8 @@ import {
   Alert,
   Modal,
   TextInput,
+  Linking,
+  Platform,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -17,7 +19,6 @@ import { eventsApi } from '../api/events';
 import { waitlistApi } from '../api/waitlist';
 import { ratingsApi } from '../api/ratings';
 import { messagingApi } from '../api/messaging';
-import { MapPreview } from '../components/MapPreview';
 import { useAuth } from '../contexts/AuthContext';
 
 export const EventDetailScreen = () => {
@@ -134,6 +135,29 @@ export const EventDetailScreen = () => {
     });
   };
 
+  const openInMaps = () => {
+    if (!event?.latitude || !event?.longitude) return;
+
+    const scheme = Platform.select({
+      ios: `maps:0,0?q=${event.latitude},${event.longitude}`,
+      android: `geo:0,0?q=${event.latitude},${event.longitude}`,
+    });
+    
+    const fallbackUrl = `https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`;
+
+    if (scheme) {
+      Linking.canOpenURL(scheme).then((supported) => {
+        if (supported) {
+          Linking.openURL(scheme);
+        } else {
+          Linking.openURL(fallbackUrl);
+        }
+      });
+    } else {
+      Linking.openURL(fallbackUrl);
+    }
+  };
+
   const isFull = event.capacity != null && (event.interactionCounts?.going || 0) >= event.capacity;
   const canJoinWaitlist = isFull && !waitlistStatus?.isOnWaitlist;
   const isOnWaitlist = waitlistStatus?.isOnWaitlist;
@@ -170,10 +194,14 @@ export const EventDetailScreen = () => {
             </Text>
           </View>
 
-          <View style={styles.infoRow}>
-            <MapPin size={20} color="#64748b" />
-            <Text style={styles.infoText}>{event.address}</Text>
-          </View>
+          <TouchableOpacity 
+            style={styles.infoRow} 
+            onPress={openInMaps}
+            activeOpacity={0.7}
+          >
+            <MapPin size={20} color="#3b82f6" />
+            <Text style={styles.addressLink}>{event.address}</Text>
+          </TouchableOpacity>
 
           {organizerRating && organizerRating.totalRatings > 0 && (
             <View style={styles.infoRow}>
@@ -184,16 +212,6 @@ export const EventDetailScreen = () => {
             </View>
           )}
         </View>
-
-        {event.latitude && event.longitude && (
-          <View style={styles.mapSection}>
-            <MapPreview
-              latitude={event.latitude}
-              longitude={event.longitude}
-              address={event.address}
-            />
-          </View>
-        )}
 
         {canJoinWaitlist && (
           <View style={styles.actionsSection}>
@@ -358,8 +376,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#475569',
   },
-  mapSection: {
-    marginBottom: 24,
+  addressLink: {
+    fontSize: 16,
+    color: '#3b82f6',
+    textDecorationLine: 'underline',
+    flex: 1,
   },
   actionsSection: {
     marginTop: 8,
