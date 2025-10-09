@@ -999,11 +999,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate rating
       const ratingSchema = z.object({
         rating: z.number().min(1).max(5),
-        comment: z.string().optional(),
+        comment: z.string().nullable().optional(),
       });
 
       const validationResult = ratingSchema.safeParse({ rating, comment });
       if (!validationResult.success) {
+        console.error("Rating validation failed:", validationResult.error);
         return res.status(400).json({ message: "Rating must be between 1 and 5" });
       }
 
@@ -1025,7 +1026,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         organizerId: event.organizerId,
         attendeeId: userId,
         rating: validationResult.data.rating,
-        comment: validationResult.data.comment || null,
+        comment: validationResult.data.comment || undefined,
       };
 
       const submittedRating = await storage.upsertOrganizerRating(ratingData);
