@@ -3,7 +3,6 @@ import {
   Modal,
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
@@ -18,7 +17,7 @@ interface RatingModalProps {
   eventTitle: string;
   organizerName: string;
   onClose: () => void;
-  onSubmit: (rating: number, comment: string) => Promise<void>;
+  onSubmit: (rating: number) => Promise<void>;
 }
 
 export default function RatingModal({
@@ -29,7 +28,6 @@ export default function RatingModal({
   onSubmit,
 }: RatingModalProps) {
   const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
@@ -39,9 +37,8 @@ export default function RatingModal({
 
     setIsSubmitting(true);
     try {
-      await onSubmit(rating, comment);
+      await onSubmit(rating);
       setRating(0);
-      setComment('');
       onClose();
     } catch (error) {
       console.error('Error submitting rating:', error);
@@ -52,7 +49,6 @@ export default function RatingModal({
 
   const handleClose = () => {
     setRating(0);
-    setComment('');
     onClose();
   };
 
@@ -102,19 +98,6 @@ export default function RatingModal({
                     {rating} {rating === 1 ? 'Star' : 'Stars'}
                   </Text>
                 )}
-
-                <Text style={styles.label}>Comment (Optional)</Text>
-                <TextInput
-                  style={styles.commentInput}
-                  placeholder="Share your experience..."
-                  placeholderTextColor="#9CA3AF"
-                  multiline
-                  numberOfLines={4}
-                  value={comment}
-                  onChangeText={setComment}
-                  maxLength={500}
-                />
-                <Text style={styles.charCount}>{comment.length}/500</Text>
 
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity
@@ -203,30 +186,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1F2937',
     textAlign: 'center',
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 8,
-  },
-  commentInput: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 14,
-    color: '#1F2937',
-    textAlignVertical: 'top',
-    minHeight: 100,
-  },
-  charCount: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    textAlign: 'right',
-    marginTop: 4,
-    marginBottom: 20,
+    marginBottom: 32,
   },
   buttonContainer: {
     flexDirection: 'row',

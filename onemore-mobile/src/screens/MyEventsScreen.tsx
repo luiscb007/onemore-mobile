@@ -158,8 +158,8 @@ export const MyEventsScreen = () => {
   });
 
   const ratingMutation = useMutation({
-    mutationFn: ({ eventId, rating, comment }: { eventId: string; rating: number; comment: string }) =>
-      eventsApi.rateEvent(eventId, rating, comment),
+    mutationFn: ({ eventId, rating }: { eventId: string; rating: number }) =>
+      eventsApi.rateEvent(eventId, rating),
     onSuccess: (_, variables) => {
       setRatedEventIds(prev => new Set(prev).add(variables.eventId));
       queryClient.invalidateQueries({ queryKey: ['user-events'] });
@@ -503,11 +503,10 @@ export const MyEventsScreen = () => {
             setRatingModalVisible(false);
             setSelectedEventForRating(null);
           }}
-          onSubmit={async (rating, comment) => {
+          onSubmit={async (rating) => {
             await ratingMutation.mutateAsync({
               eventId: selectedEventForRating.id,
               rating,
-              comment,
             });
           }}
         />
