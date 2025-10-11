@@ -157,6 +157,78 @@ export function setupJWTRoutes(app: Express) {
     }
   });
 
+  // Resend verification email endpoint
+  app.post('/api/auth/resend-verification', async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
+
+      // Find user by email
+      const user = await storage.getUserByEmail(email);
+
+      if (!user || user.emailVerified) {
+        // Don't reveal if email exists or verification status for security
+        // Return success message even if email doesn't exist or is already verified
+        return res.json({ message: 'If an unverified account exists with this email, a verification link has been sent.' });
+      }
+
+      // Generate new verification token
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationTokenExpiry = new Date();
+      verificationTokenExpiry.setHours(verificationTokenExpiry.getHours() + 24);
+
+      // Update user with new token
+      await db
+        .update(users)
+        .set({
+          verificationToken,
+          verificationTokenExpiry,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, user.id));
+
+      // Get the base URL for the verification link
+      const baseUrl = process.env.REPLIT_DOMAINS 
+        ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
+        : 'http://localhost:5000';
+      
+      const verificationLink = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
+
+      // Send verification email
+      try {
+        await sendEmail({
+          to: email,
+          subject: 'Verify your OneMore account',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #dc2626;">Verify your OneMore account</h2>
+              <p>You requested a new verification link. Click the button below to verify your email:</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${verificationLink}" style="background-color: #dc2626; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">Verify Email</a>
+              </div>
+              <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
+              <p style="color: #666; font-size: 14px; word-break: break-all;">${verificationLink}</p>
+              <p style="color: #666; font-size: 14px;">This link will expire in 24 hours.</p>
+            </div>
+          `,
+          text: `Verify your OneMore account\n\nYou requested a new verification link. Click this link to verify your email:\n${verificationLink}\n\nThis link will expire in 24 hours.`,
+        });
+      } catch (emailError) {
+        console.error('Failed to send verification email:', emailError);
+        return res.status(500).json({ message: 'Failed to send verification email' });
+      }
+
+      // Use same generic message as early return to prevent email enumeration
+      res.json({ message: 'If an unverified account exists with this email, a verification link has been sent.' });
+    } catch (error) {
+      console.error('Resend verification error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   // Email verification endpoint
   app.get('/api/auth/verify-email', async (req, res) => {
     try {

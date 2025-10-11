@@ -95,4 +95,9 @@ export const authApi = {
   updateSearchRadius: async (radius: number): Promise<void> => {
     await apiClient.put('/user/search-radius', { radius });
   },
+
+  resendVerification: async (email: string): Promise<{ message: string }> => {
+    const response = await apiClient.post('/auth/resend-verification', { email });
+    return response.data;
+  },
 };

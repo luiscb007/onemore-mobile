@@ -12,6 +12,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { authApi } from '../api/auth';
 
 type LoginScreenProps = {
   navigation: any;
@@ -23,6 +24,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const handleResendVerification = async (userEmail: string) => {
+    try {
+      const response = await authApi.resendVerification(userEmail);
+      Alert.alert('Success', response.message);
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to resend verification email.';
+      Alert.alert('Error', message);
+    }
+  };
+
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please enter both email and password');
@@ -33,8 +44,28 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     try {
       await login({ email, password });
     } catch (error: any) {
+      const errorCode = error.response?.data?.code;
       const message = error.response?.data?.message || 'Login failed. Please check your credentials.';
-      Alert.alert('Login Failed', message);
+      
+      // Handle email not verified error specially
+      if (errorCode === 'EMAIL_NOT_VERIFIED') {
+        Alert.alert(
+          'Email Not Verified',
+          message,
+          [
+            {
+              text: 'Resend Email',
+              onPress: () => handleResendVerification(email),
+            },
+            {
+              text: 'OK',
+              style: 'cancel',
+            },
+          ]
+        );
+      } else {
+        Alert.alert('Login Failed', message);
+      }
     } finally {
       setIsSubmitting(false);
     }
