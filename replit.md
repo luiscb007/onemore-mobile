@@ -20,10 +20,12 @@ The mobile application is a **React Native** app built with **Expo** for iOS. It
 
 **HomeScreen Features:**
 - **Blue Branding**: Logo uses blue (#007AFF) background, "Hide past" toggles use blue when active (main controls + modal), consistent with app's accent color
+- **Compact Controls**: Toggle switches scaled to 80% for space efficiency, date range container minimized to match Hide past row height
 - **Category Navigation**: Horizontal scrollable category carousel with compact buttons (12px text, reduced padding) and left/right arrow buttons for incremental navigation (200px scroll per click)
 - **Smart Arrow States**: Arrows auto-enable/disable based on scroll position and content width, using dark grey (#334155) when enabled, light grey (#cbd5e1) when disabled for clear visibility
-- **Compact Date Range**: Optimized vertical spacing (reduced padding/margins) in date range picker for better space utilization, allowing more events visible without scrolling
+- **Compact Date Range**: Ultra-optimized vertical spacing (zero gaps/margins, reduced padding) in date range picker for maximum space utilization
 - **Date Range Slider**: Custom horizontal range slider with dual handles using absolute touch positioning for smooth dragging on both web and native
+- **Event Cards**: Compact design with 16pt bold titles (2pt larger than 14pt descriptions) for visual hierarchy while saving vertical space
 
 **Create Event Features:**
 - **Custom OptionPicker Component**: Reusable modal-based dropdown selector following CalendarPicker/TimePicker pattern, replaces unreliable native iOS Picker
