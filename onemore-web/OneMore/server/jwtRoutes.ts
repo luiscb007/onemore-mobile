@@ -2,8 +2,6 @@ import type { Express } from 'express';
 import { storage } from './storage';
 import { hashPassword, verifyPassword, generateToken } from './jwtAuth';
 import type { JWTPayload } from './jwtAuth';
-import * as verifyAppleTokenModule from 'verify-apple-id-token';
-const verifyAppleToken = (verifyAppleTokenModule as any).default || verifyAppleTokenModule;
 
 export function setupJWTRoutes(app: Express) {
   // Login endpoint for mobile
@@ -122,8 +120,10 @@ export function setupJWTRoutes(app: Express) {
       }
 
       // Verify the Apple identity token with Apple's public keys
+      // Use dynamic import for CommonJS module in ESM context
       let jwtClaims;
       try {
+        const { default: verifyAppleToken } = await import('verify-apple-id-token');
         jwtClaims = await verifyAppleToken({
           idToken: identityToken,
           clientId: 'com.onemore.app', // iOS app bundle identifier
