@@ -743,11 +743,11 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   actionBtnGoing: {
-    backgroundColor: '#ff6b6b',
     borderColor: '#ff6b6b',
+    borderWidth: 2,
+    backgroundColor: '#fff5f5',
   },
   actionBtnLike: {
-    backgroundColor: '#fff',
     borderColor: '#e2e8f0',
   },
   actionBtnRate: {
@@ -764,7 +764,8 @@ const styles = StyleSheet.create({
     color: '#64748b',
   },
   actionBtnTextActive: {
-    color: '#fff',
+    color: '#dc2626',
+    fontWeight: 'bold',
   },
   actionBtnTextRated: {
     color: '#16a34a',
