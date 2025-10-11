@@ -9,8 +9,11 @@ import {
   Platform,
 } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 import { useAuth } from '../contexts/AuthContext';
+
+WebBrowser.maybeCompleteAuthSession();
 
 type WelcomeScreenProps = {
   navigation: any;
@@ -21,41 +24,29 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const [isAppleLoading, setIsAppleLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  // Configure Google Sign In
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    clientId: '861823949799-8t14k06iqkr4v7gvflv4lc6uc0q40k6k.apps.googleusercontent.com',
+  });
+
   useEffect(() => {
-    GoogleSignin.configure({
-      webClientId: '861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu.apps.googleusercontent.com',
-      // For iOS, you'll need to add the iOS client ID from Google Cloud Console
-      iosClientId: '861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu.apps.googleusercontent.com',
-    });
-  }, []);
+    if (response?.type === 'success') {
+      const { id_token } = response.params;
+      if (id_token) {
+        googleSignIn({ idToken: id_token }).catch((error) => {
+          console.error('Google Sign In error:', error);
+          Alert.alert('Error', 'Google Sign In failed. Please try again.');
+        });
+      }
+    } else if (response?.type === 'error') {
+      console.error('Google Sign In error:', response.params);
+      Alert.alert('Error', 'Google Sign In failed. Please try again.');
+    }
+    setIsGoogleLoading(false);
+  }, [response]);
 
   const handleGoogleSignIn = async () => {
-    try {
-      setIsGoogleLoading(true);
-      await GoogleSignin.hasPlayServices();
-      const response = await GoogleSignin.signIn();
-      
-      // Check if sign-in was successful
-      if (response.type === 'success') {
-        const { idToken } = response.data;
-        if (idToken) {
-          await googleSignIn({ idToken });
-        } else {
-          throw new Error('No ID token received from Google. Make sure webClientId is configured.');
-        }
-      }
-      // User cancelled - type would be 'cancelled', just return without error
-    } catch (error: any) {
-      if (error.code === 'SIGN_IN_CANCELLED') {
-        // User cancelled the sign-in
-        return;
-      }
-      console.error('Google Sign In error:', error);
-      Alert.alert('Error', 'Google Sign In failed. Please try again.');
-    } finally {
-      setIsGoogleLoading(false);
-    }
+    setIsGoogleLoading(true);
+    await promptAsync();
   };
 
   const handleAppleSignIn = async () => {
