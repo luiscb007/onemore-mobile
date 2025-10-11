@@ -98,6 +98,7 @@ export const events = pgTable("events", {
   priceAmount: decimal("price_amount", { precision: 10, scale: 2 }), // Nullable for free events
   priceCurrencyCode: varchar("price_currency_code", { length: 3 }).default("EUR").references(() => currencies.code),
   capacity: integer("capacity"),
+  durationHours: decimal("duration_hours", { precision: 4, scale: 2 }), // Event duration in hours (e.g., 2.5 for 2.5 hours)
   imageUrl: varchar("image_url"),
   status: varchar("status").notNull().default("active"), // active, cancelled, completed
   isRecurring: boolean("is_recurring").notNull().default(false),

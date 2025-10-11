@@ -37,6 +37,7 @@ const createEventSchema = z.object({
   priceAmount: z.string().optional().default(''),
   priceCurrencyCode: z.string().optional().default('EUR'),
   capacity: z.string().optional().default(''),
+  durationHours: z.string().optional().default(''),
   isRecurring: z.boolean().default(false),
   recurrenceType: z.string().nullable(),
   recurrenceEndDate: z.date().nullable(),
@@ -127,6 +128,7 @@ export const CreateEventScreen = () => {
       priceAmount: '',
       priceCurrencyCode: user?.defaultCurrencyCode || 'EUR',
       capacity: '',
+      durationHours: '',
       isRecurring: false,
       recurrenceType: null,
       recurrenceEndDate: null,
@@ -164,6 +166,7 @@ export const CreateEventScreen = () => {
         priceAmount: data.priceAmount || null,
         priceCurrencyCode: data.priceCurrencyCode || 'EUR',
         capacity: data.capacity ? parseInt(data.capacity, 10) : null,
+        durationHours: data.durationHours ? parseFloat(data.durationHours) : null,
         isRecurring: data.isRecurring,
         recurrenceType: data.isRecurring ? (data.recurrenceType || null) : null,
         recurrenceEndDate: data.isRecurring && data.recurrenceEndDate 
@@ -430,6 +433,26 @@ export const CreateEventScreen = () => {
                 />
               )}
             />
+          </View>
+
+          {/* Duration */}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>Duration (Optional)</Text>
+            <Controller
+              control={control}
+              name="durationHours"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={styles.input}
+                  placeholder="2.5"
+                  keyboardType="decimal-pad"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+            <Text style={styles.helperText}>Duration in hours (e.g., 1.5 for 90 minutes)</Text>
           </View>
 
           {/* Recurring Event */}
