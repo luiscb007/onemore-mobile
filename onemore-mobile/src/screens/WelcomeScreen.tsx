@@ -30,16 +30,23 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 
   useEffect(() => {
     if (response?.type === 'success') {
+      console.log('Google OAuth response:', response);
       const { id_token } = response.params;
       if (id_token) {
+        console.log('ID token received, signing in...');
         googleSignIn({ idToken: id_token }).catch((error) => {
           console.error('Google Sign In error:', error);
           Alert.alert('Error', 'Google Sign In failed. Please try again.');
         });
+      } else {
+        console.error('No id_token in response:', response.params);
+        Alert.alert('Error', 'No ID token received from Google');
       }
     } else if (response?.type === 'error') {
       console.error('Google Sign In error:', response.params);
       Alert.alert('Error', 'Google Sign In failed. Please try again.');
+    } else if (response) {
+      console.log('Google OAuth response type:', response.type);
     }
     setIsGoogleLoading(false);
   }, [response]);
