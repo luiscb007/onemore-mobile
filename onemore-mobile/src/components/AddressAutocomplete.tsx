@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  FlatList,
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
@@ -38,7 +37,7 @@ export function AddressAutocomplete({
   const [suggestions, setSuggestions] = useState<AddressResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     if (debounceRef.current) {
@@ -101,24 +100,18 @@ export function AddressAutocomplete({
 
       {showSuggestions && suggestions.length > 0 && (
         <View style={styles.suggestionsContainer}>
-          <FlatList
-            data={suggestions.slice(0, 4)}
-            keyExtractor={(item, index) => `${item.place_id}-${index}`}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.suggestionItem}
-                onPress={() => handleSelectSuggestion(item)}
-              >
-                <MapPin size={16} color="#64748b" />
-                <Text style={styles.suggestionText} numberOfLines={2}>
-                  {item.display_name}
-                </Text>
-              </TouchableOpacity>
-            )}
-            keyboardShouldPersistTaps="handled"
-            nestedScrollEnabled
-            scrollEnabled={true}
-          />
+          {suggestions.slice(0, 4).map((item, index) => (
+            <TouchableOpacity
+              key={`${item.place_id}-${index}`}
+              style={styles.suggestionItem}
+              onPress={() => handleSelectSuggestion(item)}
+            >
+              <MapPin size={16} color="#64748b" />
+              <Text style={styles.suggestionText} numberOfLines={2}>
+                {item.display_name}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
       )}
     </View>

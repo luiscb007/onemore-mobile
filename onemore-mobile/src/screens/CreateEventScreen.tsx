@@ -165,8 +165,8 @@ export const CreateEventScreen = () => {
         address: data.address,
         priceAmount: data.priceAmount || null,
         priceCurrencyCode: data.priceCurrencyCode || 'EUR',
-        capacity: data.capacity ? parseInt(data.capacity, 10) : null,
-        durationHours: data.durationHours ? parseFloat(data.durationHours) : null,
+        capacity: data.capacity ? String(data.capacity) : null,
+        durationHours: data.durationHours ? String(data.durationHours) : null,
         isRecurring: data.isRecurring,
         recurrenceType: data.isRecurring ? (data.recurrenceType || null) : null,
         recurrenceEndDate: data.isRecurring && data.recurrenceEndDate 
