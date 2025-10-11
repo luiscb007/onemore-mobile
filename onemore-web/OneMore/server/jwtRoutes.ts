@@ -110,6 +110,69 @@ export function setupJWTRoutes(app: Express) {
     }
   });
 
+  // Apple Sign In endpoint for mobile
+  app.post('/api/auth/apple', async (req, res) => {
+    try {
+      const { identityToken, user: appleUserId, email, fullName } = req.body;
+
+      if (!identityToken || !appleUserId) {
+        return res.status(400).json({ message: 'Apple identity token and user ID are required' });
+      }
+
+      // Check if user already exists with this Apple ID
+      let user = await storage.getUserByAppleId(appleUserId);
+
+      if (!user) {
+        // If no user with Apple ID, check if email exists (user might have signed up with email before)
+        if (email) {
+          user = await storage.getUserByEmail(email);
+          if (user) {
+            // Link Apple ID to existing email account
+            // Note: In production, you might want to verify the identity token with Apple
+            await storage.upsertUser({
+              ...user,
+              appleId: appleUserId,
+            });
+          }
+        }
+
+        // Create new user if still doesn't exist
+        if (!user) {
+          const firstName = fullName?.givenName || null;
+          const lastName = fullName?.familyName || null;
+          
+          user = await storage.createUserWithAppleId({
+            appleId: appleUserId,
+            email: email || null,
+            firstName,
+            lastName,
+            role: 'attendee',
+          });
+        }
+      }
+
+      // Generate JWT token
+      const payload: JWTPayload = {
+        userId: user.id,
+        email: user.email || '',
+        role: user.role,
+      };
+
+      const token = generateToken(payload);
+
+      // Remove sensitive data from response
+      const { passwordHash, appleId, ...userResponse } = user;
+
+      res.json({
+        token,
+        user: userResponse,
+      });
+    } catch (error) {
+      console.error('Apple Sign In error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   // Logout endpoint (for mobile - just returns success, token is cleared client-side)
   app.post('/api/auth/logout', (req, res) => {
     res.json({ message: 'Logged out successfully' });

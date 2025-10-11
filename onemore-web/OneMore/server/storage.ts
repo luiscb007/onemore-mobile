@@ -35,8 +35,10 @@ export interface IStorage {
   // User operations (mandatory for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByAppleId(appleId: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   createUserWithPassword(user: { email: string; passwordHash: string; firstName?: string | null; lastName?: string | null; role: string }): Promise<User>;
+  createUserWithAppleId(user: { appleId: string; email?: string | null; firstName?: string | null; lastName?: string | null; role: string }): Promise<User>;
   updateUserLocation(userId: string, latitude: number, longitude: number): Promise<void>;
   updateUserSearchRadius(userId: string, radius: number): Promise<void>;
   updateUserCurrency(userId: string, currencyCode: string, checkLatitude: number, checkLongitude: number): Promise<void>;
@@ -107,12 +109,31 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getUserByAppleId(appleId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.appleId, appleId));
+    return user;
+  }
+
   async createUserWithPassword(userData: { email: string; passwordHash: string; firstName?: string | null; lastName?: string | null; role: string }): Promise<User> {
     const [user] = await db
       .insert(users)
       .values({
         email: userData.email,
         passwordHash: userData.passwordHash,
+        firstName: userData.firstName || null,
+        lastName: userData.lastName || null,
+        role: userData.role,
+      })
+      .returning();
+    return user;
+  }
+
+  async createUserWithAppleId(userData: { appleId: string; email?: string | null; firstName?: string | null; lastName?: string | null; role: string }): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values({
+        appleId: userData.appleId,
+        email: userData.email || null,
         firstName: userData.firstName || null,
         lastName: userData.lastName || null,
         role: userData.role,

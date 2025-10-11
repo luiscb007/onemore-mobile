@@ -40,6 +40,7 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
   passwordHash: varchar("password_hash"), // For mobile JWT auth (null for OAuth users)
+  appleId: varchar("apple_id").unique(), // For Apple Sign In (null for non-Apple users)
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
