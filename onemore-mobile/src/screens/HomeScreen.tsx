@@ -167,6 +167,15 @@ export const HomeScreen = () => {
     }
   };
 
+  const formatDuration = (hours: number | null): string => {
+    if (!hours) return '';
+    const h = Math.floor(hours);
+    const m = Math.round((hours - h) * 60);
+    if (h === 0) return `${m}min`;
+    if (m === 0) return `${h}h`;
+    return `${h}h ${m}min`;
+  };
+
   const renderEvent = ({ item }: { item: EventWithDetails }) => {
     const eventDate = new Date(item.date);
     const hasInteracted = item.userInteraction !== undefined;
@@ -194,6 +203,11 @@ export const HomeScreen = () => {
             <Text style={styles.metaText}>
               📅 {format(eventDate, 'MMM d, yyyy')} • {item.time}
             </Text>
+            {item.durationHours && (
+              <Text style={styles.metaText}>
+                ⏱️ {formatDuration(item.durationHours)}
+              </Text>
+            )}
             <Text style={styles.metaText} numberOfLines={1}>
               📍 {item.address}
             </Text>

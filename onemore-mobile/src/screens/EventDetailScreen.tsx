@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Calendar, MapPin, Users, Star, Heart, ThumbsUp, ThumbsDown, MessageCircle, User } from 'lucide-react-native';
+import { ArrowLeft, Calendar, Clock, MapPin, Users, Star, Heart, ThumbsUp, ThumbsDown, MessageCircle, User } from 'lucide-react-native';
 import { eventsApi } from '../api/events';
 import { waitlistApi } from '../api/waitlist';
 import { ratingsApi } from '../api/ratings';
@@ -136,6 +136,15 @@ export const EventDetailScreen = () => {
     });
   };
 
+  const formatDuration = (hours: number | null): string => {
+    if (!hours) return '';
+    const h = Math.floor(hours);
+    const m = Math.round((hours - h) * 60);
+    if (h === 0) return `${m} minutes`;
+    if (m === 0) return `${h} ${h === 1 ? 'hour' : 'hours'}`;
+    return `${h} ${h === 1 ? 'hour' : 'hours'} ${m} minutes`;
+  };
+
   const openInMaps = () => {
     if (!event?.latitude || !event?.longitude) return;
 
@@ -218,6 +227,13 @@ export const EventDetailScreen = () => {
             <Calendar size={20} color="#64748b" />
             <Text style={styles.infoText}>{formatDate(event.date)}</Text>
           </View>
+          
+          {event.durationHours && (
+            <View style={styles.infoRow}>
+              <Clock size={20} color="#64748b" />
+              <Text style={styles.infoText}>{formatDuration(event.durationHours)}</Text>
+            </View>
+          )}
           
           <View style={styles.infoRow}>
             <Users size={20} color="#64748b" />

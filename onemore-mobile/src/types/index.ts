@@ -40,6 +40,7 @@ export type Event = {
   priceAmount: number | null;
   priceCurrencyCode: string | null;
   capacity: number | null;
+  durationHours: number | null;
   imageUrl: string | null;
   status: string;
   isRecurring: boolean;
