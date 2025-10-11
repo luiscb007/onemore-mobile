@@ -38,7 +38,7 @@ export interface IStorage {
   getUserByAppleId(appleId: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   createUserWithPassword(user: { email: string; passwordHash: string; firstName?: string | null; lastName?: string | null; role: string; verificationToken?: string | null; verificationTokenExpiry?: Date | null }): Promise<User>;
-  createUserWithAppleId(user: { appleId: string; email?: string | null; firstName?: string | null; lastName?: string | null; role: string }): Promise<User>;
+  createUserWithAppleId(user: { appleId: string; email?: string | null; firstName?: string | null; lastName?: string | null; role: string; emailVerified?: boolean }): Promise<User>;
   updateUserLocation(userId: string, latitude: number, longitude: number): Promise<void>;
   updateUserSearchRadius(userId: string, radius: number): Promise<void>;
   updateUserCurrency(userId: string, currencyCode: string, checkLatitude: number, checkLongitude: number): Promise<void>;
@@ -130,7 +130,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createUserWithAppleId(userData: { appleId: string; email?: string | null; firstName?: string | null; lastName?: string | null; role: string }): Promise<User> {
+  async createUserWithAppleId(userData: { appleId: string; email?: string | null; firstName?: string | null; lastName?: string | null; role: string; emailVerified?: boolean }): Promise<User> {
     const [user] = await db
       .insert(users)
       .values({
@@ -139,6 +139,7 @@ export class DatabaseStorage implements IStorage {
         firstName: userData.firstName || null,
         lastName: userData.lastName || null,
         role: userData.role,
+        emailVerified: userData.emailVerified ?? true, // Default to true for OAuth users
       })
       .returning();
     return user;

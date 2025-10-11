@@ -39,6 +39,14 @@ export function setupJWTRoutes(app: Express) {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
 
+      // Check if email is verified
+      if (!user.emailVerified) {
+        return res.status(403).json({ 
+          message: 'Please verify your email address before logging in. Check your inbox for the verification link.',
+          code: 'EMAIL_NOT_VERIFIED'
+        });
+      }
+
       // Generate JWT token
       const payload: JWTPayload = {
         userId: user.id,
@@ -267,10 +275,11 @@ export function setupJWTRoutes(app: Express) {
         if (verifiedEmail) {
           user = await storage.getUserByEmail(verifiedEmail);
           if (user) {
-            // Link Apple ID to existing email account
+            // Link Apple ID to existing email account and auto-verify
             await storage.upsertUser({
               ...user,
               appleId: appleUserId,
+              emailVerified: true, // Auto-verify OAuth users
             });
           }
         }
@@ -286,6 +295,7 @@ export function setupJWTRoutes(app: Express) {
             firstName,
             lastName,
             role: 'attendee',
+            emailVerified: true, // Auto-verify OAuth users
           });
         }
       }
