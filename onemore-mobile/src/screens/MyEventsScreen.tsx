@@ -152,10 +152,10 @@ export const MyEventsScreen = () => {
       messagingApi.createConversation({ otherUserId: organizerId, eventId }).then(conv => ({ conv, organizerName })),
     onSuccess: ({ conv, organizerName }) => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
-      navigation.navigate('Chat' as never, { 
+      (navigation as any).navigate('Chat', { 
         conversationId: conv.id,
         otherUserName: organizerName 
-      } as never);
+      });
     },
   });
 
