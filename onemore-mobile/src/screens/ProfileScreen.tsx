@@ -274,40 +274,6 @@ export const ProfileScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Account Settings</Text>
         
-        <View style={[styles.settingItem, styles.settingItemColumn]}>
-          <View style={styles.radiusHeader}>
-            <Text style={styles.settingLabel}>Search Radius</Text>
-            <Text style={styles.radiusValue}>{searchRadius} km</Text>
-          </View>
-          <Slider
-            style={styles.slider}
-            value={searchRadius}
-            onValueChange={setSearchRadius}
-            onSlidingComplete={(value) => updateRadiusMutation.mutate(value)}
-            minimumValue={0}
-            maximumValue={100}
-            step={1}
-            minimumTrackTintColor="#007AFF"
-            maximumTrackTintColor="#D1D1D6"
-            thumbTintColor="#007AFF"
-          />
-          <View style={styles.radiusLabels}>
-            <Text style={styles.radiusLabelText}>0 km</Text>
-            <Text style={styles.radiusLabelText}>100 km</Text>
-          </View>
-        </View>
-
-        <TouchableOpacity 
-          style={styles.settingItem} 
-          onPress={() => setCurrencyModalVisible(true)}
-        >
-          <View>
-            <Text style={styles.settingLabel}>Currency</Text>
-            <Text style={styles.settingValue}>{user.defaultCurrencyCode || 'EUR'}</Text>
-          </View>
-          <Text style={styles.settingArrow}>›</Text>
-        </TouchableOpacity>
-
         <View style={styles.settingItem}>
           <View>
             <Text style={styles.settingLabel}>Subscription Status</Text>
@@ -316,11 +282,7 @@ export const ProfileScreen = () => {
             </Text>
           </View>
         </View>
-      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Location</Text>
-        
         {(locationInfo.city || locationInfo.country) ? (
           <View style={styles.settingItem}>
             <View>
@@ -443,6 +405,40 @@ export const ProfileScreen = () => {
             </TouchableOpacity>
           </View>
         )}
+
+        <View style={[styles.settingItem, styles.settingItemColumn]}>
+          <View style={styles.radiusHeader}>
+            <Text style={styles.settingLabel}>Search Radius</Text>
+            <Text style={styles.radiusValue}>{searchRadius} km</Text>
+          </View>
+          <Slider
+            style={styles.slider}
+            value={searchRadius}
+            onValueChange={setSearchRadius}
+            onSlidingComplete={(value) => updateRadiusMutation.mutate(value)}
+            minimumValue={0}
+            maximumValue={100}
+            step={1}
+            minimumTrackTintColor="#007AFF"
+            maximumTrackTintColor="#D1D1D6"
+            thumbTintColor="#007AFF"
+          />
+          <View style={styles.radiusLabels}>
+            <Text style={styles.radiusLabelText}>0 km</Text>
+            <Text style={styles.radiusLabelText}>100 km</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity 
+          style={styles.settingItem} 
+          onPress={() => setCurrencyModalVisible(true)}
+        >
+          <View>
+            <Text style={styles.settingLabel}>Currency</Text>
+            <Text style={styles.settingValue}>{user.defaultCurrencyCode || 'EUR'}</Text>
+          </View>
+          <Text style={styles.settingArrow}>›</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.section}>

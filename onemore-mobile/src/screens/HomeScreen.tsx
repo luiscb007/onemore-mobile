@@ -178,6 +178,9 @@ export const HomeScreen = () => {
           {item.organizer && (
             <Text style={styles.organizerText}>
               By {item.organizer.firstName || ''} {item.organizer.lastName || ''}
+              {item.organizerRating && item.organizerRating.count > 0 && 
+                ` ⭐ ${item.organizerRating.average.toFixed(1)}`
+              }
             </Text>
           )}
           <Text style={styles.eventDescription} numberOfLines={2}>
