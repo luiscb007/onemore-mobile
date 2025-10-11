@@ -394,6 +394,98 @@ export function setupJWTRoutes(app: Express) {
     }
   });
 
+  // Google Sign In endpoint for mobile
+  app.post('/api/auth/google', async (req, res) => {
+    try {
+      const { idToken } = req.body;
+
+      if (!idToken) {
+        return res.status(400).json({ message: 'Google ID token is required' });
+      }
+
+      // Verify the Google ID token
+      const { OAuth2Client } = await import('google-auth-library');
+      const client = new OAuth2Client();
+      
+      let ticket;
+      try {
+        ticket = await client.verifyIdToken({
+          idToken,
+          // Accept both Expo Go (for testing) and OneMore (for production) client IDs
+          audience: [
+            '861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu.apps.googleusercontent.com', // Web client ID (used by expo-auth-session)
+            'com.googleusercontent.apps.861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu', // Alternative format
+          ],
+        });
+      } catch (verifyError) {
+        console.error('Google token verification failed:', verifyError);
+        return res.status(401).json({ message: 'Invalid Google ID token' });
+      }
+
+      const payload = ticket.getPayload();
+      if (!payload) {
+        return res.status(401).json({ message: 'Invalid Google token payload' });
+      }
+
+      // Extract user info from verified token
+      const googleUserId = payload.sub;
+      const verifiedEmail = payload.email_verified ? payload.email : null;
+      const firstName = payload.given_name || null;
+      const lastName = payload.family_name || null;
+
+      // Check if user already exists with this Google ID
+      let user = await storage.getUserByGoogleId(googleUserId);
+
+      if (!user) {
+        // If no user with Google ID and we have a verified email, check if email exists
+        // (user might have signed up with email before)
+        if (verifiedEmail) {
+          user = await storage.getUserByEmail(verifiedEmail);
+          if (user) {
+            // Link Google ID to existing email account and auto-verify
+            await storage.upsertUser({
+              ...user,
+              googleId: googleUserId,
+              emailVerified: true, // Auto-verify OAuth users
+            });
+          }
+        }
+
+        // Create new user if still doesn't exist
+        if (!user) {
+          user = await storage.createUserWithGoogleId({
+            googleId: googleUserId,
+            email: verifiedEmail || null,
+            firstName,
+            lastName,
+            role: 'attendee',
+            emailVerified: true, // Auto-verify OAuth users
+          });
+        }
+      }
+
+      // Generate JWT token
+      const payload_jwt: JWTPayload = {
+        userId: user.id,
+        email: user.email || '',
+        role: user.role,
+      };
+
+      const token = generateToken(payload_jwt);
+
+      // Remove sensitive data from response
+      const { passwordHash, appleId, googleId, ...userResponse } = user;
+
+      res.json({
+        token,
+        user: userResponse,
+      });
+    } catch (error) {
+      console.error('Google Sign In error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   // Logout endpoint (for mobile - just returns success, token is cleared client-side)
   app.post('/api/auth/logout', (req, res) => {
     res.json({ message: 'Logged out successfully' });

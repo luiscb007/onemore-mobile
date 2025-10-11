@@ -24,6 +24,10 @@ export interface AppleSignInCredentials {
   } | null;
 }
 
+export interface GoogleSignInCredentials {
+  idToken: string;
+}
+
 export interface AuthResponse {
   token: string;
   refreshToken?: string;
@@ -56,6 +60,18 @@ export const authApi = {
 
   appleSignIn: async (credentials: AppleSignInCredentials): Promise<AuthResponse> => {
     const response = await apiClient.post('/auth/apple', credentials);
+    const { token, refreshToken, user } = response.data;
+    
+    await tokenStorage.saveToken(token);
+    if (refreshToken) {
+      await tokenStorage.saveRefreshToken(refreshToken);
+    }
+    
+    return response.data;
+  },
+
+  googleSignIn: async (credentials: GoogleSignInCredentials): Promise<AuthResponse> => {
+    const response = await apiClient.post('/auth/google', credentials);
     const { token, refreshToken, user } = response.data;
     
     await tokenStorage.saveToken(token);

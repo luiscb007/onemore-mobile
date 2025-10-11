@@ -127,7 +127,8 @@ export const useLocation = () => {
         longitude,
       });
     } catch (err) {
-      console.error('Failed to update backend location:', err);
+      // Silently ignore location update errors (e.g., 401 when user not logged in)
+      // This is expected behavior and shouldn't show an error to the user
     }
   };
 

@@ -36,9 +36,11 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByAppleId(appleId: string): Promise<User | undefined>;
+  getUserByGoogleId(googleId: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   createUserWithPassword(user: { email: string; passwordHash: string; firstName?: string | null; lastName?: string | null; role: string; verificationToken?: string | null; verificationTokenExpiry?: Date | null }): Promise<User>;
   createUserWithAppleId(user: { appleId: string; email?: string | null; firstName?: string | null; lastName?: string | null; role: string; emailVerified?: boolean }): Promise<User>;
+  createUserWithGoogleId(user: { googleId: string; email?: string | null; firstName?: string | null; lastName?: string | null; role: string; emailVerified?: boolean }): Promise<User>;
   updateUserLocation(userId: string, latitude: number, longitude: number): Promise<void>;
   updateUserSearchRadius(userId: string, radius: number): Promise<void>;
   updateUserCurrency(userId: string, currencyCode: string, checkLatitude: number, checkLongitude: number): Promise<void>;
@@ -114,6 +116,11 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.googleId, googleId));
+    return user;
+  }
+
   async createUserWithPassword(userData: { email: string; passwordHash: string; firstName?: string | null; lastName?: string | null; role: string; verificationToken?: string | null; verificationTokenExpiry?: Date | null }): Promise<User> {
     const [user] = await db
       .insert(users)
@@ -135,6 +142,21 @@ export class DatabaseStorage implements IStorage {
       .insert(users)
       .values({
         appleId: userData.appleId,
+        email: userData.email || null,
+        firstName: userData.firstName || null,
+        lastName: userData.lastName || null,
+        role: userData.role,
+        emailVerified: userData.emailVerified ?? true, // Default to true for OAuth users
+      })
+      .returning();
+    return user;
+  }
+
+  async createUserWithGoogleId(userData: { googleId: string; email?: string | null; firstName?: string | null; lastName?: string | null; role: string; emailVerified?: boolean }): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values({
+        googleId: userData.googleId,
         email: userData.email || null,
         firstName: userData.firstName || null,
         lastName: userData.lastName || null,

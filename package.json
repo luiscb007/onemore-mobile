@@ -23,6 +23,7 @@
     "expo-image-picker": "^17.0.8",
     "expo-location": "^19.0.7",
     "expo-secure-store": "^15.0.7",
+    "google-auth-library": "^10.4.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react-native": "^0.544.0",
     "react-hook-form": "^7.64.0",

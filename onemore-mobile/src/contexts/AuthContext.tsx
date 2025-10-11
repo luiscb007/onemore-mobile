@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi } from '../api/auth';
 import { tokenStorage } from '../services/tokenStorage';
 import type { User } from '../types';
-import type { LoginCredentials, RegisterCredentials, AppleSignInCredentials } from '../api/auth';
+import type { LoginCredentials, RegisterCredentials, AppleSignInCredentials, GoogleSignInCredentials } from '../api/auth';
 
 type UserRole = 'attendee' | 'organizer';
 
@@ -14,6 +14,7 @@ type AuthContextType = {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<{ message: string; email?: string }>;
   appleSignIn: (credentials: AppleSignInCredentials) => Promise<void>;
+  googleSignIn: (credentials: GoogleSignInCredentials) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   setUserRole: (role: UserRole) => Promise<void>;
@@ -103,6 +104,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const googleSignIn = async (credentials: GoogleSignInCredentials) => {
+    setLoading(true);
+    try {
+      const { user: googleUser } = await authApi.googleSignIn(credentials);
+      setUser(googleUser);
+    } catch (error) {
+      console.error('Google Sign In failed:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
     setLoading(true);
     try {
@@ -126,7 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, userRole, login, register, appleSignIn, logout, refreshUser, setUserRole }}>
+    <AuthContext.Provider value={{ user, loading, userRole, login, register, appleSignIn, googleSignIn, logout, refreshUser, setUserRole }}>
       {children}
     </AuthContext.Provider>
   );

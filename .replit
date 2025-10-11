@@ -29,6 +29,10 @@ localPort = 39267
 externalPort = 3003
 
 [[ports]]
+localPort = 43485
+externalPort = 4200
+
+[[ports]]
 localPort = 44559
 externalPort = 3001
 
@@ -117,4 +121,3 @@ outputType = "console"
 
 [agent]
 expertMode = true
-integrations = ["replitmail:1.0.0"]

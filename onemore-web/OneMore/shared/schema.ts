@@ -41,6 +41,7 @@ export const users = pgTable("users", {
   email: varchar("email").unique(),
   passwordHash: varchar("password_hash"), // For mobile JWT auth (null for OAuth users)
   appleId: varchar("apple_id").unique(), // For Apple Sign In (null for non-Apple users)
+  googleId: varchar("google_id").unique(), // For Google Sign In (null for non-Google users)
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
