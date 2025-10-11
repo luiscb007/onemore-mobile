@@ -423,6 +423,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/user/currency', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { currencyCode } = req.body;
+
+      if (!currencyCode) {
+        return res.status(400).json({ message: "Currency code is required" });
+      }
+
+      // Verify currency exists
+      const currencies = await storage.getAllCurrencies();
+      const validCurrency = currencies.find((c: any) => c.code === currencyCode);
+      
+      if (!validCurrency) {
+        return res.status(400).json({ message: "Invalid currency code" });
+      }
+
+      // Update user's currency
+      const user = await storage.getUser(userId);
+      const lat = user?.currentLatitude ? parseFloat(user.currentLatitude) : 0;
+      const lon = user?.currentLongitude ? parseFloat(user.currentLongitude) : 0;
+      
+      await storage.updateUserCurrency(userId, currencyCode, lat, lon);
+
+      res.json({ success: true, message: "Currency updated successfully" });
+    } catch (error) {
+      console.error("Error updating currency:", error);
+      res.status(500).json({ message: "Failed to update currency" });
+    }
+  });
+
   // Event routes
   app.get('/api/events', async (req, res) => {
     try {

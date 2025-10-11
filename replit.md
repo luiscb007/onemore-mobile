@@ -46,6 +46,15 @@ The mobile application is a **React Native** app built with **Expo** for iOS. It
 - **Auto-Login**: Seamless auto-login for returning users via encrypted token storage in Expo SecureStore
 - **Security**: Backend properly validates OAuth tokens (Apple and Google) with provider public keys, checks email_verified claims, and prevents account takeover by only using verified data from providers. Email enumeration prevention with consistent generic responses.
 
+**ProfileScreen Features:**
+- **iOS-Native Settings Layout**: Settings items use flexDirection: 'row' with space-between justification, matching native iOS Settings app design patterns
+- **Currency Picker**: Modal-based currency selector with scrollable list, visual selection states (checkmark + highlighted background), and real-time currency updates
+- **Location Display**: Shows city/country via reverse geocoding instead of raw coordinates, with fallback to coordinates if reverse geocoding fails
+- **Search Radius Control**: Slider with real-time updates, displaying current value and range labels (0-100 km)
+- **Account Settings**: Displays subscription status and tier, with visual role badges (Attendee/Organizer) using color-coded styling
+- **User Stats**: Shows events created, attended, and average organizer rating with visual stat cards
+- **Feedback & Account Management**: Feedback modal for user suggestions, account deletion with reason tracking and optional feedback
+
 The mobile app is production-ready for iOS deployment.
 
 ### Backend Architecture

@@ -9,12 +9,19 @@ import {
   Alert,
   Modal,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useAuth } from '../contexts/AuthContext';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import { queryClient } from '../lib/queryClient';
+
+interface Currency {
+  code: string;
+  name: string;
+  symbol: string;
+}
 
 export const ProfileScreen = () => {
   const { user, logout, refreshUser, userRole, setUserRole } = useAuth();
@@ -24,6 +31,8 @@ export const ProfileScreen = () => {
   const [deletionReason, setDeletionReason] = useState('');
   const [deletionFeedback, setDeletionFeedback] = useState('');
   const [searchRadius, setSearchRadius] = useState(100);
+  const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
+  const [locationInfo, setLocationInfo] = useState<{city?: string; country?: string}>({});
 
   const { data: stats } = useQuery<{ eventsCreated: number; eventsAttended: number; averageRating: number }>({
     queryKey: [`/users/${user?.id}/stats`],
@@ -34,11 +43,42 @@ export const ProfileScreen = () => {
     enabled: !!user?.id,
   });
 
+  const { data: currencies, isLoading: currenciesLoading } = useQuery<Currency[]>({
+    queryKey: ['/currencies'],
+    queryFn: async () => {
+      const response = await apiClient.get('/currencies');
+      return response.data;
+    },
+  });
+
   useEffect(() => {
     if (user?.searchRadius !== undefined) {
       setSearchRadius(user.searchRadius);
     }
   }, [user?.searchRadius]);
+
+  useEffect(() => {
+    const fetchLocationInfo = async () => {
+      if (user?.currentLatitude && user?.currentLongitude) {
+        try {
+          const response = await apiClient.get('/geocode/reverse', {
+            params: {
+              lat: user.currentLatitude,
+              lon: user.currentLongitude,
+            },
+          });
+          setLocationInfo({
+            city: response.data.city,
+            country: response.data.country,
+          });
+        } catch (error) {
+          console.error('Error fetching location info:', error);
+        }
+      }
+    };
+
+    fetchLocationInfo();
+  }, [user?.currentLatitude, user?.currentLongitude]);
 
   const updateRadiusMutation = useMutation({
     mutationFn: async (radius: number) => {
@@ -51,6 +91,22 @@ export const ProfileScreen = () => {
     },
     onError: (error: any) => {
       Alert.alert('Error', error.response?.data?.message || 'Failed to update search radius');
+    },
+  });
+
+  const updateCurrencyMutation = useMutation({
+    mutationFn: async (currencyCode: string) => {
+      const response = await apiClient.put('/user/currency', { currencyCode });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/auth/user'] });
+      refreshUser();
+      setCurrencyModalVisible(false);
+      Alert.alert('Success', 'Currency updated successfully');
+    },
+    onError: (error: any) => {
+      Alert.alert('Error', error.response?.data?.message || 'Failed to update currency');
     },
   });
 
@@ -205,12 +261,16 @@ export const ProfileScreen = () => {
           </View>
         </View>
 
-        <View style={styles.settingItem}>
+        <TouchableOpacity 
+          style={styles.settingItem} 
+          onPress={() => setCurrencyModalVisible(true)}
+        >
           <View>
             <Text style={styles.settingLabel}>Currency</Text>
             <Text style={styles.settingValue}>{user.defaultCurrencyCode || 'EUR'}</Text>
           </View>
-        </View>
+          <Text style={styles.settingArrow}>›</Text>
+        </TouchableOpacity>
 
         <View style={styles.settingItem}>
           <View>
@@ -220,6 +280,37 @@ export const ProfileScreen = () => {
             </Text>
           </View>
         </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Location</Text>
+        
+        {(locationInfo.city || locationInfo.country) ? (
+          <View style={styles.settingItem}>
+            <View>
+              <Text style={styles.settingLabel}>Current Location</Text>
+              <Text style={styles.settingValue}>
+                {[locationInfo.city, locationInfo.country].filter(Boolean).join(', ')}
+              </Text>
+            </View>
+          </View>
+        ) : typeof user.currentLatitude === 'number' && typeof user.currentLongitude === 'number' ? (
+          <View style={styles.settingItem}>
+            <View>
+              <Text style={styles.settingLabel}>Current Location</Text>
+              <Text style={styles.settingValue}>
+                {user.currentLatitude.toFixed(4)}, {user.currentLongitude.toFixed(4)}
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.settingItem}>
+            <View>
+              <Text style={styles.settingLabel}>Location not set</Text>
+              <Text style={styles.settingValue}>Enable location to discover nearby events</Text>
+            </View>
+          </View>
+        )}
       </View>
 
       <View style={styles.section}>
@@ -245,24 +336,6 @@ export const ProfileScreen = () => {
             <Text style={styles.featureText}>Learn through workshops and classes</Text>
           </View>
         </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Location</Text>
-        
-        {typeof user.currentLatitude === 'number' && typeof user.currentLongitude === 'number' ? (
-          <View style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Current Location</Text>
-            <Text style={styles.settingValue}>
-              {user.currentLatitude.toFixed(4)}, {user.currentLongitude.toFixed(4)}
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Location not set</Text>
-            <Text style={styles.settingValue}>Enable location to discover nearby events</Text>
-          </View>
-        )}
       </View>
 
       <View style={styles.section}>
@@ -388,6 +461,55 @@ export const ProfileScreen = () => {
           </View>
         </View>
       </Modal>
+
+      {/* Currency Picker Modal */}
+      <Modal
+        visible={currencyModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setCurrencyModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Currency</Text>
+            <Text style={styles.modalDescription}>Choose your preferred currency for event prices</Text>
+            
+            {currenciesLoading ? (
+              <ActivityIndicator size="large" color="#007AFF" />
+            ) : (
+              <ScrollView style={styles.currencyList}>
+                {currencies?.map((currency) => (
+                  <TouchableOpacity
+                    key={currency.code}
+                    style={[
+                      styles.currencyOption,
+                      user?.defaultCurrencyCode === currency.code && styles.currencySelected
+                    ]}
+                    onPress={() => updateCurrencyMutation.mutate(currency.code)}
+                    disabled={updateCurrencyMutation.isPending}
+                  >
+                    <Text style={styles.currencySymbol}>{currency.symbol}</Text>
+                    <View style={styles.currencyInfo}>
+                      <Text style={styles.currencyCode}>{currency.code}</Text>
+                      <Text style={styles.currencyName}>{currency.name}</Text>
+                    </View>
+                    {user?.defaultCurrencyCode === currency.code && (
+                      <Text style={styles.checkMark}>✓</Text>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+            
+            <TouchableOpacity
+              style={[styles.modalButton, styles.cancelButton]}
+              onPress={() => setCurrencyModalVisible(false)}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -490,6 +612,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   settingItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
@@ -720,5 +845,50 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  settingArrow: {
+    fontSize: 24,
+    color: '#94a3b8',
+    marginLeft: 8,
+  },
+  currencyList: {
+    maxHeight: 300,
+    marginBottom: 16,
+  },
+  currencyOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: '#f1f5f9',
+  },
+  currencySelected: {
+    backgroundColor: '#dbeafe',
+    borderWidth: 1,
+    borderColor: '#007AFF',
+  },
+  currencySymbol: {
+    fontSize: 24,
+    marginRight: 16,
+    width: 32,
+    textAlign: 'center',
+  },
+  currencyInfo: {
+    flex: 1,
+  },
+  currencyCode: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  currencyName: {
+    fontSize: 14,
+    color: '#64748b',
+  },
+  checkMark: {
+    fontSize: 20,
+    color: '#007AFF',
+    fontWeight: 'bold',
   },
 });
