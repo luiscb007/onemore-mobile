@@ -276,6 +276,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user profile (name)
+  app.patch('/api/user/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { firstName, lastName } = req.body;
+      
+      if (!firstName || firstName.trim().length === 0) {
+        return res.status(400).json({ message: "First name is required" });
+      }
+
+      await storage.updateUserProfile(userId, firstName.trim(), lastName?.trim() || '');
+      const updatedUser = await storage.getUser(userId);
+      
+      // Remove sensitive fields from response
+      if (updatedUser) {
+        const { passwordHash, verificationToken, verificationTokenExpiry, appleId, googleId, ...safeUser } = updatedUser;
+        res.json(safeUser);
+      } else {
+        res.status(404).json({ message: "User not found" });
+      }
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
   // Send feedback
   app.post('/api/feedback', isAuthenticated, async (req: any, res) => {
     try {

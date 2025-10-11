@@ -43,6 +43,7 @@ export interface IStorage {
   createUserWithGoogleId(user: { googleId: string; email?: string | null; firstName?: string | null; lastName?: string | null; role: string; emailVerified?: boolean }): Promise<User>;
   updateUserLocation(userId: string, latitude: number, longitude: number): Promise<void>;
   updateUserSearchRadius(userId: string, radius: number): Promise<void>;
+  updateUserProfile(userId: string, firstName: string, lastName: string): Promise<void>;
   updateUserCurrency(userId: string, currencyCode: string, checkLatitude: number, checkLongitude: number): Promise<void>;
   getUserStats(userId: string): Promise<{ eventsCreated: number; eventsAttended: number; averageRating: number }>;
   deleteUser(userId: string): Promise<void>;
@@ -219,6 +220,17 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({
         searchRadius: radius,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async updateUserProfile(userId: string, firstName: string, lastName: string): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        firstName: firstName,
+        lastName: lastName,
         updatedAt: new Date(),
       })
       .where(eq(users.id, userId));

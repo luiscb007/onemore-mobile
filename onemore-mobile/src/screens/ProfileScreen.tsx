@@ -33,6 +33,9 @@ export const ProfileScreen = () => {
   const [searchRadius, setSearchRadius] = useState(100);
   const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
   const [locationInfo, setLocationInfo] = useState<{city?: string; country?: string}>({});
+  const [nameModalVisible, setNameModalVisible] = useState(false);
+  const [firstName, setFirstName] = useState(user?.firstName || '');
+  const [lastName, setLastName] = useState(user?.lastName || '');
 
   const { data: stats } = useQuery<{ eventsCreated: number; eventsAttended: number; averageRating: number }>({
     queryKey: [`/users/${user?.id}/stats`],
@@ -141,6 +144,24 @@ export const ProfileScreen = () => {
     },
   });
 
+  const updateNameMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiClient.patch('/user/profile', {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+      });
+      return response.data;
+    },
+    onSuccess: async () => {
+      await refreshUser();
+      setNameModalVisible(false);
+      Alert.alert('Success', 'Your name has been updated successfully');
+    },
+    onError: (error: any) => {
+      Alert.alert('Error', error.response?.data?.message || 'Failed to update name');
+    },
+  });
+
   if (!user) {
     return (
       <View style={styles.centered}>
@@ -208,7 +229,18 @@ export const ProfileScreen = () => {
             </View>
           )}
         </View>
-        <Text style={styles.name}>{fullName}</Text>
+        <TouchableOpacity 
+          style={styles.nameContainer} 
+          onPress={() => {
+            setFirstName(user?.firstName || '');
+            setLastName(user?.lastName || '');
+            setNameModalVisible(true);
+          }}
+        >
+          <Text style={styles.name}>{fullName}</Text>
+          <Text style={styles.editIcon}>✏️</Text>
+        </TouchableOpacity>
+        <Text style={styles.nameHint}>Tap to edit - this name is shown to others</Text>
         {user.email && <Text style={styles.email}>{user.email}</Text>}
 
         {user.subscriptionTier && (
@@ -510,6 +542,55 @@ export const ProfileScreen = () => {
           </View>
         </View>
       </Modal>
+
+      {/* Edit Name Modal */}
+      <Modal
+        visible={nameModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setNameModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit Your Name</Text>
+            <Text style={styles.modalDescription}>This name will be shown to other users</Text>
+            
+            <TextInput
+              style={styles.nameInput}
+              placeholder="First Name"
+              value={firstName}
+              onChangeText={setFirstName}
+              autoCapitalize="words"
+            />
+            
+            <TextInput
+              style={styles.nameInput}
+              placeholder="Last Name"
+              value={lastName}
+              onChangeText={setLastName}
+              autoCapitalize="words"
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setNameModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.submitButton]}
+                onPress={() => updateNameMutation.mutate()}
+                disabled={updateNameMutation.isPending || !firstName.trim()}
+              >
+                <Text style={styles.submitButtonText}>
+                  {updateNameMutation.isPending ? 'Saving...' : 'Save'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -557,15 +638,37 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontWeight: 'bold',
   },
+  nameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   name: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#000',
-    marginBottom: 4,
+  },
+  editIcon: {
+    fontSize: 16,
+    opacity: 0.6,
+  },
+  nameHint: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginTop: 4,
+    marginBottom: 8,
   },
   email: {
     fontSize: 14,
     color: '#666',
+    marginBottom: 12,
+  },
+  nameInput: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#1e293b',
     marginBottom: 12,
   },
   roleSwitcherContainer: {
