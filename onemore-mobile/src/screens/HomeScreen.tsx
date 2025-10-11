@@ -45,7 +45,7 @@ export const HomeScreen = () => {
   const [categoryContentWidth, setCategoryContentWidth] = useState(0);
   const [currentCoords, setCurrentCoords] = useState<{latitude: number, longitude: number} | null>(null);
   const previousRadiusRef = useRef<number | undefined>(undefined);
-  const isLoadingRef = useRef(false);
+  const loadingPromiseRef = useRef<Promise<void> | null>(null);
   const isMountedRef = useRef(true);
 
   const categories = ['all', 'arts', 'community', 'culture', 'sports', 'workshops'];
@@ -71,66 +71,92 @@ export const HomeScreen = () => {
     return `${year}-${month}-${day}`;
   };
 
-  const loadEvents = async (coords?: {latitude: number, longitude: number} | null) => {
-    if (isLoadingRef.current) {
-      return;
+  const isValidEvent = (event: EventWithDetails): boolean => {
+    if (!event.id || !event.title || !event.date) {
+      console.warn('Event missing required fields:', event);
+      return false;
     }
     
-    isLoadingRef.current = true;
+    const eventDate = new Date(event.date);
+    if (isNaN(eventDate.getTime())) {
+      console.warn('Event has invalid date:', event);
+      return false;
+    }
     
-    try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const startDate = new Date(today);
-      startDate.setDate(today.getDate() + startDays);
-      const dateFrom = formatDate(startDate);
-      
-      const endDate = new Date(today);
-      endDate.setDate(today.getDate() + endDays);
-      const dateTo = formatDate(endDate);
+    if (event.latitude !== null && event.longitude !== null) {
+      const lat = Number(event.latitude);
+      const lng = Number(event.longitude);
+      if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        console.warn('Event has invalid coordinates:', event);
+        return false;
+      }
+    }
+    
+    return true;
+  };
 
-      const effectiveCoords = coords !== undefined ? coords : currentCoords;
-      const params = {
-        category: selectedCategory !== 'all' ? selectedCategory : undefined,
-        userId: user?.id,
-        userLat: effectiveCoords?.latitude ?? undefined,
-        userLng: effectiveCoords?.longitude ?? undefined,
-        hidePast,
-        search: searchQuery || undefined,
-        userRadius: user?.searchRadius ?? undefined,
-        dateFrom,
-        dateTo,
-        sortBy,
-      };
-      
-      let data = await eventsApi.getEvents(params);
-      
-      if (sortBy === 'distance') {
-        data = data.sort((a, b) => (a.distance || 999) - (b.distance || 999));
-      } else if (sortBy === 'popularity') {
-        const getPopularity = (event: EventWithDetails) => 
-          (event.interactionCounts?.going || 0) + (event.interactionCounts?.like || 0);
-        data = data.sort((a, b) => getPopularity(b) - getPopularity(a));
-      } else {
-        data = data.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const loadEvents = async (coords?: {latitude: number, longitude: number} | null) => {
+    const executeLoad = async () => {
+      try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const startDate = new Date(today);
+        startDate.setDate(today.getDate() + startDays);
+        const dateFrom = formatDate(startDate);
+        
+        const endDate = new Date(today);
+        endDate.setDate(today.getDate() + endDays);
+        const dateTo = formatDate(endDate);
+
+        const effectiveCoords = coords !== undefined ? coords : currentCoords;
+        const params = {
+          category: selectedCategory !== 'all' ? selectedCategory : undefined,
+          userId: user?.id,
+          userLat: effectiveCoords?.latitude ?? undefined,
+          userLng: effectiveCoords?.longitude ?? undefined,
+          hidePast,
+          search: searchQuery || undefined,
+          userRadius: user?.searchRadius ?? undefined,
+          dateFrom,
+          dateTo,
+          sortBy,
+        };
+        
+        let data = await eventsApi.getEvents(params);
+        
+        if (sortBy === 'distance') {
+          data = data.sort((a, b) => (a.distance || 999) - (b.distance || 999));
+        } else if (sortBy === 'popularity') {
+          const getPopularity = (event: EventWithDetails) => 
+            (event.interactionCounts?.going || 0) + (event.interactionCounts?.like || 0);
+          data = data.sort((a, b) => getPopularity(b) - getPopularity(a));
+        } else {
+          data = data.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        }
+        
+        if (isMountedRef.current) {
+          const validEvents = data.filter(isValidEvent);
+          if (validEvents.length < data.length) {
+            console.warn(`Filtered out ${data.length - validEvents.length} invalid events`);
+          }
+          setEvents(validEvents);
+        }
+      } catch (error: any) {
+        console.error('Failed to load events:', error);
+        if (error.response?.status === 401 && isMountedRef.current) {
+          Alert.alert('Authentication Error', 'Please log in to view events');
+        }
+      } finally {
+        if (isMountedRef.current) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
-      
-      if (isMountedRef.current) {
-        setEvents(data);
-      }
-    } catch (error: any) {
-      console.error('Failed to load events:', error);
-      if (error.response?.status === 401 && isMountedRef.current) {
-        Alert.alert('Authentication Error', 'Please log in to view events');
-      }
-    } finally {
-      isLoadingRef.current = false;
-      if (isMountedRef.current) {
-        setLoading(false);
-        setRefreshing(false);
-      }
-    }
+    };
+
+    loadingPromiseRef.current = (loadingPromiseRef.current ?? Promise.resolve()).then(() => executeLoad());
+    return loadingPromiseRef.current;
   };
 
   useEffect(() => {
@@ -175,6 +201,10 @@ export const HomeScreen = () => {
   };
 
   const renderEvent = ({ item }: { item: EventWithDetails }) => {
+    if (!isValidEvent(item)) {
+      return null;
+    }
+    
     const eventDate = new Date(item.date);
     const hasInteracted = item.userInteraction !== undefined;
 
