@@ -955,18 +955,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginHorizontal: 4,
     alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   passButton: {
-    backgroundColor: '#FF3B30',
   },
   likeButton: {
-    backgroundColor: '#FF9500',
   },
   goingButton: {
-    backgroundColor: '#34C759',
   },
   actionButtonText: {
-    color: '#FFF',
+    color: '#64748b',
     fontSize: 14,
     fontWeight: '600',
   },
