@@ -246,12 +246,6 @@ export const ProfileScreen = () => {
         </TouchableOpacity>
         <Text style={styles.nameHint}>Tap to edit - this name is shown to others</Text>
         {user.email && <Text style={styles.email}>{user.email}</Text>}
-
-        {user.subscriptionTier && (
-          <View style={[styles.tierBadge, user.subscriptionTier === 'premium' ? styles.premiumBadge : styles.freeBadge]}>
-            <Text style={styles.tierText}>{user.subscriptionTier.toUpperCase()}</Text>
-          </View>
-        )}
       </View>
 
       <View style={styles.statsSection}>
