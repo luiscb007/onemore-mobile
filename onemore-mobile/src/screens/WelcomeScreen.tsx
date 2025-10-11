@@ -9,8 +9,23 @@ import {
   Platform,
 } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import Constants from 'expo-constants';
 import { useAuth } from '../contexts/AuthContext';
+
+// Conditionally import Google Sign In (only works in standalone builds, not Expo Go)
+// Constants.appOwnership values:
+// - 'standalone': App built with EAS/expo build (has native modules)
+// - 'expo' | 'guest' | null: Expo Go or published project (no native modules)
+const isStandaloneBuild = Constants.appOwnership === 'standalone';
+let GoogleSignin: any = null;
+
+if (isStandaloneBuild) {
+  try {
+    GoogleSignin = require('@react-native-google-signin/google-signin').GoogleSignin;
+  } catch (error) {
+    console.warn('Google Sign In module could not be loaded:', error);
+  }
+}
 
 type WelcomeScreenProps = {
   navigation: any;
@@ -20,12 +35,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const { appleSignIn, googleSignIn } = useAuth();
   const [isAppleLoading, setIsAppleLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const isGoogleAvailable = GoogleSignin !== null;
 
   useEffect(() => {
-    GoogleSignin.configure({
-      webClientId: '861823949799-8t14k06iqkr4v7gvflv4lc6uc0q40k6k.apps.googleusercontent.com',
-      iosClientId: '861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu.apps.googleusercontent.com',
-    });
+    if (GoogleSignin) {
+      GoogleSignin.configure({
+        webClientId: '861823949799-8t14k06iqkr4v7gvflv4lc6uc0q40k6k.apps.googleusercontent.com',
+        iosClientId: '861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu.apps.googleusercontent.com',
+      });
+    }
   }, []);
 
   const handleGoogleSignIn = async () => {
@@ -107,17 +125,27 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
             </View>
           )}
 
-          <TouchableOpacity
-            style={styles.googleButton}
-            onPress={handleGoogleSignIn}
-            disabled={isGoogleLoading}
-          >
-            {isGoogleLoading ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.googleButtonText}>🔵 Continue with Google</Text>
-            )}
-          </TouchableOpacity>
+          {isGoogleAvailable && (
+            <TouchableOpacity
+              style={styles.googleButton}
+              onPress={handleGoogleSignIn}
+              disabled={isGoogleLoading}
+            >
+              {isGoogleLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.googleButtonText}>🔵 Continue with Google</Text>
+              )}
+            </TouchableOpacity>
+          )}
+          
+          {!isGoogleAvailable && (
+            <View style={styles.expoGoNotice}>
+              <Text style={styles.expoGoText}>
+                ℹ️ Google Sign In requires a standalone build (not available in Expo Go)
+              </Text>
+            </View>
+          )}
 
           <View style={styles.divider}>
             <View style={styles.dividerLine} />
@@ -267,6 +295,18 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 12,
     color: '#94a3b8',
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  expoGoNotice: {
+    backgroundColor: '#fef3c7',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  expoGoText: {
+    fontSize: 13,
+    color: '#92400e',
     textAlign: 'center',
     lineHeight: 18,
   },
