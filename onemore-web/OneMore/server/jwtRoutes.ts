@@ -2,6 +2,11 @@ import type { Express } from 'express';
 import { storage } from './storage';
 import { hashPassword, verifyPassword, generateToken } from './jwtAuth';
 import type { JWTPayload } from './jwtAuth';
+import { sendEmail } from './utils/replitmail';
+import crypto from 'crypto';
+import { db } from './db';
+import { users } from '../shared/schema';
+import { eq } from 'drizzle-orm';
 
 export function setupJWTRoutes(app: Express) {
   // Login endpoint for mobile
@@ -65,6 +70,10 @@ export function setupJWTRoutes(app: Express) {
         return res.status(400).json({ message: 'Email and password are required' });
       }
 
+      if (!firstName || firstName.trim() === '') {
+        return res.status(400).json({ message: 'First name is required' });
+      }
+
       if (password.length < 6) {
         return res.status(400).json({ message: 'Password must be at least 6 characters' });
       }
@@ -79,34 +88,140 @@ export function setupJWTRoutes(app: Express) {
       // Hash password
       const passwordHash = await hashPassword(password);
 
-      // Create user
+      // Generate verification token (32 random bytes as hex string)
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      
+      // Token expires in 24 hours
+      const verificationTokenExpiry = new Date();
+      verificationTokenExpiry.setHours(verificationTokenExpiry.getHours() + 24);
+
+      // Create user with email verification pending
       const newUser = await storage.createUserWithPassword({
         email,
         passwordHash,
-        firstName: firstName || null,
-        lastName: lastName || null,
+        firstName: firstName.trim(),
+        lastName: lastName?.trim() || null,
         role: 'attendee',
+        verificationToken,
+        verificationTokenExpiry,
       });
 
-      // Generate JWT token
-      const payload: JWTPayload = {
-        userId: newUser.id,
-        email: newUser.email || '',
-        role: newUser.role,
-      };
+      // Get the base URL for the verification link
+      const baseUrl = process.env.REPLIT_DOMAINS 
+        ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
+        : 'http://localhost:5000';
+      
+      const verificationLink = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
 
-      const token = generateToken(payload);
+      // Send verification email
+      try {
+        await sendEmail({
+          to: email,
+          subject: 'Verify your OneMore account',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #dc2626;">Welcome to OneMore, ${firstName}!</h2>
+              <p>Thank you for signing up. Please verify your email address to complete your registration.</p>
+              <p>Click the button below to verify your email:</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${verificationLink}" style="background-color: #dc2626; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">Verify Email</a>
+              </div>
+              <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
+              <p style="color: #666; font-size: 14px; word-break: break-all;">${verificationLink}</p>
+              <p style="color: #666; font-size: 14px;">This link will expire in 24 hours.</p>
+            </div>
+          `,
+          text: `Welcome to OneMore, ${firstName}!\n\nPlease verify your email address by clicking this link:\n${verificationLink}\n\nThis link will expire in 24 hours.`,
+        });
+      } catch (emailError) {
+        console.error('Failed to send verification email:', emailError);
+        // Continue anyway - user can request resend
+      }
 
-      // Remove password hash from response
-      const { passwordHash: _, ...userResponse } = newUser;
-
+      // Return success message (do NOT return token - user must verify first)
       res.json({
-        token,
-        user: userResponse,
+        message: 'Registration successful! Please check your email to verify your account.',
+        email: newUser.email,
       });
     } catch (error) {
       console.error('Register error:', error);
       res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Email verification endpoint
+  app.get('/api/auth/verify-email', async (req, res) => {
+    try {
+      const { token } = req.query;
+
+      if (!token || typeof token !== 'string') {
+        return res.status(400).send(`
+          <html>
+            <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+              <h2 style="color: #dc2626;">Invalid Verification Link</h2>
+              <p>The verification link is invalid or malformed.</p>
+            </body>
+          </html>
+        `);
+      }
+
+      // Find user with this verification token
+      const userList = await db.select().from(users).where(eq(users.verificationToken, token));
+      const user = userList[0];
+
+      if (!user) {
+        return res.status(400).send(`
+          <html>
+            <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+              <h2 style="color: #dc2626;">Invalid or Expired Link</h2>
+              <p>This verification link is invalid or has already been used.</p>
+            </body>
+          </html>
+        `);
+      }
+
+      // Check if token has expired
+      if (user.verificationTokenExpiry && new Date() > new Date(user.verificationTokenExpiry)) {
+        return res.status(400).send(`
+          <html>
+            <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+              <h2 style="color: #dc2626;">Link Expired</h2>
+              <p>This verification link has expired. Please request a new one from the app.</p>
+            </body>
+          </html>
+        `);
+      }
+
+      // Verify the user's email
+      await db
+        .update(users)
+        .set({
+          emailVerified: true,
+          verificationToken: null,
+          verificationTokenExpiry: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, user.id));
+
+      res.send(`
+        <html>
+          <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+            <h2 style="color: #16a34a;">✓ Email Verified!</h2>
+            <p>Your email has been successfully verified.</p>
+            <p>You can now close this window and log in to the OneMore app.</p>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error('Email verification error:', error);
+      res.status(500).send(`
+        <html>
+          <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+            <h2 style="color: #dc2626;">Verification Failed</h2>
+            <p>An error occurred while verifying your email. Please try again later.</p>
+          </body>
+        </html>
+      `);
     }
   });
 
@@ -137,8 +252,9 @@ export function setupJWTRoutes(app: Express) {
       // Extract the verified Apple user ID from the token (sub claim)
       const appleUserId = jwtClaims.sub;
       // Only use email from Apple's verified token, never trust client-supplied email
-      // Apple returns email_verified as string "true"/"false", so check explicitly
-      const verifiedEmail = (jwtClaims.email_verified === true || jwtClaims.email_verified === 'true') 
+      // Apple returns email_verified as boolean or string, so check both
+      const emailVerified = jwtClaims.email_verified as boolean | string;
+      const verifiedEmail = (emailVerified === true || emailVerified === 'true') 
         ? jwtClaims.email 
         : null;
 

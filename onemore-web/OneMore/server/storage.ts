@@ -37,7 +37,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByAppleId(appleId: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  createUserWithPassword(user: { email: string; passwordHash: string; firstName?: string | null; lastName?: string | null; role: string }): Promise<User>;
+  createUserWithPassword(user: { email: string; passwordHash: string; firstName?: string | null; lastName?: string | null; role: string; verificationToken?: string | null; verificationTokenExpiry?: Date | null }): Promise<User>;
   createUserWithAppleId(user: { appleId: string; email?: string | null; firstName?: string | null; lastName?: string | null; role: string }): Promise<User>;
   updateUserLocation(userId: string, latitude: number, longitude: number): Promise<void>;
   updateUserSearchRadius(userId: string, radius: number): Promise<void>;
@@ -114,7 +114,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createUserWithPassword(userData: { email: string; passwordHash: string; firstName?: string | null; lastName?: string | null; role: string }): Promise<User> {
+  async createUserWithPassword(userData: { email: string; passwordHash: string; firstName?: string | null; lastName?: string | null; role: string; verificationToken?: string | null; verificationTokenExpiry?: Date | null }): Promise<User> {
     const [user] = await db
       .insert(users)
       .values({
@@ -123,6 +123,8 @@ export class DatabaseStorage implements IStorage {
         firstName: userData.firstName || null,
         lastName: userData.lastName || null,
         role: userData.role,
+        verificationToken: userData.verificationToken || null,
+        verificationTokenExpiry: userData.verificationTokenExpiry || null,
       })
       .returning();
     return user;

@@ -117,3 +117,4 @@ outputType = "console"
 
 [agent]
 expertMode = true
+integrations = ["replitmail:1.0.0"]
