@@ -17,7 +17,6 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.onemore.app",
       "buildNumber": "1.0.0",
-      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "OneMore uses your location to show nearby events and calculate distances.",
         "NSPhotoLibraryUsageDescription": "OneMore needs access to your photo library to let you upload event images.",

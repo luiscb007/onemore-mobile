@@ -36,14 +36,16 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
       await GoogleSignin.hasPlayServices();
       const response = await GoogleSignin.signIn();
       
+      // Check if sign-in was successful
       if (response.type === 'success') {
         const { idToken } = response.data;
         if (idToken) {
           await googleSignIn({ idToken });
         } else {
-          throw new Error('No ID token received from Google');
+          throw new Error('No ID token received from Google. Make sure webClientId is configured.');
         }
       }
+      // User cancelled - type would be 'cancelled', just return without error
     } catch (error: any) {
       if (error.code === 'SIGN_IN_CANCELLED') {
         // User cancelled the sign-in

@@ -40,7 +40,7 @@ The mobile application is a **React Native** app built with **Expo** for iOS. It
 **Authentication & Welcome Flow:**
 - **WelcomeScreen**: Stylish welcome screen with app's red/blue color scheme, featuring triple authentication options (Apple Sign In, Google Sign In, and Email registration) with equal prominence
 - **Apple Sign In**: Fully implemented with expo-apple-authentication, secure backend token verification using verify-apple-id-token package, and verified email linking. Auto-verified users bypass email verification.
-- **Google Sign In**: Fully implemented with @react-native-google-signin/google-signin native iOS SDK, secure backend token verification using google-auth-library package with proper audience configuration. Auto-verified users bypass email verification. **Native implementation works in both Expo Go and production builds**, providing better UX than web-based OAuth flow.
+- **Google Sign In**: Fully implemented with @react-native-google-signin/google-signin native iOS SDK, secure backend token verification using google-auth-library package with proper audience configuration. Auto-verified users bypass email verification. **Native implementation requires Expo development build or production build** (not available in standard Expo Go), providing better UX than web-based OAuth flow. Requires Google Cloud Console setup with webClientId and iOS client ID configuration.
 - **Email Registration**: Mandatory first name requirement, secure email verification flow with 24-hour token expiry
 - **Email Verification**: Users must verify email before login, with Replit Mail integration for verification emails and resend functionality
 - **Auto-Login**: Seamless auto-login for returning users via encrypted token storage in Expo SecureStore
