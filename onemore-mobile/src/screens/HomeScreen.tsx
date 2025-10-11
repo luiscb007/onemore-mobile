@@ -479,7 +479,7 @@ export const HomeScreen = () => {
           }}
           disabled={!canScrollLeft}
         >
-          <ChevronLeft size={20} color={canScrollLeft ? "#64748b" : "#cbd5e1"} />
+          <ChevronLeft size={20} color={canScrollLeft ? "#334155" : "#cbd5e1"} />
         </TouchableOpacity>
         
         <ScrollView
@@ -547,7 +547,7 @@ export const HomeScreen = () => {
           }}
           disabled={!canScrollRight}
         >
-          <ChevronRight size={20} color={canScrollRight ? "#64748b" : "#cbd5e1"} />
+          <ChevronRight size={20} color={canScrollRight ? "#334155" : "#cbd5e1"} />
         </TouchableOpacity>
         </View>
 
