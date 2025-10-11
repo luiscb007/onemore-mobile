@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi } from '../api/auth';
 import { tokenStorage } from '../services/tokenStorage';
 import type { User } from '../types';
-import type { LoginCredentials, RegisterCredentials } from '../api/auth';
+import type { LoginCredentials, RegisterCredentials, AppleSignInCredentials } from '../api/auth';
 
 type UserRole = 'attendee' | 'organizer';
 
@@ -13,6 +13,7 @@ type AuthContextType = {
   userRole: UserRole;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
+  appleSignIn: (credentials: AppleSignInCredentials) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   setUserRole: (role: UserRole) => Promise<void>;
@@ -87,6 +88,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const appleSignIn = async (credentials: AppleSignInCredentials) => {
+    setLoading(true);
+    try {
+      const { user: appleUser } = await authApi.appleSignIn(credentials);
+      setUser(appleUser);
+    } catch (error) {
+      console.error('Apple Sign In failed:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
     setLoading(true);
     try {
@@ -110,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, userRole, login, register, logout, refreshUser, setUserRole }}>
+    <AuthContext.Provider value={{ user, loading, userRole, login, register, appleSignIn, logout, refreshUser, setUserRole }}>
       {children}
     </AuthContext.Provider>
   );

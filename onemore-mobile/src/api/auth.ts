@@ -14,6 +14,16 @@ export interface RegisterCredentials {
   lastName?: string;
 }
 
+export interface AppleSignInCredentials {
+  identityToken: string;
+  user: string;
+  email: string | null;
+  fullName: {
+    givenName: string | null;
+    familyName: string | null;
+  } | null;
+}
+
 export interface AuthResponse {
   token: string;
   refreshToken?: string;
@@ -35,6 +45,18 @@ export const authApi = {
 
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
     const response = await apiClient.post('/auth/register', credentials);
+    const { token, refreshToken, user } = response.data;
+    
+    await tokenStorage.saveToken(token);
+    if (refreshToken) {
+      await tokenStorage.saveRefreshToken(refreshToken);
+    }
+    
+    return response.data;
+  },
+
+  appleSignIn: async (credentials: AppleSignInCredentials): Promise<AuthResponse> => {
+    const response = await apiClient.post('/auth/apple', credentials);
     const { token, refreshToken, user } = response.data;
     
     await tokenStorage.saveToken(token);
