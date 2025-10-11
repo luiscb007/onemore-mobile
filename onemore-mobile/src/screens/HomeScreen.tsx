@@ -21,13 +21,11 @@ import { apiClient } from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 import type { EventWithDetails } from '../types';
 import { format, addDays } from 'date-fns';
-import { Search, SlidersHorizontal, MapPin, RefreshCw, Calendar, Plus, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { Search, SlidersHorizontal, Calendar, Plus, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { RangeSlider } from '../components/RangeSlider';
-import { useLocation } from '../hooks/useLocation';
 
 export const HomeScreen = () => {
   const { user, refreshUser } = useAuth();
-  const { location, getCurrentLocation } = useLocation();
   const navigation = useNavigation();
   const [events, setEvents] = useState<EventWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,8 +37,6 @@ export const HomeScreen = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [startDays, setStartDays] = useState(0);
   const [endDays, setEndDays] = useState(60);
-  const [locationLoading, setLocationLoading] = useState(false);
-  const [cityName, setCityName] = useState<string>('');
   const categoryScrollRef = useRef<ScrollView>(null);
   const [scrollOffset, setScrollOffset] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -52,21 +48,9 @@ export const HomeScreen = () => {
 
   const categories = ['all', 'arts', 'community', 'culture', 'sports', 'workshops'];
 
-  const reverseGeocode = async (lat: number, lng: number) => {
-    try {
-      const response = await apiClient.get(`/geocode/reverse?lat=${lat}&lon=${lng}`);
-      if (response.data && response.data.city) {
-        setCityName(response.data.city);
-      }
-    } catch (error) {
-      console.error('Failed to reverse geocode:', error);
-    }
-  };
-
   useEffect(() => {
     if (user?.currentLatitude && user?.currentLongitude) {
       setCurrentCoords({ latitude: user.currentLatitude, longitude: user.currentLongitude });
-      reverseGeocode(user.currentLatitude, user.currentLongitude);
     }
   }, [user?.currentLatitude, user?.currentLongitude]);
 
@@ -324,54 +308,6 @@ export const HomeScreen = () => {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
-
-      <View style={styles.locationBanner}>
-        <View style={styles.locationInfo}>
-          <MapPin size={16} color="#64748b" />
-          <Text style={styles.locationText}>
-            {currentCoords?.latitude && currentCoords?.longitude 
-              ? cityName || 'Loading location...'
-              : 'Enable location to discover nearby events'}
-          </Text>
-        </View>
-        <TouchableOpacity
-          style={styles.refreshButton}
-          onPress={() => {
-            setLocationLoading(true);
-            (async () => {
-              try {
-                const coords = await getCurrentLocation();
-                if (coords) {
-                  // Location successful - update everything
-                  setCurrentCoords(coords);
-                  await reverseGeocode(coords.latitude, coords.longitude);
-                  await loadEvents(coords);
-                } else {
-                  // Location unavailable/denied - clear location state
-                  setCurrentCoords(null);
-                  setCityName('');
-                  await loadEvents(null);
-                }
-              } catch (error) {
-                console.error('Failed to refresh location:', error);
-                setCurrentCoords(null);
-                setCityName('');
-                await loadEvents(null);
-              } finally {
-                setLocationLoading(false);
-              }
-            })();
-          }}
-        >
-          <RefreshCw 
-            size={16} 
-            color="#64748b"
-            style={{ 
-              transform: [{ rotate: locationLoading ? '360deg' : '0deg' }] 
-            }} 
-          />
-        </TouchableOpacity>
       </View>
 
       <View style={styles.searchContainer}>
@@ -662,41 +598,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#1e293b',
   },
-  locationBanner: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-  },
-  locationInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  locationText: {
-    fontSize: 14,
-    color: '#64748b',
-  },
-  refreshButton: {
-    padding: 8,
-  },
   dateRangeContainer: {
     backgroundColor: '#fff',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
-    gap: 8,
+    gap: 4,
   },
   dateHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   dateLabel: {
     fontSize: 14,
@@ -722,12 +636,12 @@ const styles = StyleSheet.create({
   },
   rangeSliderContainer: {
     paddingHorizontal: 8,
-    paddingVertical: 16,
+    paddingVertical: 8,
   },
   dateLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 8,
+    marginTop: 4,
     paddingHorizontal: 4,
   },
   dateLabelText: {

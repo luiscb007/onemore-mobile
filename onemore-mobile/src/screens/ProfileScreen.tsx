@@ -12,10 +12,12 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
+import { RefreshCw } from 'lucide-react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import { queryClient } from '../lib/queryClient';
+import { useLocation } from '../hooks/useLocation';
 
 interface Currency {
   code: string;
@@ -25,6 +27,7 @@ interface Currency {
 
 export const ProfileScreen = () => {
   const { user, logout, refreshUser, userRole, setUserRole } = useAuth();
+  const { getCurrentLocation } = useLocation();
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -36,6 +39,7 @@ export const ProfileScreen = () => {
   const [nameModalVisible, setNameModalVisible] = useState(false);
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
+  const [locationLoading, setLocationLoading] = useState(false);
 
   const { data: stats } = useQuery<{ eventsCreated: number; eventsAttended: number; averageRating: number }>({
     queryKey: [`/users/${user?.id}/stats`],
@@ -325,6 +329,38 @@ export const ProfileScreen = () => {
                 {[locationInfo.city, locationInfo.country].filter(Boolean).join(', ')}
               </Text>
             </View>
+            <TouchableOpacity
+              style={{ padding: 8 }}
+              onPress={async () => {
+                setLocationLoading(true);
+                try {
+                  const coords = await getCurrentLocation();
+                  if (coords) {
+                    await refreshUser();
+                    const response = await apiClient.get('/geocode/reverse', {
+                      params: { lat: coords.latitude, lon: coords.longitude },
+                    });
+                    setLocationInfo({
+                      city: response.data.city,
+                      country: response.data.country,
+                    });
+                  }
+                } catch (error) {
+                  console.error('Failed to refresh location:', error);
+                  Alert.alert('Error', 'Failed to refresh location');
+                } finally {
+                  setLocationLoading(false);
+                }
+              }}
+            >
+              <RefreshCw 
+                size={16} 
+                color="#64748b"
+                style={{ 
+                  transform: [{ rotate: locationLoading ? '360deg' : '0deg' }] 
+                }} 
+              />
+            </TouchableOpacity>
           </View>
         ) : typeof user.currentLatitude === 'number' && typeof user.currentLongitude === 'number' ? (
           <View style={styles.settingItem}>
@@ -334,6 +370,38 @@ export const ProfileScreen = () => {
                 {user.currentLatitude.toFixed(4)}, {user.currentLongitude.toFixed(4)}
               </Text>
             </View>
+            <TouchableOpacity
+              style={{ padding: 8 }}
+              onPress={async () => {
+                setLocationLoading(true);
+                try {
+                  const coords = await getCurrentLocation();
+                  if (coords) {
+                    await refreshUser();
+                    const response = await apiClient.get('/geocode/reverse', {
+                      params: { lat: coords.latitude, lon: coords.longitude },
+                    });
+                    setLocationInfo({
+                      city: response.data.city,
+                      country: response.data.country,
+                    });
+                  }
+                } catch (error) {
+                  console.error('Failed to refresh location:', error);
+                  Alert.alert('Error', 'Failed to refresh location');
+                } finally {
+                  setLocationLoading(false);
+                }
+              }}
+            >
+              <RefreshCw 
+                size={16} 
+                color="#64748b"
+                style={{ 
+                  transform: [{ rotate: locationLoading ? '360deg' : '0deg' }] 
+                }} 
+              />
+            </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.settingItem}>
@@ -341,6 +409,38 @@ export const ProfileScreen = () => {
               <Text style={styles.settingLabel}>Location not set</Text>
               <Text style={styles.settingValue}>Enable location to discover nearby events</Text>
             </View>
+            <TouchableOpacity
+              style={{ padding: 8 }}
+              onPress={async () => {
+                setLocationLoading(true);
+                try {
+                  const coords = await getCurrentLocation();
+                  if (coords) {
+                    await refreshUser();
+                    const response = await apiClient.get('/geocode/reverse', {
+                      params: { lat: coords.latitude, lon: coords.longitude },
+                    });
+                    setLocationInfo({
+                      city: response.data.city,
+                      country: response.data.country,
+                    });
+                  }
+                } catch (error) {
+                  console.error('Failed to refresh location:', error);
+                  Alert.alert('Error', 'Failed to refresh location');
+                } finally {
+                  setLocationLoading(false);
+                }
+              }}
+            >
+              <RefreshCw 
+                size={16} 
+                color="#64748b"
+                style={{ 
+                  transform: [{ rotate: locationLoading ? '360deg' : '0deg' }] 
+                }} 
+              />
+            </TouchableOpacity>
           </View>
         )}
       </View>
