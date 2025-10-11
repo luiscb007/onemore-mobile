@@ -26,6 +26,7 @@ The mobile application is a **React Native** app built with **Expo** for iOS. It
 - **Compact Date Range**: Ultra-optimized vertical spacing (zero gaps/margins, reduced padding) in date range picker for maximum space utilization
 - **Date Range Slider**: Custom horizontal range slider with dual handles using absolute touch positioning for smooth dragging on both web and native
 - **Event Cards**: Compact design with 16pt bold titles (2pt larger than 14pt descriptions) for visual hierarchy while saving vertical space
+- **React Query Cache Sync**: Event interactions (going/like/pass) invalidate user-events query cache, ensuring MyEventsScreen immediately shows updated data when user switches tabs
 
 **Create Event Features:**
 - **Custom OptionPicker Component**: Reusable modal-based dropdown selector following CalendarPicker/TimePicker pattern, replaces unreliable native iOS Picker
