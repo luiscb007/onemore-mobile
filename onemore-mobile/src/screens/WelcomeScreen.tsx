@@ -9,11 +9,8 @@ import {
   Platform,
 } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useAuth } from '../contexts/AuthContext';
-
-WebBrowser.maybeCompleteAuthSession();
 
 type WelcomeScreenProps = {
   navigation: any;
@@ -24,25 +21,34 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const [isAppleLoading, setIsAppleLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  // Configure Google OAuth
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId: '861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu.apps.googleusercontent.com',
-    // For iOS, you need to add the iOS client ID here when you create one
-    iosClientId: '861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu.apps.googleusercontent.com',
-  });
-
+  // Configure Google Sign In
   useEffect(() => {
-    if (response?.type === 'success') {
-      const { id_token } = response.params;
-      handleGoogleSignIn(id_token);
-    }
-  }, [response]);
+    GoogleSignin.configure({
+      webClientId: '861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu.apps.googleusercontent.com',
+      // For iOS, you'll need to add the iOS client ID from Google Cloud Console
+      iosClientId: '861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu.apps.googleusercontent.com',
+    });
+  }, []);
 
-  const handleGoogleSignIn = async (idToken: string) => {
+  const handleGoogleSignIn = async () => {
     try {
       setIsGoogleLoading(true);
-      await googleSignIn({ idToken });
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      
+      if (response.type === 'success') {
+        const { idToken } = response.data;
+        if (idToken) {
+          await googleSignIn({ idToken });
+        } else {
+          throw new Error('No ID token received from Google');
+        }
+      }
     } catch (error: any) {
+      if (error.code === 'SIGN_IN_CANCELLED') {
+        // User cancelled the sign-in
+        return;
+      }
       console.error('Google Sign In error:', error);
       Alert.alert('Error', 'Google Sign In failed. Please try again.');
     } finally {
@@ -104,8 +110,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 
           <TouchableOpacity
             style={styles.googleButton}
-            onPress={() => promptAsync()}
-            disabled={!request || isGoogleLoading}
+            onPress={handleGoogleSignIn}
+            disabled={isGoogleLoading}
           >
             {isGoogleLoading ? (
               <ActivityIndicator size="small" color="#fff" />
