@@ -15,6 +15,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
 import { eventsApi } from '../api/events';
 import { authApi } from '../api/auth';
 import { apiClient } from '../api/client';
@@ -27,6 +28,7 @@ import { RangeSlider } from '../components/RangeSlider';
 export const HomeScreen = () => {
   const { user, refreshUser } = useAuth();
   const navigation = useNavigation();
+  const queryClient = useQueryClient();
   const [events, setEvents] = useState<EventWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -183,6 +185,7 @@ export const HomeScreen = () => {
   const handleInteraction = async (eventId: string, type: 'going' | 'like' | 'pass') => {
     try {
       await eventsApi.interactWithEvent(eventId, type);
+      queryClient.invalidateQueries({ queryKey: ['user-events'] });
       await loadEvents();
     } catch (error: any) {
       console.error('Failed to interact:', error);
