@@ -309,7 +309,7 @@ export const HomeScreen = () => {
           <Switch
             value={hidePast}
             onValueChange={setHidePast}
-            trackColor={{ false: '#cbd5e1', true: '#22c55e' }}
+            trackColor={{ false: '#cbd5e1', true: '#007AFF' }}
             thumbColor="#fff"
           />
         </View>
@@ -435,7 +435,7 @@ export const HomeScreen = () => {
                 <Switch
                   value={hidePast}
                   onValueChange={setHidePast}
-                  trackColor={{ false: '#cbd5e1', true: '#22c55e' }}
+                  trackColor={{ false: '#cbd5e1', true: '#007AFF' }}
                   thumbColor="#fff"
                 />
               </View>
