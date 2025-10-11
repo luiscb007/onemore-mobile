@@ -514,6 +514,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parsedUserLng = userLng ? parseFloat(userLng as string) : undefined;
       const parsedUserRadius = userRadius ? parseInt(userRadius as string) : undefined;
       
+      console.log('[DEBUG] /api/events query params:', {
+        userLat: parsedUserLat,
+        userLng: parsedUserLng,
+        userRadius: parsedUserRadius,
+        category,
+        sortBy
+      });
+      
       const events = await storage.getEventsByCategory(
         category as string,
         userId as string,
