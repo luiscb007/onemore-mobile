@@ -606,16 +606,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
-    gap: 4,
+    gap: 0,
   },
   dateHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 0,
   },
   dateLabel: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '500',
     color: '#334155',
   },
@@ -638,12 +638,12 @@ const styles = StyleSheet.create({
   },
   rangeSliderContainer: {
     paddingHorizontal: 8,
-    paddingVertical: 8,
+    paddingVertical: 4,
   },
   dateLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 4,
+    marginTop: 0,
     paddingHorizontal: 4,
   },
   dateLabelText: {
