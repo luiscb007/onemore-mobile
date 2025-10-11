@@ -3,8 +3,20 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
 import fs from "fs";
+import cors from "cors";
 
 const app = express();
+
+// CORS configuration for mobile app
+// Mobile app uses JWT Bearer tokens (Authorization header), not cookies
+// So credentials: false is secure - no CSRF risk from mobile JWT authentication
+app.use(cors({
+  origin: true, // Allow all origins (mobile apps can come from any location)
+  credentials: false, // No cookies used - JWT tokens in Authorization header only
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
