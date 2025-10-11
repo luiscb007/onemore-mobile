@@ -20,9 +20,9 @@ The mobile application is a **React Native** app built with **Expo** for iOS. It
 
 **HomeScreen Features:**
 - **Blue Branding**: Logo uses blue (#007AFF) background, "Hide past" toggles use blue when active (main controls + modal), consistent with app's accent color
-- **Location Display**: Shows current city name with MapPin icon and search radius, includes refresh button with loading animation
 - **Category Navigation**: Horizontal scrollable category carousel with compact buttons (12px text, reduced padding) and left/right arrow buttons for incremental navigation (200px scroll per click)
 - **Smart Arrow States**: Arrows auto-enable/disable based on scroll position and content width, using dark grey (#334155) when enabled, light grey (#cbd5e1) when disabled for clear visibility
+- **Compact Date Range**: Optimized vertical spacing (reduced padding/margins) in date range picker for better space utilization, allowing more events visible without scrolling
 - **Date Range Slider**: Custom horizontal range slider with dual handles using absolute touch positioning for smooth dragging on both web and native
 
 **Create Event Features:**
@@ -50,7 +50,7 @@ The mobile application is a **React Native** app built with **Expo** for iOS. It
 **ProfileScreen Features:**
 - **iOS-Native Settings Layout**: Settings items use flexDirection: 'row' with space-between justification, matching native iOS Settings app design patterns
 - **Currency Picker**: Modal-based currency selector with scrollable list, visual selection states (checkmark + highlighted background), and real-time currency updates
-- **Location Display**: Shows city/country via reverse geocoding instead of raw coordinates, with fallback to coordinates if reverse geocoding fails
+- **Location Display**: Shows city/country via reverse geocoding instead of raw coordinates, with fallback to coordinates if reverse geocoding fails, includes refresh icon button with loading animation to update location
 - **Search Radius Control**: Slider with real-time updates, displaying current value and range labels (0-100 km)
 - **Account Settings**: Displays subscription status and tier, with visual role badges (Attendee/Organizer) using color-coded styling
 - **User Stats**: Shows events created, attended, and average organizer rating with visual stat cards
