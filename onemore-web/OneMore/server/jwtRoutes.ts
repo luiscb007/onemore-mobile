@@ -126,7 +126,8 @@ export function setupJWTRoutes(app: Express) {
         const { default: verifyAppleToken } = await import('verify-apple-id-token');
         jwtClaims = await verifyAppleToken({
           idToken: identityToken,
-          clientId: 'com.onemore.app', // iOS app bundle identifier
+          // Accept both Expo Go (for testing) and OneMore (for production) bundle IDs
+          clientId: ['host.exp.Exponent', 'com.onemore.app'],
         });
       } catch (verifyError) {
         console.error('Apple token verification failed:', verifyError);
