@@ -73,6 +73,11 @@ The mobile app is production-ready for iOS deployment with robust error handling
 
 The backend is an **Express.js** application written in **TypeScript**, providing RESTful API endpoints. It includes **Replit's OpenID Connect (OIDC)** via **Passport.js** for web authentication and is designed for **JWT token-based authentication** for mobile. **Apple Sign In** is implemented with secure token verification using the **verify-apple-id-token** package, validating tokens against Apple's public keys and only accepting verified email claims to prevent impersonation. **Google Sign In** is implemented with the **google-auth-library** package, properly verifying ID tokens with configured audience validation. Other features include **PostgreSQL-backed sessions**, **express-rate-limit** for rate limiting, **bad-words** filter for content safety, and **sanitize-html** for XSS prevention.
 
+**Production Configuration:**
+- **CORS Middleware**: Configured with `origin: true` and `credentials: false` to allow mobile app access from any location while preventing CSRF attacks. JWT bearer tokens are sent via Authorization headers (not cookies), making this configuration secure.
+- **Environment Variables**: JWT_SECRET and LOCATIONIQ_API_KEY are stored in Replit Secrets for secure access.
+- **API Endpoint**: Currently accessible at Replit dev domain, ready for production deployment URL switch for TestFlight/App Store builds.
+
 ### Database Architecture
 
 **PostgreSQL**, hosted on **Neon**, is the primary database, accessed via **Drizzle ORM** for type-safe queries and schema management. Core tables include `users`, `events`, `eventInteractions`, `eventWaitlist`, `conversations`, `messages`, `organizerRatings`, `currencies`, and `sessions`. **Drizzle Kit** handles migrations, and schema definitions are type-safe and shared between client and server.
