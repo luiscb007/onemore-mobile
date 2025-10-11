@@ -2,6 +2,7 @@ import type { Express } from 'express';
 import { storage } from './storage';
 import { hashPassword, verifyPassword, generateToken } from './jwtAuth';
 import type { JWTPayload } from './jwtAuth';
+import verifyAppleToken from 'verify-apple-id-token';
 
 export function setupJWTRoutes(app: Express) {
   // Login endpoint for mobile
@@ -113,22 +114,42 @@ export function setupJWTRoutes(app: Express) {
   // Apple Sign In endpoint for mobile
   app.post('/api/auth/apple', async (req, res) => {
     try {
-      const { identityToken, user: appleUserId, email, fullName } = req.body;
+      const { identityToken, email, fullName } = req.body;
 
-      if (!identityToken || !appleUserId) {
-        return res.status(400).json({ message: 'Apple identity token and user ID are required' });
+      if (!identityToken) {
+        return res.status(400).json({ message: 'Apple identity token is required' });
       }
+
+      // Verify the Apple identity token with Apple's public keys
+      let jwtClaims;
+      try {
+        jwtClaims = await verifyAppleToken({
+          idToken: identityToken,
+          clientId: 'com.onemore.app', // iOS app bundle identifier
+        });
+      } catch (verifyError) {
+        console.error('Apple token verification failed:', verifyError);
+        return res.status(401).json({ message: 'Invalid Apple identity token' });
+      }
+
+      // Extract the verified Apple user ID from the token (sub claim)
+      const appleUserId = jwtClaims.sub;
+      // Only use email from Apple's verified token, never trust client-supplied email
+      // Apple returns email_verified as string "true"/"false", so check explicitly
+      const verifiedEmail = (jwtClaims.email_verified === true || jwtClaims.email_verified === 'true') 
+        ? jwtClaims.email 
+        : null;
 
       // Check if user already exists with this Apple ID
       let user = await storage.getUserByAppleId(appleUserId);
 
       if (!user) {
-        // If no user with Apple ID, check if email exists (user might have signed up with email before)
-        if (email) {
-          user = await storage.getUserByEmail(email);
+        // If no user with Apple ID and we have a verified email, check if email exists
+        // (user might have signed up with email before)
+        if (verifiedEmail) {
+          user = await storage.getUserByEmail(verifiedEmail);
           if (user) {
             // Link Apple ID to existing email account
-            // Note: In production, you might want to verify the identity token with Apple
             await storage.upsertUser({
               ...user,
               appleId: appleUserId,
@@ -143,7 +164,7 @@ export function setupJWTRoutes(app: Express) {
           
           user = await storage.createUserWithAppleId({
             appleId: appleUserId,
-            email: email || null,
+            email: verifiedEmail || null,
             firstName,
             lastName,
             role: 'attendee',
