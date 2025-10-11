@@ -50,7 +50,11 @@ export const HomeScreen = () => {
 
   useEffect(() => {
     if (user?.currentLatitude && user?.currentLongitude) {
-      setCurrentCoords({ latitude: user.currentLatitude, longitude: user.currentLongitude });
+      const coords = { latitude: user.currentLatitude, longitude: user.currentLongitude };
+      console.log('[DEBUG] Setting currentCoords:', coords, 'from user:', { lat: user.currentLatitude, lng: user.currentLongitude });
+      setCurrentCoords(coords);
+    } else {
+      console.log('[DEBUG] No coordinates to set. user.currentLatitude:', user?.currentLatitude, 'user.currentLongitude:', user?.currentLongitude);
     }
   }, [user?.currentLatitude, user?.currentLongitude]);
 
@@ -86,6 +90,7 @@ export const HomeScreen = () => {
       const dateTo = formatDate(endDate);
 
       const effectiveCoords = coords !== undefined ? coords : currentCoords;
+      console.log('[DEBUG] loadEvents called with coords:', coords, 'currentCoords:', currentCoords, 'effectiveCoords:', effectiveCoords);
       const params = {
         category: selectedCategory !== 'all' ? selectedCategory : undefined,
         userId: user?.id,
@@ -98,6 +103,8 @@ export const HomeScreen = () => {
         dateTo,
         sortBy,
       };
+      
+      console.log('[DEBUG] API params being sent:', { userLat: params.userLat, userLng: params.userLng, userRadius: params.userRadius });
       
       let data = await eventsApi.getEvents(params);
       
