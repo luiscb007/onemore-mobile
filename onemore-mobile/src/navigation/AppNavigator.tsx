@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -15,13 +15,45 @@ import { MessagesScreen } from '../screens/MessagesScreen';
 import { ChatScreen } from '../screens/ChatScreen';
 import { EventDetailScreen } from '../screens/EventDetailScreen';
 import { useAuth } from '../contexts/AuthContext';
+import { useLocation } from '../hooks/useLocation';
 import { ActivityIndicator, View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 export const AppNavigator = () => {
-  const { user, loading, userRole } = useAuth();
+  const { user, loading, userRole, refreshUser } = useAuth();
+  const { getCurrentLocation, requestLocationPermission, permissionStatus } = useLocation();
+  const locationFetchedRef = useRef(false);
+
+  // Request location when user logs in
+  useEffect(() => {
+    const fetchLocation = async () => {
+      if (user && !locationFetchedRef.current) {
+        // Request permission if not granted
+        if (permissionStatus !== 'granted') {
+          await requestLocationPermission();
+        }
+        
+        // Get location after permission is granted (either already or just granted)
+        if (permissionStatus === 'granted') {
+          const coords = await getCurrentLocation();
+          if (coords) {
+            locationFetchedRef.current = true;
+            // Refresh user data to get updated coordinates
+            setTimeout(() => {
+              refreshUser();
+            }, 500);
+          }
+        }
+      } else if (!user) {
+        // Reset when user logs out
+        locationFetchedRef.current = false;
+      }
+    };
+    
+    fetchLocation();
+  }, [user, permissionStatus]);
 
   if (loading) {
     return (
