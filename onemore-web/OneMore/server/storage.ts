@@ -606,18 +606,6 @@ export class DatabaseStorage implements IStorage {
           const eventLng = parseFloat(eventInstance.longitude);
           eventDistance = calculateDistance(userLat, userLng, eventLat, eventLng);
           
-          console.log('[DISTANCE DEBUG]', {
-            eventId: eventInstance.id,
-            eventTitle: eventInstance.title,
-            eventLat,
-            eventLng,
-            userLat,
-            userLng,
-            distance: eventDistance,
-            userRadius,
-            filtered: userRadius !== undefined && eventDistance > userRadius
-          });
-          
           // Filter by radius if provided
           if (userRadius !== undefined && eventDistance > userRadius) {
             continue;
