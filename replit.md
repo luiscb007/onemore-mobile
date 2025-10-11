@@ -59,7 +59,14 @@ The mobile application is a **React Native** app built with **Expo** for iOS. It
 - **User Stats**: Shows events created, attended, and average organizer rating with visual stat cards
 - **Feedback & Account Management**: Feedback modal for user suggestions, account deletion with reason tracking and optional feedback
 
-The mobile app is production-ready for iOS deployment.
+**App Stability & Error Handling:**
+- **Error Boundary**: Class-based ErrorBoundary component wraps all main tab screens to catch React crashes gracefully, showing user-friendly error messages with retry functionality
+- **Promise-Chaining for API Calls**: HomeScreen uses promise-chaining pattern for sequential event loading, preventing race conditions and ensuring user-triggered reloads (pull-to-refresh, filter changes) execute in order without being dropped
+- **Mounted State Guards**: isMountedRef prevents state updates after component unmount to avoid memory leaks and crashes during navigation
+- **Event Data Validation**: isValidEvent() function validates all events before rendering, checking required fields (id, title, date), date validity, and coordinate bounds to prevent crashes from malformed backend data
+- **Safe Rendering**: renderEvent includes additional validation checks as a final safeguard against invalid data
+
+The mobile app is production-ready for iOS deployment with robust error handling and stability mechanisms.
 
 ### Backend Architecture
 
