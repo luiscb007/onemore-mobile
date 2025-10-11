@@ -170,13 +170,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Parse numeric fields to numbers for frontend
       if (user) {
+        const parseCoordinate = (value: any): number | null => {
+          if (value == null || String(value).trim() === '') return null;
+          const parsed = Number(value);
+          return Number.isFinite(parsed) ? parsed : null;
+        };
+        
+        const parseRadius = (value: any): number => {
+          if (value == null || String(value).trim() === '') return 50;
+          const parsed = Number(value);
+          return Number.isFinite(parsed) ? parsed : 50;
+        };
+        
         const parsedUser = {
           ...user,
-          currentLatitude: user.currentLatitude ? parseFloat(user.currentLatitude as any) : null,
-          currentLongitude: user.currentLongitude ? parseFloat(user.currentLongitude as any) : null,
-          searchRadius: user.searchRadius ? parseInt(user.searchRadius as any) : 50,
-          lastCurrencyCheckLatitude: user.lastCurrencyCheckLatitude ? parseFloat(user.lastCurrencyCheckLatitude as any) : null,
-          lastCurrencyCheckLongitude: user.lastCurrencyCheckLongitude ? parseFloat(user.lastCurrencyCheckLongitude as any) : null,
+          currentLatitude: parseCoordinate(user.currentLatitude),
+          currentLongitude: parseCoordinate(user.currentLongitude),
+          searchRadius: parseRadius(user.searchRadius),
+          lastCurrencyCheckLatitude: parseCoordinate(user.lastCurrencyCheckLatitude),
+          lastCurrencyCheckLongitude: parseCoordinate(user.lastCurrencyCheckLongitude),
         };
         res.json(parsedUser);
       } else {
