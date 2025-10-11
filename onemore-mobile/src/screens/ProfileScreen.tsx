@@ -40,6 +40,7 @@ export const ProfileScreen = () => {
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
   const [locationLoading, setLocationLoading] = useState(false);
+  const [isSliding, setIsSliding] = useState(false);
 
   const { data: stats } = useQuery<{ eventsCreated: number; eventsAttended: number; averageRating: number }>({
     queryKey: [`/users/${user?.id}/stats`],
@@ -59,10 +60,10 @@ export const ProfileScreen = () => {
   });
 
   useEffect(() => {
-    if (user?.searchRadius !== undefined) {
+    if (user?.searchRadius !== undefined && !isSliding) {
       setSearchRadius(user.searchRadius);
     }
-  }, [user?.searchRadius]);
+  }, [user?.searchRadius, isSliding]);
 
   useEffect(() => {
     const fetchLocationInfo = async () => {
@@ -409,7 +410,11 @@ export const ProfileScreen = () => {
             style={styles.slider}
             value={searchRadius}
             onValueChange={setSearchRadius}
-            onSlidingComplete={(value) => updateRadiusMutation.mutate(value)}
+            onSlidingStart={() => setIsSliding(true)}
+            onSlidingComplete={(value) => {
+              setIsSliding(false);
+              updateRadiusMutation.mutate(value);
+            }}
             minimumValue={0}
             maximumValue={100}
             step={1}

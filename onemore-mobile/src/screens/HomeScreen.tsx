@@ -133,7 +133,7 @@ export const HomeScreen = () => {
       }, 300);
       return () => clearTimeout(timeoutId);
     }
-  }, [selectedCategory, user, searchQuery, hidePast, sortBy, startDays, endDays]);
+  }, [selectedCategory, user?.id, user?.searchRadius, user?.currentLatitude, user?.currentLongitude, searchQuery, hidePast, sortBy, startDays, endDays]);
 
   const handleRefresh = () => {
     setRefreshing(true);
