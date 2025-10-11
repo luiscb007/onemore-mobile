@@ -167,7 +167,7 @@ export const HomeScreen = () => {
     return (
       <TouchableOpacity 
         style={styles.eventCard}
-        onPress={() => navigation.navigate('EventDetail' as never, { eventId: item.id } as never)}
+        onPress={() => (navigation as any).navigate('EventDetail', { eventId: item.id })}
         activeOpacity={0.7}
       >
         <View style={styles.eventContent}>

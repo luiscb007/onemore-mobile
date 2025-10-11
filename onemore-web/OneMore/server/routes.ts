@@ -168,7 +168,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      res.json(user);
+      // Parse numeric fields to numbers for frontend
+      if (user) {
+        const parsedUser = {
+          ...user,
+          currentLatitude: user.currentLatitude ? parseFloat(user.currentLatitude as any) : null,
+          currentLongitude: user.currentLongitude ? parseFloat(user.currentLongitude as any) : null,
+          searchRadius: user.searchRadius ? parseInt(user.searchRadius as any) : 50,
+          lastCurrencyCheckLatitude: user.lastCurrencyCheckLatitude ? parseFloat(user.lastCurrencyCheckLatitude as any) : null,
+          lastCurrencyCheckLongitude: user.lastCurrencyCheckLongitude ? parseFloat(user.lastCurrencyCheckLongitude as any) : null,
+        };
+        res.json(parsedUser);
+      } else {
+        res.json(user);
+      }
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
