@@ -63,7 +63,7 @@ export const ProfileScreen = () => {
     if (user?.searchRadius !== undefined && !isSliding) {
       setSearchRadius(user.searchRadius);
     }
-  }, [user?.searchRadius, isSliding]);
+  }, [user?.searchRadius]);
 
   useEffect(() => {
     const fetchLocationInfo = async () => {
