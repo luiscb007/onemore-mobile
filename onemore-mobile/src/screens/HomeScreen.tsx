@@ -295,6 +295,7 @@ export const HomeScreen = () => {
             onValueChange={setHidePast}
             trackColor={{ false: '#cbd5e1', true: '#007AFF' }}
             thumbColor="#fff"
+            style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
           />
         </View>
         <View style={styles.sortRow}>
@@ -373,6 +374,7 @@ export const HomeScreen = () => {
                   onValueChange={setHidePast}
                   trackColor={{ false: '#cbd5e1', true: '#007AFF' }}
                   thumbColor="#fff"
+                  style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
                 />
               </View>
 
@@ -825,7 +827,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   eventTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 4,
