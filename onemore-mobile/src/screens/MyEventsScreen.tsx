@@ -542,6 +542,16 @@ export const MyEventsScreen = () => {
           }}
         />
       )}
+
+      {/* Floating Action Button to Create Event */}
+      {user?.role === 'organizer' && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => (navigation as any).navigate('CreateEvent')}
+        >
+          <Plus size={28} color="#fff" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -792,5 +802,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748b',
     fontWeight: '500',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#007AFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });
