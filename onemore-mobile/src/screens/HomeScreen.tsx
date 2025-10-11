@@ -858,8 +858,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   categoryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 20,
     marginRight: 8,
     backgroundColor: '#F0F0F0',
@@ -868,7 +868,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#007AFF',
   },
   categoryButtonText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     color: '#666',
     textTransform: 'capitalize',
