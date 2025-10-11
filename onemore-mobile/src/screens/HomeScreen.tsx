@@ -45,8 +45,17 @@ export const HomeScreen = () => {
   const [categoryContentWidth, setCategoryContentWidth] = useState(0);
   const [currentCoords, setCurrentCoords] = useState<{latitude: number, longitude: number} | null>(null);
   const previousRadiusRef = useRef<number | undefined>(undefined);
+  const isLoadingRef = useRef(false);
+  const isMountedRef = useRef(true);
 
   const categories = ['all', 'arts', 'community', 'culture', 'sports', 'workshops'];
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (user?.currentLatitude && user?.currentLongitude) {
@@ -63,6 +72,12 @@ export const HomeScreen = () => {
   };
 
   const loadEvents = async (coords?: {latitude: number, longitude: number} | null) => {
+    if (isLoadingRef.current) {
+      return;
+    }
+    
+    isLoadingRef.current = true;
+    
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -101,15 +116,20 @@ export const HomeScreen = () => {
         data = data.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       }
       
-      setEvents(data);
+      if (isMountedRef.current) {
+        setEvents(data);
+      }
     } catch (error: any) {
       console.error('Failed to load events:', error);
-      if (error.response?.status === 401) {
+      if (error.response?.status === 401 && isMountedRef.current) {
         Alert.alert('Authentication Error', 'Please log in to view events');
       }
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      isLoadingRef.current = false;
+      if (isMountedRef.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   };
 
