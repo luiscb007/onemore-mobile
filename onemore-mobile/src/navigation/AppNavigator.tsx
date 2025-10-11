@@ -16,6 +16,7 @@ import { ChatScreen } from '../screens/ChatScreen';
 import { EventDetailScreen } from '../screens/EventDetailScreen';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation } from '../hooks/useLocation';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { ActivityIndicator, View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 const Tab = createBottomTabNavigator();
@@ -95,40 +96,60 @@ export const AppNavigator = () => {
       >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
         options={{
           tabBarIcon: ({ color }) => (
             <Text style={{ fontSize: 24 }}>🔍</Text>
           ),
         }}
-      />
+      >
+        {() => (
+          <ErrorBoundary>
+            <HomeScreen />
+          </ErrorBoundary>
+        )}
+      </Tab.Screen>
       <Tab.Screen
         name="MyEvents"
-        component={MyEventsScreen}
         options={{
           tabBarIcon: ({ color }) => (
             <Text style={{ fontSize: 24 }}>📅</Text>
           ),
         }}
-      />
+      >
+        {() => (
+          <ErrorBoundary>
+            <MyEventsScreen />
+          </ErrorBoundary>
+        )}
+      </Tab.Screen>
       <Tab.Screen
         name="Messages"
-        component={MessagesScreen}
         options={{
           tabBarIcon: ({ color }) => (
             <Text style={{ fontSize: 24 }}>💬</Text>
           ),
         }}
-      />
+      >
+        {() => (
+          <ErrorBoundary>
+            <MessagesScreen />
+          </ErrorBoundary>
+        )}
+      </Tab.Screen>
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
         options={{
           tabBarIcon: ({ color }) => (
             <Text style={{ fontSize: 24 }}>👤</Text>
           ),
         }}
-      />
+      >
+        {() => (
+          <ErrorBoundary>
+            <ProfileScreen />
+          </ErrorBoundary>
+        )}
+      </Tab.Screen>
       </Tab.Navigator>
     );
   };
