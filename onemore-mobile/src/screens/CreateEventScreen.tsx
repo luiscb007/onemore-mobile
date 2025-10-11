@@ -418,7 +418,7 @@ export const CreateEventScreen = () => {
 
           {/* Capacity */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Capacity (Optional)</Text>
+            <Text style={styles.label}>Capacity</Text>
             <Controller
               control={control}
               name="capacity"
@@ -437,7 +437,7 @@ export const CreateEventScreen = () => {
 
           {/* Duration */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Duration (Optional)</Text>
+            <Text style={styles.label}>Duration (hours)</Text>
             <Controller
               control={control}
               name="durationHours"
