@@ -472,14 +472,12 @@ export const MyEventsScreen = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Events</Text>
-        {user?.role === 'organizer' && (
-          <TouchableOpacity
-            style={styles.createButton}
-            onPress={() => (navigation as any).navigate('CreateEvent')}
-          >
-            <Plus size={20} color="#fff" />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={styles.createButton}
+          onPress={() => (navigation as any).navigate('CreateEvent')}
+        >
+          <Plus size={20} color="#fff" />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.tabsContainer}>
@@ -542,16 +540,6 @@ export const MyEventsScreen = () => {
           }}
         />
       )}
-
-      {/* Floating Action Button to Create Event */}
-      {user?.role === 'organizer' && (
-        <TouchableOpacity
-          style={styles.fab}
-          onPress={() => (navigation as any).navigate('CreateEvent')}
-        >
-          <Plus size={28} color="#fff" />
-        </TouchableOpacity>
-      )}
     </View>
   );
 };
@@ -570,19 +558,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    paddingTop: 60,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#1e293b',
   },
   createButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: '#007AFF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -802,22 +792,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748b',
     fontWeight: '500',
-  },
-  fab: {
-    position: 'absolute',
-    bottom: 24,
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#007AFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-    zIndex: 1000,
   },
 });
