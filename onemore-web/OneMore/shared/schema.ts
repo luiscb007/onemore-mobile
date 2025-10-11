@@ -45,6 +45,9 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").notNull().default("attendee"), // attendee or organizer
+  emailVerified: boolean("email_verified").notNull().default(false), // Email verification status
+  verificationToken: varchar("verification_token"), // Token for email verification (null after verified)
+  verificationTokenExpiry: timestamp("verification_token_expiry"), // Token expiry time
   currentLatitude: decimal("current_latitude", { precision: 10, scale: 7 }),
   currentLongitude: decimal("current_longitude", { precision: 10, scale: 7 }),
   searchRadius: integer("search_radius").notNull().default(100), // Search radius in km (0-100)
