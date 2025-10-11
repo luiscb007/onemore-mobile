@@ -484,18 +484,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/events', async (req, res) => {
     try {
       const { category = 'all', userId, userLat, userLng, hidePast, userRadius, search, dateFrom, dateTo, sortBy } = req.query;
+      
+      const parsedUserLat = userLat ? parseFloat(userLat as string) : undefined;
+      const parsedUserLng = userLng ? parseFloat(userLng as string) : undefined;
+      const parsedUserRadius = userRadius ? parseInt(userRadius as string) : undefined;
+      
+      console.log('[DEBUG] /api/events params:', {
+        userLat: parsedUserLat,
+        userLng: parsedUserLng,
+        userRadius: parsedUserRadius,
+        category,
+        sortBy
+      });
+      
       const events = await storage.getEventsByCategory(
         category as string,
         userId as string,
-        userLat ? parseFloat(userLat as string) : undefined,
-        userLng ? parseFloat(userLng as string) : undefined,
+        parsedUserLat,
+        parsedUserLng,
         hidePast === 'true',
-        userRadius ? parseInt(userRadius as string) : undefined,
+        parsedUserRadius,
         search as string | undefined,
         dateFrom ? new Date(dateFrom as string) : undefined,
         dateTo ? new Date(dateTo as string) : undefined,
         sortBy as 'date' | 'distance' | 'popularity' | undefined
       );
+      
+      console.log(`[DEBUG] Returned ${events.length} events`);
+      
       res.json(events);
     } catch (error) {
       console.error("Error fetching events:", error);

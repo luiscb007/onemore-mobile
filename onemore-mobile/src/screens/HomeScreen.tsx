@@ -195,12 +195,9 @@ export const HomeScreen = () => {
                 ⏱️ {formatDuration(item.durationHours)}
               </Text>
             )}
-            <Text style={styles.metaText} numberOfLines={1}>
-              📍 {item.address}
-            </Text>
             {item.distance !== undefined && item.distance !== null && (
               <Text style={styles.metaText}>
-                🚶 {item.distance.toFixed(1)} km away
+                📍 {item.distance.toFixed(1)} km
               </Text>
             )}
             {item.priceAmount !== null && item.priceAmount !== undefined && (
