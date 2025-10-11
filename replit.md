@@ -39,9 +39,11 @@ The mobile application is a **React Native** app built with **Expo** for iOS. It
 
 **Authentication & Welcome Flow:**
 - **WelcomeScreen**: Stylish welcome screen with app's red/blue color scheme, featuring dual authentication options (Apple Sign In and Email registration) with equal prominence
-- **Apple Sign In**: Fully implemented with expo-apple-authentication, secure backend token verification using verify-apple-id-token package, and verified email linking
+- **Apple Sign In**: Fully implemented with expo-apple-authentication, secure backend token verification using verify-apple-id-token package, and verified email linking. Auto-verified users bypass email verification.
+- **Email Registration**: Mandatory first name requirement, secure email verification flow with 24-hour token expiry
+- **Email Verification**: Users must verify email before login, with Replit Mail integration for verification emails and resend functionality
 - **Auto-Login**: Seamless auto-login for returning users via encrypted token storage in Expo SecureStore
-- **Security**: Backend properly validates Apple identity tokens with Apple's public keys, checks email_verified claim, and prevents account takeover by only using verified data from Apple
+- **Security**: Backend properly validates Apple identity tokens with Apple's public keys, checks email_verified claim, and prevents account takeover by only using verified data from Apple. Email enumeration prevention with consistent generic responses.
 
 The mobile app is production-ready for iOS deployment.
 
@@ -72,6 +74,7 @@ The platform supports:
 
 -   **Neon Database**: Serverless PostgreSQL hosting.
 -   **Replit**: Platform hosting and OIDC authentication provider.
+-   **Replit Mail**: Transactional email service for verification emails.
 -   **LocationIQ API**: Address autocomplete and geocoding.
 -   **OpenStreetMap Nominatim**: Reverse geocoding for location context and currency detection.
 -   **MapLibre GL JS**: Open-source map rendering.
