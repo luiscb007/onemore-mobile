@@ -12,7 +12,7 @@ type AuthContextType = {
   loading: boolean;
   userRole: UserRole;
   login: (credentials: LoginCredentials) => Promise<void>;
-  register: (credentials: RegisterCredentials) => Promise<void>;
+  register: (credentials: RegisterCredentials) => Promise<{ message: string; email?: string }>;
   appleSignIn: (credentials: AppleSignInCredentials) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -78,8 +78,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (credentials: RegisterCredentials) => {
     setLoading(true);
     try {
-      const { user: registeredUser } = await authApi.register(credentials);
-      setUser(registeredUser);
+      // New flow: registration returns message, user must verify email before logging in
+      const response = await authApi.register(credentials);
+      // Do NOT set user - they need to verify email first
+      return response;
     } catch (error) {
       console.error('Registration failed:', error);
       throw error;

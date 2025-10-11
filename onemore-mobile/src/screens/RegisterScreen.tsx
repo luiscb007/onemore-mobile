@@ -32,6 +32,11 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
       return;
     }
 
+    if (!firstName || firstName.trim() === '') {
+      Alert.alert('Error', 'First name is required');
+      return;
+    }
+
     if (password.length < 6) {
       Alert.alert('Error', 'Password must be at least 6 characters');
       return;
@@ -44,12 +49,24 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
 
     setIsSubmitting(true);
     try {
-      await register({
+      const response = await register({
         email,
         password,
-        firstName: firstName || undefined,
-        lastName: lastName || undefined,
+        firstName: firstName.trim(),
+        lastName: lastName?.trim() || undefined,
       });
+      
+      // Show success message and navigate to login
+      Alert.alert(
+        'Check Your Email',
+        response.message || 'Please check your email to verify your account before logging in.',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('Login'),
+          },
+        ]
+      );
     } catch (error: any) {
       const message = error.response?.data?.message || 'Registration failed. Please try again.';
       Alert.alert('Registration Failed', message);
@@ -89,7 +106,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
               editable={!isSubmitting}
             />
 
-            <Text style={styles.label}>First Name</Text>
+            <Text style={styles.label}>First Name *</Text>
             <TextInput
               style={styles.input}
               placeholder="John"

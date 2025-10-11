@@ -30,6 +30,11 @@ export interface AuthResponse {
   user: User;
 }
 
+export interface RegisterResponse {
+  message: string;
+  email?: string;
+}
+
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     const response = await apiClient.post('/auth/login', credentials);
@@ -43,15 +48,9 @@ export const authApi = {
     return response.data;
   },
 
-  register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
+  register: async (credentials: RegisterCredentials): Promise<RegisterResponse> => {
     const response = await apiClient.post('/auth/register', credentials);
-    const { token, refreshToken, user } = response.data;
-    
-    await tokenStorage.saveToken(token);
-    if (refreshToken) {
-      await tokenStorage.saveRefreshToken(refreshToken);
-    }
-    
+    // New flow: registration returns message, not token (user must verify email first)
     return response.data;
   },
 
