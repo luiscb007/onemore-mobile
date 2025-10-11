@@ -7,8 +7,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from 'react-native';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
 import { MessageCircle } from 'lucide-react-native';
 import { messagingApi, type Conversation } from '../api/messaging';
@@ -25,6 +26,31 @@ export const MessagesScreen = () => {
     enabled: !!user,
     refetchInterval: 5000,
   });
+
+  const deleteConversationMutation = useMutation({
+    mutationFn: (conversationId: string) => messagingApi.deleteConversation(conversationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    },
+    onError: () => {
+      Alert.alert('Error', 'Failed to delete conversation');
+    },
+  });
+
+  const handleDeleteConversation = (conversationId: string) => {
+    Alert.alert(
+      'Delete Conversation',
+      'Are you sure you want to delete this conversation? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteConversationMutation.mutate(conversationId),
+        },
+      ]
+    );
+  };
 
   const formatTime = (date: Date | null) => {
     if (!date) return '';
@@ -49,6 +75,8 @@ export const MessagesScreen = () => {
         onPress={() => {
           navigation.navigate('Chat' as never, { conversationId: item.id, otherUserName } as never);
         }}
+        onLongPress={() => handleDeleteConversation(item.id)}
+        delayLongPress={500}
       >
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{otherUserName.charAt(0).toUpperCase()}</Text>

@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -68,11 +69,37 @@ export const ChatScreen = () => {
     },
   });
 
+  const deleteMessageMutation = useMutation({
+    mutationFn: (messageId: string) => messagingApi.deleteMessage(messageId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    },
+    onError: () => {
+      Alert.alert('Error', 'Failed to delete message');
+    },
+  });
+
   const handleSend = () => {
     const trimmed = messageText.trim();
     if (trimmed) {
       sendMessageMutation.mutate(trimmed);
     }
+  };
+
+  const handleDeleteMessage = (messageId: string) => {
+    Alert.alert(
+      'Delete Message',
+      'Are you sure you want to delete this message?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteMessageMutation.mutate(messageId),
+        },
+      ]
+    );
   };
 
   const formatTime = (date: Date) => {
@@ -90,11 +117,13 @@ export const ChatScreen = () => {
           isOwnMessage ? styles.ownMessage : styles.otherMessage,
         ]}
       >
-        <View
+        <TouchableOpacity
           style={[
             styles.messageBubble,
             isOwnMessage ? styles.ownBubble : styles.otherBubble,
           ]}
+          onLongPress={() => isOwnMessage && handleDeleteMessage(item.id)}
+          delayLongPress={500}
         >
           <Text
             style={[
@@ -112,7 +141,7 @@ export const ChatScreen = () => {
           >
             {formatTime(item.createdAt)}
           </Text>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   };
