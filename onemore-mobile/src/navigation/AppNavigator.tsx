@@ -7,6 +7,7 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
+import { WelcomeScreen } from '../screens/WelcomeScreen';
 import { CreateEventScreen } from '../screens/CreateEventScreen';
 import { MyEventsScreen } from '../screens/MyEventsScreen';
 import { EditEventScreen } from '../screens/EditEventScreen';
@@ -35,6 +36,7 @@ export const AppNavigator = () => {
     return (
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Welcome" component={WelcomeScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
         </Stack.Navigator>
