@@ -31,12 +31,16 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const handleGoogleSignIn = async () => {
     try {
       setIsGoogleLoading(true);
-      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-      const userInfo = await GoogleSignin.signIn();
       
-      const idToken = userInfo.data?.idToken;
-      if (idToken) {
-        await googleSignIn({ idToken });
+      if (Platform.OS === 'android') {
+        await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      }
+      
+      const userInfo = await GoogleSignin.signIn();
+      const tokens = await GoogleSignin.getTokens();
+      
+      if (tokens.idToken) {
+        await googleSignIn({ idToken: tokens.idToken });
       } else {
         throw new Error('No ID token received from Google. Make sure webClientId is configured.');
       }
