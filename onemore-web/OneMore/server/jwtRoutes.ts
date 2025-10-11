@@ -2,7 +2,8 @@ import type { Express } from 'express';
 import { storage } from './storage';
 import { hashPassword, verifyPassword, generateToken } from './jwtAuth';
 import type { JWTPayload } from './jwtAuth';
-import verifyAppleToken from 'verify-apple-id-token';
+import * as verifyAppleTokenModule from 'verify-apple-id-token';
+const verifyAppleToken = (verifyAppleTokenModule as any).default || verifyAppleTokenModule;
 
 export function setupJWTRoutes(app: Express) {
   // Login endpoint for mobile
