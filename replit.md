@@ -37,11 +37,17 @@ The mobile application is a **React Native** app built with **Expo** for iOS. It
 - **Optimistic UI**: Local ratedEventIds provides immediate feedback while backend data refetches
 - **Type-Safe Implementation**: Full TypeScript integration with OrganizerRating type including all fields (updatedAt, createdAt)
 
+**Authentication & Welcome Flow:**
+- **WelcomeScreen**: Stylish welcome screen with app's red/blue color scheme, featuring dual authentication options (Apple Sign In and Email registration) with equal prominence
+- **Apple Sign In**: Fully implemented with expo-apple-authentication, secure backend token verification using verify-apple-id-token package, and verified email linking
+- **Auto-Login**: Seamless auto-login for returning users via encrypted token storage in Expo SecureStore
+- **Security**: Backend properly validates Apple identity tokens with Apple's public keys, checks email_verified claim, and prevents account takeover by only using verified data from Apple
+
 The mobile app is production-ready for iOS deployment.
 
 ### Backend Architecture
 
-The backend is an **Express.js** application written in **TypeScript**, providing RESTful API endpoints. It includes **Replit's OpenID Connect (OIDC)** via **Passport.js** for web authentication and is designed for **JWT token-based authentication** for mobile. Other features include **PostgreSQL-backed sessions**, **express-rate-limit** for rate limiting, **bad-words** filter for content safety, and **sanitize-html** for XSS prevention.
+The backend is an **Express.js** application written in **TypeScript**, providing RESTful API endpoints. It includes **Replit's OpenID Connect (OIDC)** via **Passport.js** for web authentication and is designed for **JWT token-based authentication** for mobile. **Apple Sign In** is implemented with secure token verification using the **verify-apple-id-token** package, validating tokens against Apple's public keys and only accepting verified email claims to prevent impersonation. Other features include **PostgreSQL-backed sessions**, **express-rate-limit** for rate limiting, **bad-words** filter for content safety, and **sanitize-html** for XSS prevention.
 
 ### Database Architecture
 
