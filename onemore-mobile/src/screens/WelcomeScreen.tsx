@@ -13,10 +13,8 @@ import Constants from 'expo-constants';
 import { useAuth } from '../contexts/AuthContext';
 
 // Conditionally import Google Sign In (only works in standalone builds, not Expo Go)
-// Constants.appOwnership values:
-// - 'standalone': App built with EAS/expo build (has native modules)
-// - 'expo' | 'guest' | null: Expo Go or published project (no native modules)
-const isStandaloneBuild = Constants.appOwnership === 'standalone';
+// Check if we're NOT in Expo Go (expo-constants defines this)
+const isStandaloneBuild = Constants.appOwnership !== 'expo';
 let GoogleSignin: any = null;
 
 if (isStandaloneBuild) {
