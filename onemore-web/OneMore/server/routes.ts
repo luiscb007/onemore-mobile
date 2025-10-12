@@ -359,20 +359,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const { reason, feedback } = req.body;
       
-      // Get user info before deletion for email
+      // Get user info before deletion for database storage
       const user = await storage.getUser(userId);
       const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Anonymous' : 'Anonymous';
       const userEmail = user?.email || 'no-email@example.com';
       
+      // Save deletion feedback to database (don't block deletion if save fails)
+      try {
+        await storage.saveAccountDeletionFeedback(userId, userEmail, userName, reason, feedback);
+      } catch (saveError) {
+        console.error("Error saving account deletion feedback:", saveError);
+      }
+      
       // Delete user and all associated data
       await storage.deleteUser(userId);
-      
-      // Send notification email (don't block deletion if email fails)
-      try {
-        await sendAccountDeletionEmail(userEmail, userName, reason, feedback);
-      } catch (emailError) {
-        console.error("Error sending deletion notification email:", emailError);
-      }
       
       // Logout the user
       req.logout((err: any) => {
