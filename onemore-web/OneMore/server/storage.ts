@@ -8,6 +8,7 @@ import {
   messages,
   organizerRatings,
   monthlyUsage,
+  accountDeletions,
   type User,
   type UpsertUser,
   type Currency,
@@ -381,6 +382,22 @@ export class DatabaseStorage implements IStorage {
       
       // 7. Delete user
       await tx.delete(users).where(eq(users.id, userId));
+    });
+  }
+
+  async saveAccountDeletionFeedback(
+    userId: string,
+    userEmail: string,
+    userName: string,
+    reason?: string,
+    feedback?: string
+  ): Promise<void> {
+    await db.insert(accountDeletions).values({
+      userId,
+      userEmail,
+      userName,
+      reason: reason || null,
+      feedback: feedback || null,
     });
   }
 
