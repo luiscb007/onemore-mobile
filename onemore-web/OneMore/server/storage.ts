@@ -48,6 +48,7 @@ export interface IStorage {
   updateUserCurrency(userId: string, currencyCode: string, checkLatitude: number, checkLongitude: number): Promise<void>;
   getUserStats(userId: string): Promise<{ eventsCreated: number; eventsAttended: number; averageRating: number }>;
   deleteUser(userId: string): Promise<void>;
+  saveAccountDeletionFeedback(userId: string, userEmail: string, userName: string, reason?: string, feedback?: string): Promise<void>;
   
   // Currency operations
   getAllCurrencies(): Promise<Currency[]>;

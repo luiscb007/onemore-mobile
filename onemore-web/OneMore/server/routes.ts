@@ -355,23 +355,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Delete user account
   app.delete('/api/user/delete', isAuthenticated, async (req: any, res) => {
+    const userId = req.user.claims.sub;
+    const { reason, feedback } = req.body;
+    
+    // Get user info before deletion for database storage
+    let user;
     try {
-      const userId = req.user.claims.sub;
-      const { reason, feedback } = req.body;
-      
-      // Get user info before deletion for database storage
-      const user = await storage.getUser(userId);
-      const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Anonymous' : 'Anonymous';
-      const userEmail = user?.email || 'no-email@example.com';
-      
-      // Save deletion feedback to database (don't block deletion if save fails)
-      try {
-        await storage.saveAccountDeletionFeedback(userId, userEmail, userName, reason, feedback);
-      } catch (saveError) {
-        console.error("Error saving account deletion feedback:", saveError);
-      }
-      
-      // Delete user and all associated data
+      user = await storage.getUser(userId);
+    } catch (error) {
+      console.error("Error fetching user before deletion:", error);
+    }
+    
+    const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Anonymous' : 'Anonymous';
+    const userEmail = user?.email || 'no-email@example.com';
+    
+    // Save deletion feedback to database (don't block deletion if save fails)
+    try {
+      await storage.saveAccountDeletionFeedback(userId, userEmail, userName, reason, feedback);
+    } catch (saveError) {
+      console.error("Error saving account deletion feedback:", saveError);
+      // Continue with deletion even if feedback save fails
+    }
+    
+    // Delete user and all associated data
+    try {
       await storage.deleteUser(userId);
       
       // Logout the user
