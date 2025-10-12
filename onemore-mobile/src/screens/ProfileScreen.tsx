@@ -269,14 +269,16 @@ export const ProfileScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Account Settings</Text>
         
-        <View style={styles.settingItem}>
-          <View>
-            <Text style={styles.settingLabel}>Subscription Status</Text>
-            <Text style={styles.settingValue}>
-              {user.subscriptionStatus || 'active'} • {user.subscriptionTier}
-            </Text>
+        {user.subscriptionTier && user.subscriptionTier !== 'free' && (
+          <View style={styles.settingItem}>
+            <View>
+              <Text style={styles.settingLabel}>Subscription Status</Text>
+              <Text style={styles.settingValue}>
+                {user.subscriptionStatus || 'active'} • {user.subscriptionTier}
+              </Text>
+            </View>
           </View>
-        </View>
+        )}
 
         {(locationInfo.city || locationInfo.country) ? (
           <View style={styles.settingItem}>
