@@ -182,6 +182,17 @@ export const monthlyUsage = pgTable("monthly_usage", {
   uniqueIndex("monthly_usage_user_month_unique").on(table.userId, table.month),
 ]);
 
+// Account deletions - track user feedback when deleting accounts
+export const accountDeletions = pgTable("account_deletions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id"), // User ID before deletion (no FK since user is deleted)
+  userEmail: varchar("user_email"),
+  userName: varchar("user_name"),
+  reason: varchar("reason"), // Predefined reason from app
+  feedback: text("feedback"), // Optional user-provided feedback
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const currenciesRelations = relations(currencies, ({ many }) => ({
   users: many(users),
@@ -360,6 +371,11 @@ export const insertMonthlyUsageSchema = createInsertSchema(monthlyUsage).omit({
   updatedAt: true,
 });
 
+export const insertAccountDeletionSchema = createInsertSchema(accountDeletions).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type Currency = typeof currencies.$inferSelect;
 export type InsertCurrency = z.infer<typeof insertCurrencySchema>;
@@ -379,6 +395,8 @@ export type InsertOrganizerRating = z.infer<typeof insertOrganizerRatingSchema>;
 export type OrganizerRating = typeof organizerRatings.$inferSelect;
 export type InsertMonthlyUsage = z.infer<typeof insertMonthlyUsageSchema>;
 export type MonthlyUsage = typeof monthlyUsage.$inferSelect;
+export type InsertAccountDeletion = z.infer<typeof insertAccountDeletionSchema>;
+export type AccountDeletion = typeof accountDeletions.$inferSelect;
 
 // Event with organizer and interaction info
 export type EventWithDetails = Event & {
