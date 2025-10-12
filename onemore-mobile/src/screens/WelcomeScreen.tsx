@@ -40,8 +40,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   useEffect(() => {
     if (GoogleSignin) {
       GoogleSignin.configure({
-        webClientId: '861823949799-8t14k06iqkr4v7gvflv4lc6uc0q40k6k.apps.googleusercontent.com',
-        iosClientId: '861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu.apps.googleusercontent.com',
+        webClientId: '178660337416-m9o2rjl5g3lshsa980tovrlvlvna8onl.apps.googleusercontent.com',
+        iosClientId: '178660337416-n5gd0jm1fkfb9d0j30hrecd6cgtge5iv.apps.googleusercontent.com',
       });
     }
   }, []);

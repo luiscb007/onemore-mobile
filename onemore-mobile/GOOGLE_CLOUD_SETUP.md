@@ -2,8 +2,8 @@
 
 ## Current Status
 ✅ Your app code is configured with these client IDs:
-- **Web Client ID**: `861823949799-8t14k06iqkr4v7gvflv4lc6uc0q40k6k.apps.googleusercontent.com`
-- **iOS Client ID**: `861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu.apps.googleusercontent.com`
+- **Web Client ID**: `178660337416-m9o2rjl5g3lshsa980tovrlvlvna8onl.apps.googleusercontent.com`
+- **iOS Client ID**: `178660337416-n5gd0jm1fkfb9d0j30hrecd6cgtge5iv.apps.googleusercontent.com`
 
 ## What You Need to Do
 
@@ -19,12 +19,12 @@ You should see two OAuth 2.0 Client IDs:
 
 #### Web Client ID (for ID tokens)
 - **Type**: Web application
-- **Client ID**: `861823949799-8t14k06iqkr4v7gvflv4lc6uc0q40k6k.apps.googleusercontent.com`
+- **Client ID**: `178660337416-m9o2rjl5g3lshsa980tovrlvlvna8onl.apps.googleusercontent.com`
 - **Purpose**: Backend verification of ID tokens
 
 #### iOS Client ID (for native sign-in)
 - **Type**: iOS
-- **Client ID**: `861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu.apps.googleusercontent.com`
+- **Client ID**: `178660337416-n5gd0jm1fkfb9d0j30hrecd6cgtge5iv.apps.googleusercontent.com`
 - **Bundle ID**: `com.onemore.app` (must match your app.json bundleIdentifier)
 
 ### Step 3: Create iOS Client ID (if it doesn't exist)
@@ -38,7 +38,7 @@ If the iOS Client ID doesn't exist yet:
 5. Click **CREATE**
 6. Copy the generated Client ID
 
-**Important**: The iOS Client ID should be `861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu.apps.googleusercontent.com` (as configured in your code)
+**Important**: The iOS Client ID should be `178660337416-n5gd0jm1fkfb9d0j30hrecd6cgtge5iv.apps.googleusercontent.com` (as configured in your code)
 
 ### Step 4: Enable Required APIs
 

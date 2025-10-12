@@ -411,10 +411,10 @@ export function setupJWTRoutes(app: Express) {
       try {
         ticket = await client.verifyIdToken({
           idToken,
-          // Accept both Expo Go (for testing) and OneMore (for production) client IDs
+          // Web client ID for OneMore app
           audience: [
-            '861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu.apps.googleusercontent.com', // Web client ID (used by expo-auth-session)
-            'com.googleusercontent.apps.861823949799-benbjhbbkbd7lnu2p0mknv6uutfp6ieu', // Alternative format
+            '178660337416-m9o2rjl5g3lshsa980tovrlvlvna8onl.apps.googleusercontent.com', // Web client ID
+            'com.googleusercontent.apps.178660337416-m9o2rjl5g3lshsa980tovrlvlvna8onl', // Alternative format
           ],
         });
       } catch (verifyError) {
