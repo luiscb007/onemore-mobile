@@ -51,12 +51,13 @@ The mobile application is a **React Native** app built with **Expo** for iOS. It
 - **Security**: Backend properly validates OAuth tokens (Apple and Google) with provider public keys, checks email_verified claims, and prevents account takeover by only using verified data from providers. Email enumeration prevention with consistent generic responses.
 
 **ProfileScreen Features:**
-- **Compact Header**: Shows avatar, editable name, and email only - subscription tier removed from header to save space (shown in Account Settings instead)
+- **Compact Header**: Shows avatar, editable name, and email only - subscription tier removed from header to save space
 - **iOS-Native Settings Layout**: Settings items use flexDirection: 'row' with space-between justification, matching native iOS Settings app design patterns
 - **Currency Picker**: Modal-based currency selector with scrollable list, visual selection states (checkmark + highlighted background), and real-time currency updates
 - **Location Display**: Shows city/country via reverse geocoding instead of raw coordinates, with fallback to coordinates if reverse geocoding fails, includes refresh icon button with loading animation to update location
 - **Search Radius Control**: Slider with real-time updates, displaying current value and range labels (0-100 km)
-- **Account Settings Order**: Subscription Status → Current Location (with refresh) → Search Radius → Currency, providing logical flow from account info to search preferences
+- **Subscription Status**: Only visible to paying users (when subscriptionTier !== 'free'), hidden for free tier users to avoid foreshadowing future paid features
+- **Account Settings Order**: Current Location (with refresh) → Search Radius → Currency, providing logical flow (Subscription Status shown first only for paid users)
 - **User Stats**: Shows events created, attended, and average organizer rating with visual stat cards
 - **Feedback & Account Management**: Feedback modal for user suggestions, account deletion with reason tracking and optional feedback
 
