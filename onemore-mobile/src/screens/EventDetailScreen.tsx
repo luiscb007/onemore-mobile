@@ -11,10 +11,12 @@ import {
   TextInput,
   Linking,
   Platform,
+  Share,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Calendar, Clock, MapPin, Users, Star, Heart, ThumbsUp, ThumbsDown, MessageCircle, User } from 'lucide-react-native';
+import { ArrowLeft, Calendar, Clock, MapPin, Users, Star, Heart, ThumbsUp, ThumbsDown, MessageCircle, User, Share2 } from 'lucide-react-native';
+import * as ExpoCalendar from 'expo-calendar';
 import { eventsApi } from '../api/events';
 import { waitlistApi } from '../api/waitlist';
 import { ratingsApi } from '../api/ratings';
@@ -145,6 +147,82 @@ export const EventDetailScreen = () => {
     return `${h} ${h === 1 ? 'hour' : 'hours'} ${m} minutes`;
   };
 
+  const buildSharePayload = (event: any) => {
+    const dateTimeStr = formatDate(event.date);
+    const description = event.description 
+      ? (event.description.length > 140 ? event.description.substring(0, 137) + '...' : event.description)
+      : '';
+    const location = event.address || 'Online event';
+    
+    const shareText = `Check out this event: ${event.title}\n\n` +
+      `📅 ${dateTimeStr}\n` +
+      `📍 ${location}\n` +
+      (description ? `\n${description}\n` : '');
+    
+    return {
+      title: event.title,
+      message: shareText,
+    };
+  };
+
+  const handleShare = async () => {
+    if (!event) return;
+    
+    try {
+      const payload = buildSharePayload(event);
+      await Share.share(payload);
+    } catch (error) {
+      console.error('Share error:', error);
+      Alert.alert('Error', 'Failed to share event. Please try again.');
+    }
+  };
+
+  const handleAddToCalendar = async () => {
+    if (!event) return;
+
+    try {
+      const { status } = await ExpoCalendar.requestCalendarPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Calendar access is required to add events to your calendar.');
+        return;
+      }
+
+      const calendars = await ExpoCalendar.getCalendarsAsync(ExpoCalendar.EntityTypes.EVENT);
+      const defaultCalendar = calendars.find(cal => cal.allowsModifications) || calendars[0];
+
+      if (!defaultCalendar) {
+        Alert.alert('Error', 'No calendar available to save the event.');
+        return;
+      }
+
+      const eventDate = new Date(event.date);
+      const endDate = new Date(eventDate);
+      
+      if (event.durationHours) {
+        endDate.setHours(endDate.getHours() + Math.floor(event.durationHours));
+        endDate.setMinutes(endDate.getMinutes() + Math.round((event.durationHours % 1) * 60));
+      } else {
+        endDate.setHours(endDate.getHours() + 2);
+      }
+
+      const calendarEventDetails = {
+        title: event.title,
+        startDate: eventDate,
+        endDate: endDate,
+        location: event.address || '',
+        notes: event.description || '',
+        timeZone: 'default',
+      };
+
+      await ExpoCalendar.createEventAsync(defaultCalendar.id, calendarEventDetails);
+      Alert.alert('Success', 'Event added to your calendar!');
+    } catch (error) {
+      console.error('Calendar error:', error);
+      Alert.alert('Error', 'Failed to add event to calendar. Please try again.');
+    }
+  };
+
   const openInMaps = () => {
     if (!event?.latitude || !event?.longitude) return;
 
@@ -179,6 +257,9 @@ export const EventDetailScreen = () => {
           <ArrowLeft size={24} color="#1e293b" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Event Details</Text>
+        <TouchableOpacity onPress={handleShare} style={styles.shareButton}>
+          <Share2 size={22} color="#1e293b" />
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
@@ -295,6 +376,16 @@ export const EventDetailScreen = () => {
             </TouchableOpacity>
           </View>
         )}
+
+        <View style={styles.actionsSection}>
+          <TouchableOpacity
+            style={styles.calendarButton}
+            onPress={handleAddToCalendar}
+          >
+            <Calendar size={20} color="#3b82f6" />
+            <Text style={styles.calendarButtonText}>Add to Calendar</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
       <Modal
@@ -380,6 +471,10 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginRight: 12,
+    padding: 4,
+  },
+  shareButton: {
+    marginLeft: 'auto',
     padding: 4,
   },
   headerTitle: {
@@ -585,6 +680,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#f59e0b',
+  },
+  calendarButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#3b82f6',
+    gap: 8,
+  },
+  calendarButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
   messageButton: {
     flexDirection: 'row',

@@ -4,6 +4,7 @@ import { authApi } from '../api/auth';
 import { tokenStorage } from '../services/tokenStorage';
 import type { User } from '../types';
 import type { LoginCredentials, RegisterCredentials, AppleSignInCredentials, GoogleSignInCredentials } from '../api/auth';
+import { setupPushNotifications, unregisterPushNotifications } from '../utils/notifications';
 
 type UserRole = 'attendee' | 'organizer';
 
@@ -35,6 +36,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (token) {
         const userData = await authApi.getCurrentUser();
         setUser(userData);
+        
+        // Setup push notifications for already logged in user
+        setupPushNotifications().catch(console.error);
       }
       
       const savedRole = await AsyncStorage.getItem(ROLE_STORAGE_KEY);
@@ -68,6 +72,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { user: loggedInUser } = await authApi.login(credentials);
       setUser(loggedInUser);
+      
+      // Setup push notifications after login
+      setupPushNotifications().catch(console.error);
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -96,6 +103,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { user: appleUser } = await authApi.appleSignIn(credentials);
       setUser(appleUser);
+      
+      // Setup push notifications after Apple Sign In
+      setupPushNotifications().catch(console.error);
     } catch (error) {
       console.error('Apple Sign In failed:', error);
       throw error;
@@ -109,6 +119,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { user: googleUser } = await authApi.googleSignIn(credentials);
       setUser(googleUser);
+      
+      // Setup push notifications after Google Sign In
+      setupPushNotifications().catch(console.error);
     } catch (error) {
       console.error('Google Sign In failed:', error);
       throw error;
@@ -120,6 +133,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setLoading(true);
     try {
+      // Unregister push notifications before logout
+      await unregisterPushNotifications();
+      
       await authApi.logout();
       setUser(null);
     } catch (error) {

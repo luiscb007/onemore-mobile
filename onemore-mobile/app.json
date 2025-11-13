@@ -8,6 +8,9 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "scheme": "onemore",
+    "plugins": [
+      "expo-notifications"
+    ],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -20,7 +23,10 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "OneMore uses your location to show nearby events and calculate distances.",
         "NSPhotoLibraryUsageDescription": "OneMore needs access to your photo library to let you upload event images.",
-        "NSCameraUsageDescription": "OneMore needs access to your camera to let you take photos for events."
+        "NSCameraUsageDescription": "OneMore needs access to your camera to let you take photos for events.",
+        "NSUserNotificationsUsageDescription": "Allow OneMore to send you notifications about event updates, messages from organizers, and new events from favorite organizers.",
+        "NSCalendarsUsageDescription": "OneMore needs access to your calendar to save events you want to attend.",
+        "UIBackgroundModes": ["remote-notification"]
       }
     },
     "android": {
@@ -30,6 +36,10 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
+    },
+    "notification": {
+      "iosDisplayInForeground": true,
+      "androidMode": "default"
     },
     "web": {
       "favicon": "./assets/favicon.png"
