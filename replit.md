@@ -81,7 +81,7 @@ The backend is an **Express.js** application written in **TypeScript**, providin
 
 ### Database Architecture
 
-**PostgreSQL**, hosted on **Neon**, is the primary database, accessed via **Drizzle ORM** for type-safe queries and schema management. Core tables include `users`, `events`, `eventInteractions`, `eventWaitlist`, `conversations`, `messages`, `organizerRatings`, `currencies`, and `sessions`. **Drizzle Kit** handles migrations, and schema definitions are type-safe and shared between client and server.
+**PostgreSQL**, hosted on **Neon**, is the primary database, accessed via **Drizzle ORM** for type-safe queries and schema management. Core tables include `users`, `events`, `eventInteractions`, `eventWaitlist`, `removedAttendees`, `conversations`, `messages`, `organizerRatings`, `currencies`, and `sessions`. **Drizzle Kit** handles migrations, and schema definitions are type-safe and shared between client and server.
 
 ### Geolocation & Location Services
 
@@ -92,6 +92,7 @@ The platform uses browser geolocation for the web and `expo-location` for mobile
 The platform supports:
 - **Event Discovery & Matching**: Swipe-based interactions, category, distance, keyword, and date-range filtering, with sorting options.
 - **Event Management**: Organizers can create, edit, and cancel events, with support for recurring events, capacity enforcement, and waitlists. LocationIQ API provides address autocomplete.
+- **Attendee Management**: Organizers can view attendee lists and remove attendees from their events. Removed users are permanently blocked from rejoining the same event through the `removed_attendees` table with unique constraint on (eventId, userId). Transaction-safe removal ensures atomic deletion of "going" interaction and insertion of removal record.
 - **Messaging System**: Direct user conversations with real-time unread counts and rate limiting.
 - **User Profiles & Analytics**: Displays user stats, supports account deletion with feedback, and sends email notifications.
 - **Content Safety**: Profanity filtering and HTML sanitization for user-generated content, along with rate limiting on various actions.
