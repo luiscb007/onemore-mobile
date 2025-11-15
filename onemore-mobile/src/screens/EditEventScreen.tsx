@@ -18,6 +18,7 @@ import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { eventsApi } from '../api/events';
+import { Switch } from 'react-native';
 
 const editEventSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -31,6 +32,8 @@ const editEventSchema = z.object({
   priceAmount: z.string().optional(),
   priceCurrencyCode: z.string().default('EUR'),
   capacity: z.string().optional(),
+  hasAgeRestriction: z.boolean().default(false),
+  minimumAge: z.string().optional().default(''),
   isRecurring: z.boolean().default(false),
   recurrenceType: z.string().nullable().refine(
     (val, ctx) => {
@@ -62,6 +65,18 @@ const editEventSchema = z.object({
     },
     { message: 'End date must be within 2 months of start date' }
   ),
+}).superRefine((data, ctx) => {
+  // Validate minimum age when age restriction is enabled
+  if (data.hasAgeRestriction) {
+    const age = parseInt(data.minimumAge || '');
+    if (!data.minimumAge || isNaN(age) || age < 1 || age > 99) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Minimum age must be between 1 and 99',
+        path: ['minimumAge'],
+      });
+    }
+  }
 });
 
 type EditEventForm = z.infer<typeof editEventSchema>;
@@ -109,6 +124,8 @@ export const EditEventScreen = () => {
       priceAmount: '',
       priceCurrencyCode: 'EUR',
       capacity: '',
+      hasAgeRestriction: false,
+      minimumAge: '',
       isRecurring: false,
       recurrenceType: null,
       recurrenceEndDate: null,
@@ -129,6 +146,10 @@ export const EditEventScreen = () => {
       if (event.priceAmount) setValue('priceAmount', event.priceAmount);
       if (event.priceCurrencyCode) setValue('priceCurrencyCode', event.priceCurrencyCode);
       if (event.capacity) setValue('capacity', event.capacity.toString());
+      if (event.minimumAge) {
+        setValue('hasAgeRestriction', true);
+        setValue('minimumAge', event.minimumAge.toString());
+      }
       if (event.recurrenceType) {
         setValue('isRecurring', true);
         setValue('recurrenceType', event.recurrenceType);
@@ -155,6 +176,7 @@ export const EditEventScreen = () => {
         priceAmount: data.priceAmount || null,
         priceCurrencyCode: data.priceCurrencyCode || 'EUR',
         capacity: data.capacity ? parseInt(data.capacity) : null,
+        minimumAge: data.hasAgeRestriction && data.minimumAge ? parseInt(data.minimumAge) : null,
         recurrenceType: data.isRecurring ? data.recurrenceType : null,
         recurrenceEndDate: data.isRecurring && data.recurrenceEndDate
           ? data.recurrenceEndDate.toISOString()
@@ -196,6 +218,7 @@ export const EditEventScreen = () => {
   };
 
   const isRecurring = watch('isRecurring');
+  const hasAgeRestriction = watch('hasAgeRestriction');
 
   if (isLoading) {
     return (
@@ -411,6 +434,41 @@ export const EditEventScreen = () => {
             />
           </View>
         </View>
+
+        <View style={styles.switchContainer}>
+          <Text style={styles.label}>Age Restriction</Text>
+          <Controller
+            control={control}
+            name="hasAgeRestriction"
+            render={({ field: { onChange, value } }) => (
+              <Switch value={value} onValueChange={onChange} />
+            )}
+          />
+        </View>
+
+        {hasAgeRestriction && (
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>Minimum Age *</Text>
+            <Controller
+              control={control}
+              name="minimumAge"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[styles.input, errors.minimumAge && styles.inputError]}
+                  placeholder="18"
+                  keyboardType="number-pad"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+            {errors.minimumAge && (
+              <Text style={styles.errorText}>{errors.minimumAge.message}</Text>
+            )}
+            <Text style={styles.helperText}>Minimum age must be between 1 and 99</Text>
+          </View>
+        )}
 
         <View style={styles.switchContainer}>
           <Text style={styles.label}>Recurring Event</Text>

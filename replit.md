@@ -21,9 +21,10 @@ The platform prioritizes a mobile-first responsive design using Shadcn/UI, Radix
 ### Feature Specifications
 - **Event Discovery & Matching**: Swipe-based interface, filtering by category, distance, keyword, and date range.
 - **Event Management**: Organizers can create, edit, cancel events, manage capacity, and utilize waitlists. LocationIQ API aids address autocomplete.
+- **Age Restrictions**: Organizers can set minimum age requirements (18+, 21+, etc.) for events. Server-side validation enforces age checks using shared helper function (`checkAgeEligibility`) for both event interactions and waitlist joins. Users must provide birthday to attend age-restricted events. Future waitlist promotion logic documented to require age validation.
 - **Attendee Management**: Organizers can view and remove attendees, with removed users blocked from rejoining.
 - **Messaging System**: Direct user conversations with real-time unread counts and rate limiting.
-- **User Profiles**: Displays user statistics, supports account deletion with feedback, and sends email notifications.
+- **User Profiles**: Displays user statistics, optional birthday field for age verification, supports account deletion with feedback, and sends email notifications.
 - **Content Safety**: Implements profanity filtering, HTML sanitization, and rate limiting.
 - **Authentication**: Supports Apple Sign In, Google Sign In, and Email registration with secure verification flows and auto-login.
 - **Push Notifications**: Comprehensive system for messages and event changes, with Expo push token integration.

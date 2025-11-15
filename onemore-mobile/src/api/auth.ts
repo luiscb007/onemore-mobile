@@ -12,6 +12,7 @@ export interface RegisterCredentials {
   password: string;
   firstName?: string;
   lastName?: string;
+  birthday?: Date | null;
 }
 
 export interface AppleSignInCredentials {

@@ -182,8 +182,43 @@ export const HomeScreen = () => {
     loadEvents();
   };
 
+  const calculateAge = (birthday: Date): number => {
+    const today = new Date();
+    let age = today.getFullYear() - birthday.getFullYear();
+    const monthDiff = today.getMonth() - birthday.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthday.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
   const handleInteraction = async (eventId: string, type: 'going' | 'like' | 'pass') => {
     try {
+      const event = events.find(e => e.id === eventId);
+      
+      if (type === 'going' && event?.minimumAge) {
+        if (!user?.birthday) {
+          Alert.alert(
+            'Birthday Required',
+            `This event requires attendees to be at least ${event.minimumAge} years old. Please update your birthday in your profile to verify your age.`,
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Update Birthday', onPress: () => navigation.navigate('Profile' as never) }
+            ]
+          );
+          return;
+        }
+        
+        const userAge = calculateAge(new Date(user.birthday));
+        if (userAge < event.minimumAge) {
+          Alert.alert(
+            'Age Restriction',
+            `This event requires attendees to be at least ${event.minimumAge} years old. You must be ${event.minimumAge} or older to attend this event.`
+          );
+          return;
+        }
+      }
+      
       await eventsApi.interactWithEvent(eventId, type);
       queryClient.invalidateQueries({ queryKey: ['user-events'] });
       await loadEvents();
@@ -218,8 +253,15 @@ export const HomeScreen = () => {
         activeOpacity={0.7}
       >
         <View style={styles.eventContent}>
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryText}>{item.category.toUpperCase()}</Text>
+          <View style={styles.badgesRow}>
+            <View style={styles.categoryBadge}>
+              <Text style={styles.categoryText}>{item.category.toUpperCase()}</Text>
+            </View>
+            {item.minimumAge && (
+              <View style={styles.ageBadge}>
+                <Text style={styles.ageBadgeText}>{item.minimumAge}+</Text>
+              </View>
+            )}
           </View>
           <Text style={styles.eventTitle}>{item.title}</Text>
           {item.organizer && (
@@ -860,15 +902,30 @@ const styles = StyleSheet.create({
   eventContent: {
     padding: 16,
   },
+  badgesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 8,
+  },
   categoryBadge: {
-    alignSelf: 'flex-start',
     backgroundColor: '#007AFF',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
-    marginBottom: 8,
   },
   categoryText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  ageBadge: {
+    backgroundColor: '#ff6b35',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  ageBadgeText: {
     color: '#FFF',
     fontSize: 12,
     fontWeight: 'bold',

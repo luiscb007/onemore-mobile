@@ -18,6 +18,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import { queryClient } from '../lib/queryClient';
 import { useLocation } from '../hooks/useLocation';
+import { CalendarPicker } from '../components/CalendarPicker';
 
 interface Currency {
   code: string;
@@ -39,6 +40,9 @@ export const ProfileScreen = () => {
   const [nameModalVisible, setNameModalVisible] = useState(false);
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
+  const [birthdayModalVisible, setBirthdayModalVisible] = useState(false);
+  const [birthday, setBirthday] = useState<Date | null>(user?.birthday ? new Date(user.birthday) : null);
+  const [showBirthdayPicker, setShowBirthdayPicker] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
   const [isSliding, setIsSliding] = useState(false);
 
@@ -164,6 +168,23 @@ export const ProfileScreen = () => {
     },
     onError: (error: any) => {
       Alert.alert('Error', error.response?.data?.message || 'Failed to update name');
+    },
+  });
+
+  const updateBirthdayMutation = useMutation({
+    mutationFn: async (newBirthday: Date | null) => {
+      const response = await apiClient.patch('/user/birthday', {
+        birthday: newBirthday ? newBirthday.toISOString() : null,
+      });
+      return response.data;
+    },
+    onSuccess: async () => {
+      await refreshUser();
+      setBirthdayModalVisible(false);
+      Alert.alert('Success', 'Your birthday has been updated successfully');
+    },
+    onError: (error: any) => {
+      Alert.alert('Error', error.response?.data?.message || 'Failed to update birthday');
     },
   });
 
@@ -440,6 +461,24 @@ export const ProfileScreen = () => {
           </View>
           <Text style={styles.settingArrow}>›</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.settingItem} 
+          onPress={() => {
+            setBirthday(user?.birthday ? new Date(user.birthday) : null);
+            setBirthdayModalVisible(true);
+          }}
+        >
+          <View>
+            <Text style={styles.settingLabel}>Birthday</Text>
+            <Text style={styles.settingValue}>
+              {user.birthday 
+                ? new Date(user.birthday).toLocaleDateString()
+                : 'Not set'}
+            </Text>
+          </View>
+          <Text style={styles.settingArrow}>›</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.section}>
@@ -682,6 +721,68 @@ export const ProfileScreen = () => {
               >
                 <Text style={styles.submitButtonText}>
                   {updateNameMutation.isPending ? 'Saving...' : 'Save'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit Birthday Modal */}
+      <Modal
+        visible={birthdayModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setBirthdayModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit Your Birthday</Text>
+            <Text style={styles.modalDescription}>Used for age-restricted events</Text>
+            
+            <TouchableOpacity
+              style={styles.birthdayButton}
+              onPress={() => setShowBirthdayPicker(true)}
+            >
+              <Text style={styles.birthdayButtonText}>
+                {birthday ? birthday.toLocaleDateString() : 'Select Birthday'}
+              </Text>
+            </TouchableOpacity>
+            
+            {birthday && (
+              <TouchableOpacity
+                style={styles.clearBirthdayButton}
+                onPress={() => setBirthday(null)}
+              >
+                <Text style={styles.clearBirthdayText}>Clear Birthday</Text>
+              </TouchableOpacity>
+            )}
+            
+            <CalendarPicker
+              visible={showBirthdayPicker}
+              value={birthday || new Date(2000, 0, 1)}
+              onSelect={(date) => {
+                setBirthday(date);
+                setShowBirthdayPicker(false);
+              }}
+              onClose={() => setShowBirthdayPicker(false)}
+              minimumDate={new Date(1900, 0, 1)}
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setBirthdayModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.submitButton]}
+                onPress={() => updateBirthdayMutation.mutate(birthday)}
+                disabled={updateBirthdayMutation.isPending}
+              >
+                <Text style={styles.submitButtonText}>
+                  {updateBirthdayMutation.isPending ? 'Saving...' : 'Save'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1090,5 +1191,25 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#007AFF',
     fontWeight: 'bold',
+  },
+  birthdayButton: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  birthdayButtonText: {
+    fontSize: 16,
+    color: '#1e293b',
+  },
+  clearBirthdayButton: {
+    padding: 8,
+    marginBottom: 12,
+  },
+  clearBirthdayText: {
+    fontSize: 14,
+    color: '#007AFF',
+    textAlign: 'center',
   },
 });

@@ -326,6 +326,15 @@ export const EventDetailScreen = () => {
             </Text>
           </View>
 
+          {event.minimumAge && (
+            <View style={styles.ageRestrictionRow}>
+              <Text style={styles.ageRestrictionIcon}>🔞</Text>
+              <Text style={styles.ageRestrictionText}>
+                {event.minimumAge}+ event - Age restriction applies
+              </Text>
+            </View>
+          )}
+
           <TouchableOpacity 
             style={styles.infoRow} 
             onPress={openInMaps}
@@ -588,6 +597,26 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 15,
     color: '#475569',
+    flex: 1,
+  },
+  ageRestrictionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fef3c7',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#fbbf24',
+  },
+  ageRestrictionIcon: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  ageRestrictionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#92400e',
     flex: 1,
   },
   addressLink: {

@@ -5,6 +5,7 @@ export type User = {
   email: string | null;
   firstName: string | null;
   lastName: string | null;
+  birthday: string | null;
   profileImageUrl: string | null;
   role: string;
   currentLatitude: number | null;
@@ -41,6 +42,7 @@ export type Event = {
   priceCurrencyCode: string | null;
   capacity: number | null;
   durationHours: number | null;
+  minimumAge: number | null;
   imageUrl: string | null;
   status: string;
   isRecurring: boolean;

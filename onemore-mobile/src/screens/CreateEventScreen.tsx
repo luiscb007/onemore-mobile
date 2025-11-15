@@ -38,10 +38,25 @@ const createEventSchema = z.object({
   priceCurrencyCode: z.string().optional().default('EUR'),
   capacity: z.string().optional().default(''),
   durationHours: z.string().optional().default(''),
+  hasAgeRestriction: z.boolean().default(false),
+  minimumAge: z.string().optional().default(''),
   isRecurring: z.boolean().default(false),
   recurrenceType: z.string().nullable(),
   recurrenceEndDate: z.date().nullable(),
 }).superRefine((data, ctx) => {
+  // Validate minimum age when age restriction is enabled
+  if (data.hasAgeRestriction) {
+    const age = parseInt(data.minimumAge || '');
+    if (!data.minimumAge || isNaN(age) || age < 1 || age > 99) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Minimum age must be between 1 and 99',
+        path: ['minimumAge'],
+      });
+    }
+  }
+  
+  // Validate recurrence type is selected when recurring
   // Validate recurrence type is selected when recurring
   if (data.isRecurring) {
     if (!data.recurrenceType || data.recurrenceType === '' || data.recurrenceType === 'none') {
@@ -129,6 +144,8 @@ export const CreateEventScreen = () => {
       priceCurrencyCode: user?.defaultCurrencyCode || 'EUR',
       capacity: '',
       durationHours: '',
+      hasAgeRestriction: false,
+      minimumAge: '',
       isRecurring: false,
       recurrenceType: null,
       recurrenceEndDate: null,
@@ -136,6 +153,7 @@ export const CreateEventScreen = () => {
   });
 
   const isRecurring = watch('isRecurring');
+  const hasAgeRestriction = watch('hasAgeRestriction');
 
   // Update currency when user's default currency changes (location-based)
   React.useEffect(() => {
@@ -167,6 +185,7 @@ export const CreateEventScreen = () => {
         priceCurrencyCode: data.priceCurrencyCode || 'EUR',
         capacity: data.capacity ? String(data.capacity) : null,
         durationHours: data.durationHours ? String(data.durationHours) : null,
+        minimumAge: data.hasAgeRestriction && data.minimumAge ? parseInt(data.minimumAge) : null,
         isRecurring: data.isRecurring,
         recurrenceType: data.isRecurring ? (data.recurrenceType || null) : null,
         recurrenceEndDate: data.isRecurring && data.recurrenceEndDate 
@@ -454,6 +473,45 @@ export const CreateEventScreen = () => {
             />
             <Text style={styles.helperText}>Duration in hours (e.g., 1.5 for 90 minutes)</Text>
           </View>
+
+          {/* Age Restriction */}
+          <View style={styles.switchContainer}>
+            <View style={styles.switchTextContainer}>
+              <Text style={styles.label}>Age Restriction</Text>
+              <Text style={styles.helperText}>Require minimum age for attendees</Text>
+            </View>
+            <Controller
+              control={control}
+              name="hasAgeRestriction"
+              render={({ field: { onChange, value } }) => (
+                <Switch value={value} onValueChange={onChange} />
+              )}
+            />
+          </View>
+
+          {hasAgeRestriction && (
+            <View style={styles.fieldContainer}>
+              <Text style={styles.label}>Minimum Age *</Text>
+              <Controller
+                control={control}
+                name="minimumAge"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    style={[styles.input, errors.minimumAge && styles.inputError]}
+                    placeholder="18"
+                    keyboardType="number-pad"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                  />
+                )}
+              />
+              {errors.minimumAge && (
+                <Text style={styles.errorText}>{errors.minimumAge.message}</Text>
+              )}
+              <Text style={styles.helperText}>Minimum age must be between 1 and 99</Text>
+            </View>
+          )}
 
           {/* Recurring Event */}
           <View style={styles.switchContainer}>

@@ -12,6 +12,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { CalendarPicker } from '../components/CalendarPicker';
 
 type RegisterScreenProps = {
   navigation: any;
@@ -24,6 +25,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
   const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [birthday, setBirthday] = useState<Date | null>(null);
+  const [showBirthdayPicker, setShowBirthdayPicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRegister = async () => {
@@ -54,6 +57,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
         password,
         firstName: firstName.trim(),
         lastName: lastName?.trim() || undefined,
+        birthday: birthday || undefined,
       });
       
       // Show success message and navigate to login
@@ -124,6 +128,40 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
               onChangeText={setLastName}
               autoCapitalize="words"
               editable={!isSubmitting}
+            />
+
+            <Text style={styles.label}>Birthday (Optional)</Text>
+            <TouchableOpacity
+              style={styles.input}
+              onPress={() => !isSubmitting && setShowBirthdayPicker(true)}
+              disabled={isSubmitting}
+            >
+              <Text style={birthday ? styles.dateText : styles.placeholderText}>
+                {birthday ? birthday.toLocaleDateString() : 'Select your birthday'}
+              </Text>
+            </TouchableOpacity>
+            {birthday && (
+              <TouchableOpacity
+                onPress={() => setBirthday(null)}
+                disabled={isSubmitting}
+                style={styles.clearButton}
+              >
+                <Text style={styles.clearButtonText}>Clear Birthday</Text>
+              </TouchableOpacity>
+            )}
+            <Text style={styles.helperText}>
+              Optional: Used for age-restricted events
+            </Text>
+
+            <CalendarPicker
+              visible={showBirthdayPicker}
+              value={birthday || new Date(2000, 0, 1)}
+              onSelect={(date) => {
+                setBirthday(date);
+                setShowBirthdayPicker(false);
+              }}
+              onClose={() => setShowBirthdayPicker(false)}
+              minimumDate={new Date(1900, 0, 1)}
             />
 
             <Text style={styles.label}>Password *</Text>
@@ -277,5 +315,27 @@ const styles = StyleSheet.create({
     color: '#FFF',
     lineHeight: 20,
     textAlign: 'center',
+  },
+  dateText: {
+    fontSize: 16,
+    color: '#000',
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: '#999',
+  },
+  clearButton: {
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  clearButtonText: {
+    fontSize: 14,
+    color: '#007AFF',
+    textAlign: 'center',
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 8,
   },
 });
