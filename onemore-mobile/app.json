@@ -20,7 +20,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.onemore.app",
+      "bundleIdentifier": "com.onemorelux.app",
       "buildNumber": "1",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "OneMore uses your location to show nearby events and calculate distances.",
