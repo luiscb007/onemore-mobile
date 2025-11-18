@@ -29,8 +29,10 @@
         "NSUserNotificationsUsageDescription": "Allow OneMore to send you notifications about event updates, messages from organizers, and new events from favorite organizers.",
         "NSCalendarsUsageDescription": "OneMore needs access to your calendar to save events you want to attend.",
         "UIBackgroundModes": [
+          "remote-notification",
           "remote-notification"
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
