@@ -28,7 +28,9 @@
         "NSCameraUsageDescription": "OneMore needs access to your camera to let you take photos for events.",
         "NSUserNotificationsUsageDescription": "Allow OneMore to send you notifications about event updates, messages from organizers, and new events from favorite organizers.",
         "NSCalendarsUsageDescription": "OneMore needs access to your calendar to save events you want to attend.",
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -45,6 +47,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d52615c1-915d-4b79-9b14-6ad7f0aa6d44"
+      }
     }
   }
 }
