@@ -1,0 +1,51 @@
+~/workspace$ cd onemore-mobile
+~/workspace/onemore-mobile$ eas submit --platform ios --latest
+
+Ensuring your app exists on App Store Connect. This step can be skipped by providing ascAppId in the submit profile. Learn more:
+https://expo.fyi/asc-app-id
+
+› Log in to your Apple Developer account to continue
+✔ Apple ID: … luiscantobrum@icloud.com
+› The password is only used to authenticate with Apple and never stored on EAS servers
+  Learn more: https://bit.ly/2VtGWhU
+✔ Password (for luiscantobrum@icloud.com): … **********
+› Saving Apple ID password to the local Keychain
+  Learn more: https://docs.expo.dev/distribution/security#keychain
+✔ Logged in, verify your Apple account to continue
+Two-factor Authentication (6 digit code) is enabled for luiscantobrum@icloud.com. Learn more: https://support.apple.com/en-us/HT204915
+
+✔ How do you want to validate your account? … device / sms
+✔ Please enter the 6 digit code … 064186
+✔ Valid code
+✔ Logged in and verified
+› Team LUIS VAN ZELLER PAMP D C BRUM (VA3QCP5GWR)
+› Provider LUIS VAN ZELLER PAMP D C BRUM (128303461)
+
+✔ Bundle identifier registered com.onemorelux.app
+✔ Prepared App Store Connect for OneMore com.onemorelux.app
+✔ TestFlight group created: Team (Expo)
+TestFlight access enabled for: luiscantobrum@icloud.com
+Looking up credentials configuration for com.onemorelux.app...
+✔ Generate a new App Store Connect API Key? … yes
+✔ Created App Store Connect API Key.
+✔ App Store Connect API Key assigned to onemore-mobile: com.onemorelux.app for EAS Submit.
+Using Api Key ID: QP6LNQL58G ([Expo] EAS Submit wvLvM0tLUL)
+
+ASC App ID:                 6755462566
+Project ID:                 d52615c1-915d-4b79-9b14-6ad7f0aa6d44
+App Store Connect API Key:  
+    Key Name  :  [Expo] EAS Submit wvLvM0tLUL
+    Key ID    :  QP6LNQL58G
+    Key Source:  EAS servers
+Build:                      
+    Build ID    :  efb754a6-5a36-4d2a-81b5-fb7272cf1f2c
+    Build Date  :  11/19/2025, 6:13:57 AM
+    App Version :  1.0.0
+    Build number:  3
+
+✔ Scheduled iOS submission
+
+Submission details: https://expo.dev/accounts/luiscb007/projects/onemore-mobile/submissions/47c65070-c776-4f0f-92bd-8f8ed45c4849
+
+Waiting for submission to complete. You can press Ctrl+C to exit.
+⠸ Submitting your app to Apple App Store Connect: waiting for an available submitter
