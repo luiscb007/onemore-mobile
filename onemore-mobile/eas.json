@@ -13,6 +13,9 @@
     },
     "preview": {
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://daade1d6-9389-485f-990e-56c4b4974a06-00-e3z49q9vb39k.janeway.replit.dev"
+      },
       "ios": {
         "simulator": false,
         "resourceClass": "m-medium"
