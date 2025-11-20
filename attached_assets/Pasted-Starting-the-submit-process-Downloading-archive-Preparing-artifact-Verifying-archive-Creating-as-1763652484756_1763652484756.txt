@@ -1,0 +1,36 @@
+Starting the submit process
+Downloading archive
+Preparing artifact
+Verifying archive
+Creating ascApiJsonKey.json file with ASC credentials
+Submitting iOS app to TestFlight...
+Submitting the app with fastlane pilot
+-------------------
+--- Step: pilot ---
+-------------------
+Creating authorization token for App Store Connect API
+Ready to upload new build to TestFlight (App: 6755462566)...
+Going to upload updated app to App Store Connect
+This might take a few minutes. Please don't interrupt the script.
+[altool] 2025-11-20 05:47:38.182 *** Error: Validation failed Redundant Binary Upload. You've already uploaded a build with build number '17' for version number '1.0.0'. Make sure you increment the build string before you upload your app to App Store Connect. Learn more in Xcode Help (http://help.apple.com/xcode/mac/current/#/devba7f53ad4). (ID: 8325e1d6-d253-4961-b017-945721032e3e) (409)
+[altool]  {
+[altool]     NSLocalizedDescription = "Validation failed";
+[altool]     NSLocalizedFailureReason = "Redundant Binary Upload. You've already uploaded a build with build number '17' for version number '1.0.0'. Make sure you increment the build string before you upload your app to App Store Connect. Learn more in Xcode Help (http://help.apple.com/xcode/mac/current/#/devba7f53ad4). (ID: 8325e1d6-d253-4961-b017-945721032e3e)";
+[altool]     NSUnderlyingError = "Error Domain=IrisAPI Code=-19241 \"Validation failed\" UserInfo={status=409, detail=Redundant Binary Upload. You've already uploaded a build with build number '17' for version number '1.0.0'. Make sure you increment the build string before you upload your app to App Store Connect. Learn more in Xcode Help (http://help.apple.com/xcode/mac/current/#/devba7f53ad4)., id=8325e1d6-d253-4961-b017-945721032e3e, code=STATE_ERROR.VALIDATION_ERROR, title=Validation failed, NSLocalizedFailureReason=Redundant Binary Upload. You've already uploaded a build with build number '17' for version number '1.0.0'. Make sure you increment the build string before you upload your app to App Store Connect. Learn more in Xcode Help (http://help.apple.com/xcode/mac/current/#/devba7f53ad4)., NSLocalizedDescription=Validation failed}";
+[altool]     "iris-code" = "STATE_ERROR.VALIDATION_ERROR";
+[altool] }
+Application Loader output above ^
+[ContentDelivery.Uploader.6000020C0100] Validation failed (409) Redundant Binary Upload. You've already uploaded a build with build number '17' for version number '1.0.0'. Make sure you increment the build string before you upload your app to App Store Connect. Learn more in Xcode Help (http://help.apple.com/xcode/mac/current/#/devba7f53ad4). (ID: 8325e1d6-d253-4961-b017-945721032e3e)
+Error uploading '/var/folders/m1/8_w9962s3b79dqm00nnlm85m0000gn/T/13d24883-9fbe-4778-bb27-3772544f6922.ipa'.
+Validation failed Redundant Binary Upload. You've already uploaded a build with build number '17' for version number '1.0.0'. Make sure you increment the build string before you upload your app to App Store Connect. Learn more in Xcode Help (http://help.apple.com/xcode/mac/current/#/devba7f53ad4). (ID: 8325e1d6-d253-4961-b017-945721032e3e) (409)
+The call to the altool completed with a non-zero exit status: 1. This indicates a failure.
+Could not download/upload from App Store Connect!
+[!] Error uploading ipa file: 
+ [Application Loader Error Output]: [ContentDelivery.Uploader.6000020C0100] Validation failed (409) Redundant Binary Upload. You've already uploaded a build with build number '17' for version number '1.0.0'. Make sure you increment the build string before you upload your app to App Store Connect. Learn more in Xcode Help (http://help.apple.com/xcode/mac/current/#/devba7f53ad4). (ID: 8325e1d6-d253-4961-b017-945721032e3e)
+[Application Loader Error Output]: Error uploading '/var/folders/m1/8_w9962s3b79dqm00nnlm85m0000gn/T/13d24883-9fbe-4778-bb27-3772544f6922.ipa'.
+[Application Loader Error Output]: Validation failed Redundant Binary Upload. You've already uploaded a build with build number '17' for version number '1.0.0'. Make sure you increment the build string before you upload your app to App Store Connect. Learn more in Xcode Help (http://help.apple.com/xcode/mac/current/#/devba7f53ad4). (ID: 8325e1d6-d253-4961-b017-945721032e3e) (409)
+[Application Loader Error Output]: The call to the altool completed with a non-zero exit status: 1. This indicates a failure.
+Fastlane pilot failed
+We couldn't figure out what went wrong. See logs to learn more.
+
+Failed to submit the app to the store
