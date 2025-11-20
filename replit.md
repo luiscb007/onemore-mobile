@@ -48,12 +48,18 @@ The platform prioritizes a mobile-first responsive design using Shadcn/UI, Radix
 
 ## Recent Changes (November 20, 2025)
 
-### iOS Production Build Fixes
-Fixed persistent blank screen issue in TestFlight builds by implementing the following critical changes:
+### iOS Production Build Fixes - Build #14 (Final Fix)
+Fixed persistent blank screen issue in TestFlight builds by identifying and resolving the root cause:
+
+**Root Cause**: The app was attempting to connect to the Replit backend on startup without any timeout configuration. When the API was unreachable from iOS devices, the AuthProvider would hang indefinitely in "loading" state, resulting in a blank white screen.
+
+**Critical Fixes Applied**:
 1. **Added Missing Dependencies**: Installed `react-native-reanimated` and `react-native-worklets` (required by React Navigation in Expo SDK 54)
 2. **Babel Configuration**: Created `babel.config.js` with `babel-preset-expo` only (SDK 54 automatically includes Reanimated plugin)
-3. **Component Hierarchy**: Corrected nesting order in `App.tsx` to `GestureHandlerRootView > SafeAreaProvider > ErrorBoundary` (previously ErrorBoundary was first child)
-4. **Error Visibility**: Modified `ErrorBoundary.tsx` to display error details in production builds for better debugging
-5. **Gesture Handler Import**: Verified `import 'react-native-gesture-handler'` is first line in `index.ts` entry point
+3. **Component Hierarchy**: Corrected nesting order in `App.tsx` to `GestureHandlerRootView > SafeAreaProvider > ErrorBoundary`
+4. **Error Visibility**: Modified `ErrorBoundary.tsx` to display error details in production builds
+5. **Gesture Handler Import**: Verified `import 'react-native-gesture-handler'` is first line in `index.ts`
+6. **API Timeout**: Added 10-second timeout to all API calls in `apiClient` and `refreshClient` (Build #14)
+7. **Error Recovery**: Improved AuthProvider initialization to gracefully handle API failures by clearing tokens and showing login screen instead of hanging (Build #14)
 
-These changes address the root causes of blank screens in production builds: missing native dependencies, incorrect component initialization order, and silent error handling.
+**Result**: Build #14 resolves all blank screen issues by ensuring the app shows the Welcome/Login screen within 10 seconds even when the backend is unreachable.
