@@ -1,40 +1,34 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from './src/contexts/AuthContext';
+import { AppNavigator } from './src/navigation/AppNavigator';
+import { LocationPermissionPrompt } from './src/components/LocationPermissionPrompt';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
+import { StatusBar } from 'expo-status-bar';
+import { queryClient } from './src/lib/queryClient';
 
 export default function App() {
+  console.log('[App] Starting App initialization');
+  
+  React.useEffect(() => {
+    console.log('[App] App component mounted successfully');
+  }, []);
+  
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>OneMore App - Build #20</Text>
-      <Text style={styles.subtitle}>Minimal Test Build</Text>
-      <Text style={styles.info}>If you see this, the app is working!</Text>
-    </View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <ErrorBoundary>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <StatusBar style="auto" />
+              <AppNavigator />
+              <LocationPermissionPrompt />
+            </AuthProvider>
+          </QueryClientProvider>
+        </ErrorBoundary>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FF0000',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  text: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 24,
-    color: '#FFFFFF',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  info: {
-    fontSize: 18,
-    color: '#FFFFFF',
-    textAlign: 'center',
-  },
-});

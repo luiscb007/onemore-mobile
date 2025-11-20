@@ -9,7 +9,6 @@
     "newArchEnabled": true,
     "scheme": "onemore",
     "description": "Discover local events and connect with your community. Find activities near you, interact with event organizers, and never miss out on what's happening around you.",
-    "privacy": "public",
     "plugins": [
       "expo-notifications"
     ],
