@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { View, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi } from '../api/auth';
 import { tokenStorage } from '../services/tokenStorage';
@@ -30,39 +31,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRoleState] = useState<UserRole>('attendee');
+  const [debugStatus, setDebugStatus] = useState<string>('Starting...');
 
   const loadUser = async () => {
     console.log('[AuthProvider] loadUser started');
+    setDebugStatus('Loading user...');
     try {
       console.log('[AuthProvider] Getting token from storage');
+      setDebugStatus('Checking token...');
       const token = await tokenStorage.getToken();
       console.log('[AuthProvider] Token retrieved:', token ? 'exists' : 'null');
       
       if (token) {
         try {
           console.log('[AuthProvider] Fetching current user from API');
+          setDebugStatus('Connecting to API...');
           const userData = await authApi.getCurrentUser();
           console.log('[AuthProvider] User data received:', userData);
+          setDebugStatus('User loaded!');
           setUser(userData);
           
           // Setup push notifications for already logged in user
           setupPushNotifications().catch(console.error);
         } catch (apiError) {
           console.error('[AuthProvider] API connection failed:', apiError);
+          setDebugStatus('API failed, clearing token...');
           // Clear invalid token and continue to show login screen
           await tokenStorage.clearTokens();
           setUser(null);
         }
+      } else {
+        setDebugStatus('No token found');
       }
       
       console.log('[AuthProvider] Getting saved role');
+      setDebugStatus('Loading role...');
       const savedRole = await AsyncStorage.getItem(ROLE_STORAGE_KEY);
       console.log('[AuthProvider] Saved role:', savedRole);
       if (savedRole === 'organizer' || savedRole === 'attendee') {
         setUserRoleState(savedRole);
       }
+      setDebugStatus('Initialization complete!');
     } catch (error) {
       console.error('[AuthProvider] Failed to load user:', error);
+      setDebugStatus(`Error: ${error}`);
       await tokenStorage.clearTokens();
       setUser(null);
     } finally {
@@ -177,6 +189,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   return (
     <AuthContext.Provider value={{ user, loading, userRole, login, register, appleSignIn, googleSignIn, logout, refreshUser, setUserRole }}>
+      {__DEV__ === false && loading && (
+        <View style={{ position: 'absolute', top: 100, left: 0, right: 0, backgroundColor: 'rgba(255,255,255,0.9)', padding: 20, zIndex: 9999 }}>
+          <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>Debug Info:</Text>
+          <Text style={{ fontSize: 14 }}>{debugStatus}</Text>
+          <Text style={{ fontSize: 12, marginTop: 10, color: '#666' }}>Loading: {loading ? 'true' : 'false'}</Text>
+          <Text style={{ fontSize: 12, color: '#666' }}>User: {user ? 'exists' : 'null'}</Text>
+        </View>
+      )}
       {children}
     </AuthContext.Provider>
   );
