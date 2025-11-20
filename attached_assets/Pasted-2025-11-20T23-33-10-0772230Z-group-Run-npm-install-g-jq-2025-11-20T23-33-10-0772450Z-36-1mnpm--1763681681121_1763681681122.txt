@@ -1,0 +1,38 @@
+2025-11-20T23:33:10.0772230Z ##[group]Run npm install -g jq
+2025-11-20T23:33:10.0772450Z [36;1mnpm install -g jq[0m
+2025-11-20T23:33:10.0772740Z [36;1mjq '.expo.newArchEnabled = false' app.json > app.json.tmp && mv app.json.tmp app.json[0m
+2025-11-20T23:33:10.1307490Z shell: /bin/bash -e {0}
+2025-11-20T23:33:10.1307720Z ##[endgroup]
+2025-11-20T23:33:12.8902200Z npm warn deprecated har-validator@5.1.5: this library is no longer supported
+2025-11-20T23:33:12.8992320Z npm warn deprecated uuid@3.4.0: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+2025-11-20T23:33:12.9922160Z npm warn deprecated request@2.88.2: request has been deprecated, see https://github.com/request/request/issues/3142
+2025-11-20T23:33:13.8461910Z 
+2025-11-20T23:33:13.8462290Z added 64 packages in 4s
+2025-11-20T23:33:13.8462460Z 
+2025-11-20T23:33:13.8462600Z 9 packages are looking for funding
+2025-11-20T23:33:13.8462820Z   run `npm fund` for details
+2025-11-20T23:33:13.8780280Z node:internal/modules/cjs/loader:1210
+2025-11-20T23:33:13.8781110Z   throw err;
+2025-11-20T23:33:13.8792250Z   ^
+2025-11-20T23:33:13.8792480Z 
+2025-11-20T23:33:13.8792720Z Error: Cannot find module 'commander'
+2025-11-20T23:33:13.8793050Z Require stack:
+2025-11-20T23:33:13.8793520Z - /Users/runner/hostedtoolcache/node/20.19.5/arm64/lib/node_modules/jq/bin/jq
+2025-11-20T23:33:13.8794460Z     at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)
+2025-11-20T23:33:13.8795320Z     at Module._load (node:internal/modules/cjs/loader:1038:27)
+2025-11-20T23:33:13.8795810Z     at Module.require (node:internal/modules/cjs/loader:1289:19)
+2025-11-20T23:33:13.8796170Z     at require (node:internal/modules/helpers:182:18)
+2025-11-20T23:33:13.8796640Z     at Object.<anonymous> (/Users/runner/hostedtoolcache/node/20.19.5/arm64/lib/node_modules/jq/bin/jq:7:15)
+2025-11-20T23:33:13.8797120Z     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+2025-11-20T23:33:13.8797520Z     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+2025-11-20T23:33:13.8797880Z     at Module.load (node:internal/modules/cjs/loader:1266:32)
+2025-11-20T23:33:13.8798250Z     at Module._load (node:internal/modules/cjs/loader:1091:12)
+2025-11-20T23:33:13.8798710Z     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12) {
+2025-11-20T23:33:13.8799030Z   code: 'MODULE_NOT_FOUND',
+2025-11-20T23:33:13.8799210Z   requireStack: [
+2025-11-20T23:33:13.8799540Z     '/Users/runner/hostedtoolcache/node/20.19.5/arm64/lib/node_modules/jq/bin/jq'
+2025-11-20T23:33:13.8799820Z   ]
+2025-11-20T23:33:13.8799950Z }
+2025-11-20T23:33:13.8800020Z 
+2025-11-20T23:33:13.8800070Z Node.js v20.19.5
+2025-11-20T23:33:13.8803210Z ##[error]Process completed with exit code 1.
