@@ -10,6 +10,12 @@ import { StatusBar } from 'expo-status-bar';
 import { queryClient } from './src/lib/queryClient';
 
 export default function App() {
+  console.log('[App] Starting App initialization');
+  
+  React.useEffect(() => {
+    console.log('[App] App component mounted successfully');
+  }, []);
+  
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

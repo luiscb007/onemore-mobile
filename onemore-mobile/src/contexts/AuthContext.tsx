@@ -26,38 +26,49 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const ROLE_STORAGE_KEY = '@onemore_user_role';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  console.log('[AuthProvider] AuthProvider component rendering');
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRoleState] = useState<UserRole>('attendee');
 
   const loadUser = async () => {
+    console.log('[AuthProvider] loadUser started');
     try {
+      console.log('[AuthProvider] Getting token from storage');
       const token = await tokenStorage.getToken();
+      console.log('[AuthProvider] Token retrieved:', token ? 'exists' : 'null');
+      
       if (token) {
         try {
+          console.log('[AuthProvider] Fetching current user from API');
           const userData = await authApi.getCurrentUser();
+          console.log('[AuthProvider] User data received:', userData);
           setUser(userData);
           
           // Setup push notifications for already logged in user
           setupPushNotifications().catch(console.error);
         } catch (apiError) {
-          console.error('API connection failed:', apiError);
+          console.error('[AuthProvider] API connection failed:', apiError);
           // Clear invalid token and continue to show login screen
           await tokenStorage.clearTokens();
           setUser(null);
         }
       }
       
+      console.log('[AuthProvider] Getting saved role');
       const savedRole = await AsyncStorage.getItem(ROLE_STORAGE_KEY);
+      console.log('[AuthProvider] Saved role:', savedRole);
       if (savedRole === 'organizer' || savedRole === 'attendee') {
         setUserRoleState(savedRole);
       }
     } catch (error) {
-      console.error('Failed to load user:', error);
+      console.error('[AuthProvider] Failed to load user:', error);
       await tokenStorage.clearTokens();
       setUser(null);
     } finally {
+      console.log('[AuthProvider] Setting loading to false');
       setLoading(false);
+      console.log('[AuthProvider] loadUser completed');
     }
   };
 
@@ -162,6 +173,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  console.log('[AuthProvider] Rendering children, loading:', loading, 'user:', user ? 'exists' : 'null');
+  
   return (
     <AuthContext.Provider value={{ user, loading, userRole, login, register, appleSignIn, googleSignIn, logout, refreshUser, setUserRole }}>
       {children}
