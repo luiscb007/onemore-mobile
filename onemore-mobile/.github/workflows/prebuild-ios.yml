@@ -19,6 +19,7 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
+        working-directory: ./onemore-mobile
         run: npm install
 
       - name: Setup Expo
@@ -27,21 +28,20 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Disable New Architecture in app.json
-        run: |
-          npm install -g jq
-          jq '.expo.newArchEnabled = false' app.json > app.json.tmp && mv app.json.tmp app.json
+      - name: Disable New Architecture
+        working-directory: ./onemore-mobile
+        run: jq '.expo.newArchEnabled = false' app.json > app.json.tmp && mv app.json.tmp app.json
 
       - name: Run iOS prebuild (clean)
+        working-directory: ./onemore-mobile
         run: npx expo prebuild --clean --platform ios --no-install
 
       - name: Commit iOS folder
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add ios/
-          git add app.json
-          git commit -m "chore: clean iOS prebuild with New Architecture disabled" || echo "No changes to commit"
-
-      - name: Push changes
-        run: git push origin HEAD:${{ github.ref }}
+          cd onemore-mobile
+          git add ios/ app.json
+          git commit -m "chore: clean iOS prebuild with New Architecture disabled" || echo "No changes"
+          cd ..
+          git push
