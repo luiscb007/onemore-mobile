@@ -23,7 +23,9 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 export const AppNavigator = () => {
+  console.log('[AppNavigator] Component rendering');
   const { user, loading, userRole, refreshUser } = useAuth();
+  console.log('[AppNavigator] Auth state - loading:', loading, 'user:', user ? 'exists' : 'null');
   const { getCurrentLocation, requestLocationPermission, permissionStatus } = useLocation();
   const locationFetchedRef = useRef(false);
 
@@ -57,6 +59,7 @@ export const AppNavigator = () => {
   }, [user, permissionStatus]);
 
   if (loading) {
+    console.log('[AppNavigator] Showing loading screen');
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color="#007AFF" />
@@ -66,6 +69,7 @@ export const AppNavigator = () => {
   }
 
   if (!user) {
+    console.log('[AppNavigator] Rendering guest navigation (Welcome/Login/Register)');
     return (
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -77,7 +81,10 @@ export const AppNavigator = () => {
     );
   }
 
+  console.log('[AppNavigator] Rendering authenticated navigation for role:', userRole);
+  
   const MainTabs = () => {
+    console.log('[MainTabs] Rendering main tabs');
     const insets = useSafeAreaInsets();
     
     return (
