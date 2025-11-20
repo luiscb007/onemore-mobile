@@ -1,0 +1,30 @@
+name: Build & Submit to TestFlight
+
+on:
+  workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build iOS for production
+        working-directory: ./onemore-mobile
+        run: eas build --platform ios --build-profile production --non-interactive
+
+      - name: Submit to TestFlight
+        working-directory: ./onemore-mobile
+        run: eas submit --platform ios --non-interactive
