@@ -1,4 +1,5 @@
 import React from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './src/contexts/AuthContext';
@@ -10,16 +11,18 @@ import { queryClient } from './src/lib/queryClient';
 
 export default function App() {
   return (
-    <ErrorBoundary>
-      <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <StatusBar style="auto" />
-            <AppNavigator />
-            <LocationPermissionPrompt />
-          </AuthProvider>
-        </QueryClientProvider>
-      </SafeAreaProvider>
-    </ErrorBoundary>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ErrorBoundary>
+        <SafeAreaProvider>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <StatusBar style="auto" />
+              <AppNavigator />
+              <LocationPermissionPrompt />
+            </AuthProvider>
+          </QueryClientProvider>
+        </SafeAreaProvider>
+      </ErrorBoundary>
+    </GestureHandlerRootView>
   );
 }
