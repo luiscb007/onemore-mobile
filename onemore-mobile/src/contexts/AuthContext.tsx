@@ -34,11 +34,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const token = await tokenStorage.getToken();
       if (token) {
-        const userData = await authApi.getCurrentUser();
-        setUser(userData);
-        
-        // Setup push notifications for already logged in user
-        setupPushNotifications().catch(console.error);
+        try {
+          const userData = await authApi.getCurrentUser();
+          setUser(userData);
+          
+          // Setup push notifications for already logged in user
+          setupPushNotifications().catch(console.error);
+        } catch (apiError) {
+          console.error('API connection failed:', apiError);
+          // Clear invalid token and continue to show login screen
+          await tokenStorage.clearTokens();
+          setUser(null);
+        }
       }
       
       const savedRole = await AsyncStorage.getItem(ROLE_STORAGE_KEY);
