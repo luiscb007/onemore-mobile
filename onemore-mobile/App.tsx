@@ -12,8 +12,8 @@ import { queryClient } from './src/lib/queryClient';
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ErrorBoundary>
-        <SafeAreaProvider>
+      <SafeAreaProvider>
+        <ErrorBoundary>
           <QueryClientProvider client={queryClient}>
             <AuthProvider>
               <StatusBar style="auto" />
@@ -21,8 +21,8 @@ export default function App() {
               <LocationPermissionPrompt />
             </AuthProvider>
           </QueryClientProvider>
-        </SafeAreaProvider>
-      </ErrorBoundary>
+        </ErrorBoundary>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
