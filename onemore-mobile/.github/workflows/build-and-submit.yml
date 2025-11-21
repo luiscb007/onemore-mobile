@@ -6,6 +6,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      CI: true
+      EAS_PROJECT_ID: d52615c1-915d-4b79-9b14-6ad7f0aa6d44
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,12 +26,8 @@ jobs:
 
       - name: Build iOS for production
         working-directory: ./onemore-mobile
-        env:
-          CI: true
         run: eas build --platform ios --profile production --wait
 
       - name: Submit to TestFlight
         working-directory: ./onemore-mobile
-        env:
-          CI: true
         run: eas submit --platform ios --profile production --non-interactive
