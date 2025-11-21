@@ -36,6 +36,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadUser = async () => {
     console.log('[AuthProvider] loadUser started');
     setDebugStatus('Loading user...');
+    
+    // Force timeout after 15 seconds to prevent indefinite hanging
+    const timeoutId = setTimeout(() => {
+      console.warn('[AuthProvider] Loading timeout reached, forcing completion');
+      setDebugStatus('Connection timeout, showing login...');
+      setLoading(false);
+    }, 15000);
+    
     try {
       console.log('[AuthProvider] Getting token from storage');
       setDebugStatus('Checking token...');
@@ -55,13 +63,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setupPushNotifications().catch(console.error);
         } catch (apiError) {
           console.error('[AuthProvider] API connection failed:', apiError);
-          setDebugStatus('API failed, clearing token...');
+          setDebugStatus('API failed, showing login...');
           // Clear invalid token and continue to show login screen
           await tokenStorage.clearTokens();
           setUser(null);
         }
       } else {
-        setDebugStatus('No token found');
+        setDebugStatus('No token found, ready to login');
       }
       
       console.log('[AuthProvider] Getting saved role');
@@ -71,13 +79,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (savedRole === 'organizer' || savedRole === 'attendee') {
         setUserRoleState(savedRole);
       }
-      setDebugStatus('Initialization complete!');
+      setDebugStatus('Ready!');
     } catch (error) {
       console.error('[AuthProvider] Failed to load user:', error);
       setDebugStatus(`Error: ${error}`);
       await tokenStorage.clearTokens();
       setUser(null);
     } finally {
+      clearTimeout(timeoutId);
       console.log('[AuthProvider] Setting loading to false');
       setLoading(false);
       console.log('[AuthProvider] loadUser completed');
@@ -187,16 +196,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   console.log('[AuthProvider] Rendering children, loading:', loading, 'user:', user ? 'exists' : 'null');
   
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+        <View style={{ padding: 20, backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 12, marginHorizontal: 20 }}>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>OneMore</Text>
+          <Text style={{ fontSize: 14, marginBottom: 20, textAlign: 'center', color: '#666' }}>{debugStatus}</Text>
+          <View style={{ height: 4, backgroundColor: '#e5e7eb', borderRadius: 2, marginBottom: 15, overflow: 'hidden' }}>
+            <View style={{ height: '100%', backgroundColor: '#007AFF', width: '50%' }} />
+          </View>
+          <Text style={{ fontSize: 12, color: '#999', textAlign: 'center' }}>Initializing...</Text>
+        </View>
+      </View>
+    );
+  }
+  
   return (
     <AuthContext.Provider value={{ user, loading, userRole, login, register, appleSignIn, googleSignIn, logout, refreshUser, setUserRole }}>
-      {__DEV__ === false && loading && (
-        <View style={{ position: 'absolute', top: 100, left: 0, right: 0, backgroundColor: 'rgba(255,255,255,0.9)', padding: 20, zIndex: 9999 }}>
-          <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>Debug Info:</Text>
-          <Text style={{ fontSize: 14 }}>{debugStatus}</Text>
-          <Text style={{ fontSize: 12, marginTop: 10, color: '#666' }}>Loading: {loading ? 'true' : 'false'}</Text>
-          <Text style={{ fontSize: 12, color: '#666' }}>User: {user ? 'exists' : 'null'}</Text>
-        </View>
-      )}
       {children}
     </AuthContext.Provider>
   );
