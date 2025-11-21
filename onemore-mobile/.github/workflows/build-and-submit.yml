@@ -23,8 +23,8 @@ jobs:
 
       - name: Build iOS for production
         working-directory: ./onemore-mobile
-        run: eas build --platform ios --profile production --wait
+        run: eas build --platform ios --profile production --wait --yes
 
       - name: Submit to TestFlight
         working-directory: ./onemore-mobile
-        run: eas submit --platform ios --profile production --non-interactive
+        run: eas submit --platform ios --profile production --non-interactive --yes
