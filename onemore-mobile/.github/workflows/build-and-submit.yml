@@ -24,6 +24,10 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
+      - name: Initialize EAS project
+        working-directory: ./onemore-mobile
+        run: eas init --id d52615c1-915d-4b79-9b14-6ad7f0aa6d44 --force
+
       - name: Build iOS for production
         working-directory: ./onemore-mobile
         run: eas build --platform ios --profile production --wait
