@@ -8,8 +8,19 @@ import { LocationPermissionPrompt } from './src/components/LocationPermissionPro
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { StatusBar } from 'expo-status-bar';
 import { queryClient } from './src/lib/queryClient';
+import * as Sentry from '@sentry/react-native';
 
-export default function App() {
+const SENTRY_DSN = 'https://a7e23d8c7e0a4b3d8c9e0f1a2b3c4d5e@o4507410436284416.ingest.us.sentry.io/4507410476589056';
+
+if (!__DEV__) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    tracesSampleRate: 1.0,
+    environment: 'production',
+  });
+}
+
+function AppContent() {
   console.log('[App] Starting App initialization');
   
   React.useEffect(() => {
@@ -32,3 +43,5 @@ export default function App() {
     </GestureHandlerRootView>
   );
 }
+
+export default Sentry.wrap(AppContent);

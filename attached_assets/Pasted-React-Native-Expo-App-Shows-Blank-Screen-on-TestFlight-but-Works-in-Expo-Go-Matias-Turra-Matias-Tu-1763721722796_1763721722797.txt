@@ -1,0 +1,99 @@
+React Native Expo App Shows Blank Screen on TestFlight but Works in Expo Go
+Matias Turra
+Matias Turra
+
+Follow
+4 min read
+·
+Jul 25, 2025
+7
+
+
+2
+
+
+
+I recently started working with React Native using Expo to build my first mobile app. Things were going great — I shipped a first version to TestFlight, no problem. But then, I pushed an update (v1.1.0), and everything broke.
+
+The app opened to a blank screen. No crash. No error. Just… nothing.
+
+I searched Reddit, GitHub issues, StackOverflow — found dozens of posts describing the same problem:
+
+“My app works in Expo Go, but in TestFlight it just shows a blank screen.”
+
+But no real answers.
+
+So after hours of trial and error (and wasting several TestFlight builds), I figured it out. And I’m writing this post in case it helps someone else avoid that pain.
+
+How I Found the Problem
+The app worked fine in Expo Go, but once I installed it through TestFlight, it was just a blank screen. I had no logs, no crash, no error — nothing. Here’s exactly how I debugged it:
+
+1. Build a Preview Version
+Since I couldn’t reproduce the issue in Expo Go, I built a preview build for the iOS Simulator:
+
+npx eas-cli build - platform ios - profile preview
+I made sure my eas.json had this simulator flag on under the preview profile:
+
+"preview": {
+  "distribution": "internal",
+  "ios": {
+    "simulator": true
+  }
+}
+This creates a .app file (instead of a .ipa) that works on the macOS iOS Simulator.
+
+2. Run the App on the Simulator
+After the build finished:
+
+I downloaded the .app file from the Expo build page (if you are building locally you’ll have it there)
+Then installed it using:
+xcrun simctl install booted /path/to/your.app
+Then I opened the app on the simulator
+
+3. Open Console.app and Filter Logs
+To see what was going wrong:
+
+Open the Console app (just search for “Console” in Spotlight)
+In the left sidebar, select your simulator device under the “Devices” section
+Click the “Errors and Faults” filter above the log table to filter the errors
+Add a search filter for your app name using the search bar (PROCESS: YOUR_APP_NAME)
+Launch the app in the simulator and watch the logs roll in
+I found a bunch of logs with errors but the one that did the trick was this one:
+
+[runtime not ready]: Invariant Violation: TurboModuleRegistry.getEnforcing(...): 
+'RNGestureHandlerModule' could not be found. 
+Verify that a module by this name is registered in the native binary., js engine: hermes
+RNGestureHandlerModule is the native module for react-native-gesture-handler.
+
+Get Matias Turra’s stories in your inbox
+Join Medium for free to get updates from this writer.
+
+Enter your email
+Subscribe
+My code(or a dependency, like React Navigation) is trying to use this module, but it is not present in the native binary.
+
+The Cause
+After googling the error, I found out:
+
+Some native modules are available in Expo Go, but are not automatically included in your standalone EAS builds.
+
+So if your app (or a dependency like React Navigation) needs react-native-gesture-handler, you have to explicitly install it:
+
+npx expo install react-native-gesture-handler
+Final Steps
+I installed the missing package, rebuilt the preview app, tested it in the simulator again — and it worked. After confirming it was fixed, I created a new production build and submitted it to TestFlight.
+
+The app was finally working again on my phone.
+
+Lessons (painfully) Learned
+💻 Preview builds save hours. Don’t go straight to production — use eas build — profile preview and test in the iOS simulator first.
+🧠 Expo Go is not your production app. It includes many prebuilt native modules that your standalone build will not include unless you explicitly install them.
+🧩 Missing native modules crash silently. If you’re using libraries like React Navigation, make sure all required native dependencies (like react-native-gesture-handler) are installed.
+📝 You must commit before cloud builds. Expo’s EAS cloud builds only use the last committed state. I built the same broken version three times without realizing my local fixes weren’t included 😅.
+🔎 Logs don’t show in TestFlight. If your app fails to launch, you won’t see why unless you test locally or use a crash reporting tool.
+🛠 macOS Console is your best friend. Open Console.app, filter by your app name and “Errors and Faults”, and you’ll see what’s really breaking under the hood.
+📉 You’re blind without JS logs. In production, console.log() is gone. Tools like Sentry or Bugsnag can help track runtime errors.
+🧪 Add logs in key places. I added console.log()s at every startup stage — and none of them showed up. That told me the JS bundle wasn’t even loading.
+⚙️ babel.config.js and tsconfig.json changes matter. I made tweaks to both (like using path aliases) and didn’t realize they could affect build output in production.
+🧱 A missing dependency can break everything. The app didn’t crash — it just never started. That’s way harder to debug without knowing where to look.
+👷 Add an error boundary. Once I realized I had none, I added one — it won’t fix native crashes, but it helps catch unexpected runtime errors in production JS.

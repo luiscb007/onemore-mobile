@@ -1,0 +1,233 @@
+Blank white screen when expo app uploaded to TestFlight (built with EAS)
+Asked 2 years, 5 months ago
+Modified 2 years, 4 months ago
+Viewed 3k times
+ Part of Mobile Development Collective
+2
+
+My React native app is bundled using EAS.
+
+When I run my app using expo start or expo start --no-dev --minify on expo go or the xcode simulator via expo, I get no issues and my app runs flawlessly. When I compile the app with EAS, use Apple's Transporter to upload it to AppConnect and then put it on testflight, I just get a blank white screen whenever I open the app (after first install and after closing it and reopening). I have no idea whether it is something wrong with my env set up or the dependancies I'm using or my actual app code. Please Help!
+
+This is my app.json:
+
+{
+  "expo": {
+    "name": "NAME",
+    "slug": "",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/applogo.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "identifier",
+      "buildNumber": "4"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "web": {
+      "favicon": ""
+    },
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
+    }
+  }
+}
+This is my package.json:
+
+{
+  "name": "NAME",
+  "version": "1.0.1",
+  "main": "node_modules/expo/AppEntry.js",
+  "homepage": "",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@aws-amplify/cli": "^10.7.1",
+    "@aws-amplify/core": "^5.0.14",
+    "@aws-sdk/client-secrets-manager": "^3.267.0",
+    "@react-native-async-storage/async-storage": "1.17.11",
+    "@react-native-community/netinfo": "9.3.7",
+    "@react-navigation/bottom-tabs": "^6.4.0",
+    "@react-navigation/drawer": "^6.5.8",
+    "@react-navigation/material-bottom-tabs": "^6.2.4",
+    "@react-navigation/material-top-tabs": "^6.5.3",
+    "@react-navigation/native": "^6.0.13",
+    "@react-navigation/native-stack": "^6.9.1",
+    "@react-navigation/stack": "^6.3.16",
+    "amazon-cognito-identity-js": "^6.1.2",
+    "aws-amplify": "^5.0.14",
+    "aws-amplify-react-native": "^7.0.2",
+    "expo": "^48.0.19",
+    "expo-constants": "~14.2.1",
+    "expo-linear-gradient": "~12.1.2",
+    "expo-status-bar": "~1.4.4",
+    "expo-updates": "~0.16.4",
+    "fuse.js": "^6.6.2",
+    "nativewind": "^2.0.11",
+    "react": "18.2.0",
+    "react-native": "0.71.8",
+    "react-native-calendars": "^1.1293.0",
+    "react-native-date-picker": "^4.2.6",
+    "react-native-dropdown-picker": "^5.4.4",
+    "react-native-gesture-handler": "~2.9.0",
+    "react-native-linear-gradient": "^2.6.2",
+    "react-native-pager-view": "6.1.2",
+    "react-native-paper": "^4.12.5",
+    "react-native-reanimated": "~2.14.4",
+    "react-native-responsive-screen": "^1.4.2",
+    "react-native-skeleton-loader-pulse": "^1.2.0",
+    "react-native-tab-view": "^3.3.4",
+    "react-native-vector-icons": "^9.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@babel/plugin-proposal-private-methods": "^7.18.6",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.0",
+    "tailwindcss": "^3.2.0"
+  },
+  "private": true
+}
+Result of npx expo-env-info
+
+javascript
+ expo-env-info 1.0.5 environment info:
+    System:
+      OS: macOS 13.4
+      Shell: 3.2.57 - /bin/bash
+    Binaries:
+      Node: 16.15.0 - /usr/local/bin/node
+      npm: 8.5.5 - /usr/local/bin/npm
+    SDKs:
+      iOS SDK:
+        Platforms: DriverKit 22.4, iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4
+    IDEs:
+      Android Studio: 2021.3 AI-213.7172.25.2113.9014738
+      Xcode: 14.3.1/14E300c - /usr/bin/xcodebuild
+    npmPackages:
+      expo: ^48.0.19 => 48.0.19 
+      react: 18.2.0 => 18.2.0 
+      react-native: 0.71.8 => 0.71.8 
+    npmGlobalPackages:
+      eas-cli: 3.13.3
+      expo-cli: 6.3.8
+    Expo Workflow: managed
+iosreactjsreact-nativeexpotestflight
+Share
+Improve this question
+Follow
+asked Jun 10, 2023 at 1:37
+0xFarted's user avatar
+0xFarted
+17122 silver badges55 bronze badges
+Add a comment
+1 Answer
+Sorted by:
+
+Highest score (default)
+1
+
+I encountered a similar issue while upgrading a project from SDK 41 to 47. The iOS version looked fine in the Expo Go app, but after building it using EAS, the app became completely blank.
+
+From the device log, it seems the static image is missing in the bundle.
+
+The root cause of the problem in my case was the metro.config.js file.
+
+When ejecting, expo is supposed to generate a metro.config.js file that looks like that
+
+javascript
+module.exports = {
+   transformer: {
+       assetPlugins: ['expo-asset/tools/hashAssetFiles']
+   }
+};
+However, in our project, we had previously created this file to support svg assets requested by react-native-svg-transformer, so Expo didn't overwrite it since it already existed.
+
+The solution was to merge the Expo-generated configuration into our existing metro.config.js file. After doing this, the production build finally displayed its contents correctly.
+
+Here's the updated metro.config.js:
+
+javascript
+const { getDefaultConfig } = require("@expo/metro-config")
+
+module.exports = (async () => {
+  const {
+    resolver: { sourceExts, assetExts }
+  } = await getDefaultConfig(__dirname)
+
+  return {
+    transformer: {
+      babelTransformerPath: require.resolve("react-native-svg-transformer"),
+      assetPlugins: ['expo-asset/tools/hashAssetFiles']
+    },
+    resolver: {
+      assetExts: assetExts.filter((ext) => ext !== "svg"),
+      sourceExts: [...sourceExts, "svg"]
+    }
+  }
+})()
+I want to give credit to r1skz3ro's answer and this Expo forum thread for helping me find this solution. Huge thanks.
+
+Here are some debugging tips that I found helpful:
+
+To make the debug process faster, I have run the production build locally for easier testing. The step is like this:
+run npx expo prebuild to generate the ios folder,
+
+open the .xcworkspace file and build the app using the XCode IDE
+
+Alternatively, you can run npx expo start --ios --no-dev to build the application.
+
+Although the actual build time is similar to EAS build, this approach reduces the time to download the build and the processing time when uploading to Testflight.
+
+View the crash log on a real device or on the simulator. (I will try writing the steps later when I got time)
+Share
+Improve this answer
+Follow
+edited Jul 25, 2023 at 10:00
+answered Jul 25, 2023 at 9:41
+Tyson Z's user avatar
+Tyson Z
+42322 silver badges1010 bronze badges
+Sign up to request clarification or add additional context in comments.
+
+3 Comments
+
+
+Jovaaa
+Over a year ago
+Hey, you didn't write the steps for crash logs :D
+
+Tyson Z
+Over a year ago
+Hi @Jovaaa, thanks for the notification, I haven't updated that part as it'll need some screenshots to show the steps. I recommend this blog for viewing iOS device logs for reference. :)
+
+Jovaaa
+Over a year ago
+Thank you for your reply, I have managed to debug just like that a few days ago. It's hard to debug like that, but it does the trick
